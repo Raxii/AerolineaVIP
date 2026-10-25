@@ -1,0 +1,59 @@
+﻿@model Con_Autenticacion.Models.Asiento
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Asiento</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Codigo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Codigo)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Fila)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Fila)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Lado)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Lado)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Ubicacion)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Ubicacion)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ModeloAeronave.Fabricante)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ModeloAeronave.Fabricante)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

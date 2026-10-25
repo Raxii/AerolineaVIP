@@ -1,0 +1,43 @@
+﻿@model Con_Autenticacion.Models.TramoItinerario
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>TramoItinerario</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Orden)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Orden)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Itinerario.Referencia)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Itinerario.Referencia)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Vuelo.EstadoVueloCodigo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Vuelo.EstadoVueloCodigo)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.TramoItinerarioId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
