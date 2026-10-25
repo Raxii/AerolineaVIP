@@ -22,7 +22,7 @@ namespace Con_Autenticacion.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -34,9 +34,9 @@ namespace Con_Autenticacion.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -120,7 +120,7 @@ namespace Con_Autenticacion.Controllers
             // Si un usuario introduce códigos incorrectos durante un intervalo especificado de tiempo, la cuenta del usuario 
             // se bloqueará durante un período de tiempo especificado. 
             // Puede configurar el bloqueo de la cuenta en IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -155,8 +155,22 @@ namespace Con_Autenticacion.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    // Todo registro público recibe únicamente el rol Cliente.
+                    var resultadoRol = await UserManager.AddToRoleAsync(user.Id, "Cliente");
+                    if (!resultadoRol.Succeeded)
+                    {
+                        // Evitar dejar una cuenta incompleta sin el rol Cliente.
+                        var eliminacion = await UserManager.DeleteAsync(user);
+                        AddErrors(resultadoRol);
+                        if (!eliminacion.Succeeded)
+                        {
+                            AddErrors(eliminacion);
+                        }
+                        return View(model);
+                    }
+
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
                     // Enviar un correo electrónico con este vínculo
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -374,6 +388,20 @@ namespace Con_Autenticacion.Controllers
                     result = await UserManager.AddLoginAsync(user.Id, info.Login);
                     if (result.Succeeded)
                     {
+                        // Los registros externos también son clientes.
+                        var resultadoRol = await UserManager.AddToRoleAsync(user.Id, "Cliente");
+                        if (!resultadoRol.Succeeded)
+                        {
+                            var eliminacion = await UserManager.DeleteAsync(user);
+                            AddErrors(resultadoRol);
+                            if (!eliminacion.Succeeded)
+                            {
+                                AddErrors(eliminacion);
+                            }
+                            ViewBag.ReturnUrl = returnUrl;
+                            return View(model);
+                        }
+
                         await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                         return RedirectToLocal(returnUrl);
                     }
