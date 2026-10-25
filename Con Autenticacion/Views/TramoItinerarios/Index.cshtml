@@ -1,0 +1,46 @@
+﻿@model IEnumerable<Con_Autenticacion.Models.TramoItinerario>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Orden)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Itinerario.Referencia)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Vuelo.EstadoVueloCodigo)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Orden)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Itinerario.Referencia)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Vuelo.EstadoVueloCodigo)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.TramoItinerarioId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.TramoItinerarioId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.TramoItinerarioId })
+        </td>
+    </tr>
+}
+
+</table>

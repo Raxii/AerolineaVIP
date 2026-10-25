@@ -1,0 +1,58 @@
+﻿@model IEnumerable<Con_Autenticacion.Models.Frecuencia>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.DiaSemana)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.HoraSalida)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.HoraLlegada)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Activa)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Ruta.RutaId)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.DiaSemana)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.HoraSalida)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.HoraLlegada)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Activa)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Ruta.RutaId)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.FrecuenciaId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.FrecuenciaId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.FrecuenciaId })
+        </td>
+    </tr>
+}
+
+</table>

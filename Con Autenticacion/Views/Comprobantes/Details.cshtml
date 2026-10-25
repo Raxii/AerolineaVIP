@@ -1,0 +1,59 @@
+﻿@model Con_Autenticacion.Models.Comprobante
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Comprobante</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.NumeroComprobante)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.NumeroComprobante)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FechaEmision)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FechaEmision)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Compra.MonedaCodigo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Compra.MonedaCodigo)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EstadoComprobante.Descripcion)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EstadoComprobante.Descripcion)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TipoComprobante.Descripcion)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TipoComprobante.Descripcion)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ComprobanteId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
