@@ -472,6 +472,7 @@
     <Content Include="Views\CheckIns\Details.cshtml" />
     <Content Include="Views\CheckIns\Edit.cshtml" />
     <Content Include="Views\CheckIns\Index.cshtml" />
+    <Content Include="Views\Usuarios\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

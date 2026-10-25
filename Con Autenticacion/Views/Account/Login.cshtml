@@ -1,63 +1,228 @@
-﻿@using Con_Autenticacion.Models
+﻿
+@using Con_Autenticacion.Models
 @model LoginViewModel
+
 @{
     ViewBag.Title = "Iniciar sesión";
 }
 
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <div class="row">
-        <div class="col-md-8">
-            <section id="loginForm">
-                @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
-                {
-                    @Html.AntiForgeryToken()
-                    <h4>Utilice una cuenta local para iniciar sesión.</h4>
-                    <hr />
-                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-                    <div class="row">
-                        @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 col-form-label" })
-                        <div class="col-md-10">
-                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
-                            @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
-                        </div>
-                    </div>
-                    <div class="row">
-                        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 col-form-label" })
-                        <div class="col-md-10">
-                            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
-                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="offset-md-2 col-md-10">
-                            <div class="checkbox">
-                                @Html.CheckBoxFor(m => m.RememberMe)
-                                @Html.LabelFor(m => m.RememberMe)
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="offset-md-2 col-md-10">
-                            <input type="submit" value="Iniciar sesión" class="btn btn-outline-dark" />
-                        </div>
-                    </div>
-                    <p>
-                        @Html.ActionLink("Registrarse como usuario nuevo", "Register")
+<style>
+    .vip-login {
+        color: #34414C;
+    }
+
+        .vip-login .vip-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E7EBEF;
+            border-radius: 10px;
+        }
+
+        .vip-login .vip-header {
+            background-color: #E7EBEF;
+            color: #34414C;
+            padding: 24px;
+        }
+
+        .vip-login .vip-footer {
+            background-color: #F6F8FA;
+            color: #34414C;
+        }
+
+        .vip-login .form-control {
+            background-color: #F6F8FA;
+            border: 1px solid #E7EBEF;
+            color: #34414C;
+        }
+
+            .vip-login .form-control:focus {
+                border-color: #34414C;
+                box-shadow: 0 0 0 0.2rem rgba(52, 65, 76, 0.15);
+            }
+
+        .vip-login .btn-vip {
+            background-color: #34414C;
+            border-color: #34414C;
+            color: #FFFFFF;
+        }
+
+            .vip-login .btn-vip:hover {
+                background-color: #F6F8FA;
+                color: #34414C;
+            }
+
+        .vip-login .btn-vip-outline {
+            border: 1px solid #34414C;
+            color: #34414C;
+            background-color: #FFFFFF;
+        }
+
+            .vip-login .btn-vip-outline:hover {
+                background-color: #34414C;
+                color: #FFFFFF;
+            }
+</style>
+
+<main class="container vip-login py-5" aria-labelledby="title">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7 col-md-8 mb-4">
+
+            <section id="loginForm" class="card vip-card shadow-sm">
+
+                <div class="card-header vip-header text-center">
+
+                    <h2 id="title" class="mb-2">
+                        AEROLÍNEA VIP
+                    </h2>
+
+                    <p class="mb-0">
+                        Inicio de sesión
                     </p>
-                    @* Habilite esta opción una vez tenga la confirmación de la cuenta habilitada para la funcionalidad de restablecimiento de contraseña
+
+                </div>
+
+                <div class="card-body p-4">
+
+                    @using (Html.BeginForm("Login", "Account",
+                        new { ReturnUrl = ViewBag.ReturnUrl },
+                        FormMethod.Post,
+                        new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <h4 class="mb-3">
+                            Bienvenido
+                        </h4>
+
                         <p>
-                            @Html.ActionLink("¿Ha olvidado su contraseña?", "ForgotPassword")
-                        </p>*@
-                }
+                            Utilice una cuenta local para iniciar sesión.
+                        </p>
+
+                        <hr />
+
+                        @Html.ValidationSummary(true, "",
+                            new { @class = "text-danger" })
+
+                        <div class="form-group mb-3">
+
+                            @Html.LabelFor(m => m.UserName)
+
+                            @Html.TextBoxFor(m => m.UserName,
+                                new
+                                     {
+                                    @class = "form-control",
+                                    placeholder = "Nombre de usuario",
+                                    autocomplete = "username"
+                                })
+
+                            @Html.ValidationMessageFor(m => m.UserName,
+                                "",
+                                new { @class = "text-danger" })
+
+                        </div>
+
+                        <div class="form-group mb-3">
+
+                            @Html.LabelFor(m => m.Password)
+
+                            @Html.PasswordFor(m => m.Password,
+                                new
+                                     {
+                                    @class = "form-control",
+                                    placeholder = "Contraseña",
+                                    autocomplete = "current-password"
+                                })
+
+                            @Html.ValidationMessageFor(m => m.Password,
+                                "",
+                                new { @class = "text-danger" })
+
+                        </div>
+
+                        <div class="form-check mb-4">
+
+                            @Html.CheckBoxFor(m => m.RememberMe,
+                                new { @class = "form-check-input" })
+
+                            @Html.LabelFor(m => m.RememberMe,
+                                new { @class = "form-check-label" })
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <input type="submit"
+                                   value="Iniciar sesión"
+                                   class="btn btn-vip w-100" />
+
+                        </div>
+
+                        <div class="text-center mt-4">
+
+                            <p>¿No tiene una cuenta?</p>
+
+                            @Html.ActionLink(
+                                "Registrarse como usuario nuevo",
+                                "Register",
+                                null,
+                                new { @class = "btn btn-vip-outline" }
+                            )
+
+                        </div>
+
+                        @* Habilite esta opción una vez tenga la confirmación de la cuenta habilitada para la funcionalidad de restablecimiento de contraseña
+                            <p>
+                                @Html.ActionLink("¿Ha olvidado su contraseña?", "ForgotPassword")
+                            </p>*@
+
+                    }
+
+                </div>
+
+                <div class="card-footer vip-footer text-center py-3">
+
+                    <small>
+                        Sistema de reservas y administración de pasajes
+                    </small>
+
+                </div>
+
             </section>
+
         </div>
-        <div class="col-md-4">
-            <section id="socialLoginForm">
-                @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
+
+        <div class="col-lg-4 col-md-4 mb-4">
+
+            <section id="socialLoginForm"
+                     class="card vip-card shadow-sm">
+
+                <div class="card-header vip-header">
+
+                    <h5 class="mb-0">
+                        Acceso externo
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    @Html.Partial(
+                        "_ExternalLoginsListPartial",
+                        new ExternalLoginListViewModel
+                             {
+                            ReturnUrl = ViewBag.ReturnUrl
+                        }
+                    )
+
+                </div>
+
             </section>
+
         </div>
+
     </div>
+
 </main>
 
 @section Scripts {
