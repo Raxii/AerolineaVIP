@@ -1,0 +1,43 @@
+﻿@model Con_Autenticacion.Models.CheckIn
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>CheckIn</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.FechaRegistro)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FechaRegistro)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ReservaPasajeroVuelo.EstadoAsignacionCodigo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ReservaPasajeroVuelo.EstadoAsignacionCodigo)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EstadoCheckIn.Descripcion)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EstadoCheckIn.Descripcion)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.CheckInId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
