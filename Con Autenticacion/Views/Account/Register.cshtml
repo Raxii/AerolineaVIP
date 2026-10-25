@@ -1,47 +1,248 @@
-﻿@model Con_Autenticacion.Models.RegisterViewModel
+﻿
+@model Con_Autenticacion.Models.RegisterViewModel
+
 @{
     ViewBag.Title = "Registrarse";
 }
 
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-
-    @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form" }))
-    {
-        @Html.AntiForgeryToken()
-        <h4>Cree una cuenta nueva.</h4>
-        <hr />
-        <div class="row">
-             @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 col-form-label" })
-            <div class="col-md-10">
-                @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
-            </div>
-        </div>
-        @Html.ValidationSummary("", new { @class = "text-danger" })
-        <div class="row">
-            @Html.LabelFor(m => m.Email, new { @class = "col-md-2 col-form-label" })
-            <div class="col-md-10">
-                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
-            </div>
-        </div>
-        <div class="row">
-            @Html.LabelFor(m => m.Password, new { @class = "col-md-2 col-form-label" })
-            <div class="col-md-10">
-                @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
-            </div>
-        </div>
-        <div class="row">
-            @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 col-form-label" })
-            <div class="col-md-10">
-                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
-            </div>
-        </div>
-        <div class="row">
-            <div class="offset-md-2 col-md-10">
-                <input type="submit" value="Registrarse" class="btn btn-outline-dark" />
-            </div>
-        </div>
+<style>
+    .vip-register {
+        color: #34414C;
     }
+
+        .vip-register .vip-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E7EBEF;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .vip-register .vip-header {
+            background-color: #E7EBEF;
+            color: #34414C;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .vip-register .vip-footer {
+            background-color: #F6F8FA;
+            color: #34414C;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .vip-register .form-control {
+            background-color: #F6F8FA;
+            border: 1px solid #E7EBEF;
+            color: #34414C;
+            border-radius: 6px;
+        }
+
+            .vip-register .form-control:focus {
+                border-color: #34414C;
+                box-shadow: 0 0 0 0.2rem rgba(52,65,76,0.15);
+            }
+
+        .vip-register .btn-vip {
+            background-color: #34414C;
+            border: 1px solid #34414C;
+            color: #FFFFFF;
+        }
+
+            .vip-register .btn-vip:hover {
+                background-color: #26323B;
+                color: #FFFFFF;
+            }
+
+        .vip-register .btn-vip-outline {
+            background-color: #FFFFFF;
+            border: 1px solid #34414C;
+            color: #34414C;
+        }
+
+            .vip-register .btn-vip-outline:hover {
+                background-color: #34414C;
+                color: #FFFFFF;
+            }
+
+        .vip-register .field-validation-error {
+            color: #B02A37;
+            font-size: 0.875rem;
+        }
+</style>
+
+<main class="container vip-register py-5"
+      aria-labelledby="title">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7 col-md-9">
+
+            <section class="card vip-card shadow-sm">
+
+                <div class="card-header vip-header">
+
+                    <h2 id="title" class="mb-2">
+                        AEROLÍNEA VIP
+                    </h2>
+
+                    <p class="mb-0">
+                        Registro de usuarios
+                    </p>
+
+                </div>
+
+                <div class="card-body p-4">
+
+                    @using (Html.BeginForm(
+                        "Register",
+                        "Account",
+                        FormMethod.Post,
+                        new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <h4 class="mb-3">
+                            Crear cuenta nueva
+                        </h4>
+
+                        <p>
+                            Complete los siguientes campos
+                            para registrarse en el sistema.
+                        </p>
+
+                        <hr />
+
+                        @Html.ValidationSummary("",
+                            new { @class = "text-danger mb-3" })
+
+                        <!-- NOMBRE DE USUARIO -->
+                        <div class="form-group mb-3">
+
+                            @Html.LabelFor(m => m.UserName)
+
+                            @Html.TextBoxFor(m => m.UserName,
+                                new
+                                     {
+                                    @class = "form-control",
+                                    placeholder = "Ingrese su nombre de usuario",
+                                    autocomplete = "username"
+                                })
+
+                            @Html.ValidationMessageFor(
+                                m => m.UserName,
+                                "",
+                                new { @class = "text-danger" })
+
+                        </div>
+
+                        <!-- CORREO ELECTRONICO -->
+                        <div class="form-group mb-3">
+
+                            @Html.LabelFor(m => m.Email)
+
+                            @Html.TextBoxFor(m => m.Email,
+                                new
+                                     {
+                                    @class = "form-control",
+                                    type = "email",
+                                    placeholder = "Ingrese su correo electrónico",
+                                    autocomplete = "email"
+                                })
+
+                            @Html.ValidationMessageFor(
+                                m => m.Email,
+                                "",
+                                new { @class = "text-danger" })
+
+                        </div>
+
+                        <!-- CONTRASEÑA -->
+                        <div class="form-group mb-3">
+
+                            @Html.LabelFor(m => m.Password)
+
+                            @Html.PasswordFor(m => m.Password,
+                                new
+                                     {
+                                    @class = "form-control",
+                                    placeholder = "Ingrese su contraseña",
+                                    autocomplete = "new-password"
+                                })
+
+                            @Html.ValidationMessageFor(
+                                m => m.Password,
+                                "",
+                                new { @class = "text-danger" })
+
+                        </div>
+
+                        <!-- CONFIRMAR CONTRASEÑA -->
+                        <div class="form-group mb-4">
+
+                            @Html.LabelFor(m => m.ConfirmPassword)
+
+                            @Html.PasswordFor(m => m.ConfirmPassword,
+                                new
+                                     {
+                                    @class = "form-control",
+                                    placeholder = "Repita su contraseña",
+                                    autocomplete = "new-password"
+                                })
+
+                            @Html.ValidationMessageFor(
+                                m => m.ConfirmPassword,
+                                "",
+                                new { @class = "text-danger" })
+
+                        </div>
+
+                        <!-- BOTON REGISTRARSE -->
+                        <div class="mb-3">
+
+                            <input type="submit"
+                                   value="Crear cuenta"
+                                   class="btn btn-vip w-100" />
+
+                        </div>
+
+                        <!-- VOLVER A LOGIN -->
+                        <div class="text-center mt-4">
+
+                            <p class="mb-2">
+                                ¿Ya tiene una cuenta?
+                            </p>
+
+                            @Html.ActionLink(
+                                "Iniciar sesión",
+                                "Login",
+                                "Account",
+                                null,
+                                new
+                                     {
+                                    @class = "btn btn-vip-outline"
+                                }
+                            )
+
+                        </div>
+                    }
+
+                </div>
+
+                <div class="card-footer vip-footer">
+
+                    <small>
+                        Sistema de reservas y administración de pasajes
+                    </small>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
 </main>
 
 @section Scripts {

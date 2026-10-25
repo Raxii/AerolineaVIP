@@ -1,0 +1,225 @@
+﻿
+@model IEnumerable<Con_Autenticacion.Controllers.UsuarioRolViewModel>
+
+@{
+    ViewBag.Title = "Gestión de usuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .vip-usuarios {
+        color: #34414C;
+    }
+
+        .vip-usuarios .vip-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E7EBEF;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .vip-usuarios .vip-cabecera {
+            background-color: #E7EBEF;
+            color: #34414C;
+            padding: 20px;
+        }
+
+        .vip-usuarios .vip-tabla {
+            color: #34414C;
+        }
+
+            .vip-usuarios .vip-tabla thead {
+                background-color: #E7EBEF;
+            }
+
+            .vip-usuarios .vip-tabla tbody tr:nth-child(odd) {
+                background-color: #F6F8FA;
+            }
+
+            .vip-usuarios .vip-tabla th,
+            .vip-usuarios .vip-tabla td {
+                padding: 12px;
+                vertical-align: middle;
+            }
+
+        .vip-usuarios .form-control {
+            background-color: #F6F8FA;
+            border: 1px solid #E7EBEF;
+            color: #34414C;
+        }
+
+        .vip-usuarios .btn-vip {
+            background-color: #34414C;
+            color: #FFFFFF;
+            border: 1px solid #34414C;
+        }
+
+            .vip-usuarios .btn-vip:hover {
+                background-color: #26323B;
+                color: #FFFFFF;
+            }
+
+        .vip-usuarios .vip-protegido {
+            color: #34414C;
+            background-color: #E7EBEF;
+            padding: 6px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+</style>
+
+<main class="container py-4 vip-usuarios">
+
+    <div class="row justify-content-center">
+
+        <div class="col-12">
+
+            <div class="card vip-card shadow-sm">
+
+                <!-- CABECERA -->
+                <div class="card-header vip-cabecera">
+
+                    <h2 class="mb-2">
+                        AEROLÍNEA VIP
+                    </h2>
+
+                    <h4 class="mb-0">
+                        Gestión de usuarios y roles
+                    </h4>
+
+                </div>
+
+                <!-- CONTENIDO -->
+                <div class="card-body p-4">
+
+                    <p>
+                        Administración de los usuarios registrados
+                        en el sistema.
+                    </p>
+
+                    <hr />
+
+                    <!-- MENSAJES -->
+                    @if (TempData["Ok"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["Ok"]
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <!-- TABLA DE USUARIOS -->
+                    <div class="table-responsive">
+
+                        <table class="table table-striped table-hover vip-tabla">
+
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Correo electrónico</th>
+                                    <th>Rol actual</th>
+                                    <th>Administrar rol</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Usuario
+                                        </td>
+
+                                        <td>
+                                            @item.Correo
+                                        </td>
+
+                                        <td>
+                                            @item.Roles
+                                        </td>
+
+                                        <td>
+
+                                            @if (item.PuedeCambiarRol)
+                                            {
+                                                using (Html.BeginForm(
+                                                    "CambiarRol",
+                                                    "Usuarios",
+                                                    FormMethod.Post))
+                                                {
+                                                    @Html.AntiForgeryToken()
+
+                                                    @Html.Hidden("id", item.Id)
+
+                                                    <div class="d-flex align-items-center"
+                                                         style="gap: 8px;">
+
+                                                        @Html.DropDownList(
+                                                            "rol",
+                                                            new SelectList(
+                                                                new[]
+                                                                {
+                                                                    "Cliente",
+                                                                    "Administrador",
+                                                                    "Counter"
+                                                                },
+                                                                item.RolSeleccionado
+                                                            ),
+                                                            new
+                                                            {
+                                                                @class = "form-control",
+                                                                aria_label = "Rol de " + item.Usuario
+                                                            }
+                                                        )
+
+                                                        <button type="submit"
+                                                                class="btn btn-vip">
+                                                            Guardar
+                                                        </button>
+
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="vip-protegido">
+                                                    Cuenta protegida
+                                                </span>
+                                            }
+
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- PIE -->
+                <div class="card-footer text-center"
+                     style="background-color:#F6F8FA; color:#34414C;">
+
+                    <small>
+                        Administración de usuarios - Aerolínea VIP
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
