@@ -1,76 +1,647 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Pasajero>
+﻿
+@model IEnumerable<Con_Autenticacion.Models.Pasajero>
+@using System.Linq
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Gestión de pasajeros";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var totalPasajeros = Model == null ? 0 : Model.Count();
 }
 
-<h2>Index</h2>
+<style>
+    /* ==========================================
+       AEROLINEA VIP - GESTION DE PASAJEROS
+       ========================================== */
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.NumeroDocumento)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Nombres)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Apellidos)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.FechaNacimiento)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Correo)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Telefono)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.FechaRegistro)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.TipoDocumentoIdentidad.Descripcion)
-        </th>
-        <th></th>
-    </tr>
+    .vip-pasajeros {
+        color: #34414C;
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.NumeroDocumento)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Nombres)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Apellidos)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FechaNacimiento)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Correo)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Telefono)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FechaRegistro)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.TipoDocumentoIdentidad.Descripcion)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.PasajeroId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.PasajeroId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.PasajeroId })
-        </td>
-    </tr>
-}
+        /* TARJETA PRINCIPAL */
+        .vip-pasajeros .vip-card {
+            background: #FFFFFF;
+            border: 1px solid #E7EBEF;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 16px rgba(52,65,76,0.07);
+        }
 
-</table>
+        /* CABECERA */
+        .vip-pasajeros .vip-header {
+            background: #E7EBEF;
+            padding: 28px 30px;
+            border-bottom: 1px solid #D6DEE5;
+        }
+
+        .vip-pasajeros .vip-marca {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #657482;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .vip-pasajeros .vip-titulo {
+            font-size: 26px;
+            font-weight: 700;
+            color: #34414C;
+            margin-bottom: 6px;
+        }
+
+        .vip-pasajeros .vip-subtitulo {
+            font-size: 14px;
+            color: #647482;
+            margin-bottom: 0;
+        }
+
+        /* CONTENIDO */
+        .vip-pasajeros .vip-contenido {
+            padding: 26px 30px;
+        }
+
+        /* BARRA SUPERIOR */
+        .vip-pasajeros .vip-herramientas {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .vip-pasajeros .vip-contador {
+            background: #F6F8FA;
+            color: #34414C;
+            border: 1px solid #E7EBEF;
+            border-radius: 8px;
+            padding: 11px 17px;
+            font-size: 14px;
+        }
+
+            .vip-pasajeros .vip-contador strong {
+                font-size: 19px;
+                margin-right: 6px;
+            }
+
+        /* BOTON PRINCIPAL */
+        .vip-pasajeros .btn-vip {
+            background: #34414C;
+            color: #FFFFFF;
+            border: 1px solid #34414C;
+            border-radius: 7px;
+            padding: 9px 16px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+            .vip-pasajeros .btn-vip:hover {
+                background: #26323B;
+                border-color: #26323B;
+                color: #FFFFFF;
+            }
+
+        /* BUSCADOR */
+        .vip-pasajeros .vip-busqueda {
+            background: #F6F8FA;
+            padding: 16px;
+            border: 1px solid #E7EBEF;
+            border-radius: 9px;
+            margin-bottom: 22px;
+        }
+
+            .vip-pasajeros .vip-busqueda label {
+                display: block;
+                font-weight: 600;
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+
+        .vip-pasajeros .vip-input {
+            width: 100%;
+            border: 1px solid #D6DEE5;
+            border-radius: 7px;
+            background: #FFFFFF;
+            color: #34414C;
+            padding: 11px 13px;
+            font-size: 14px;
+        }
+
+            .vip-pasajeros .vip-input:focus {
+                outline: none;
+                border-color: #34414C;
+                box-shadow: 0 0 0 3px rgba(52,65,76,0.10);
+            }
+
+        /* TABLA */
+        .vip-pasajeros .vip-tabla {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            color: #34414C;
+            margin-bottom: 0;
+        }
+
+            .vip-pasajeros .vip-tabla thead th {
+                background: #E7EBEF;
+                color: #34414C;
+                padding: 15px 13px;
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                white-space: nowrap;
+                border-bottom: 1px solid #D6DEE5;
+            }
+
+            .vip-pasajeros .vip-tabla tbody td {
+                padding: 16px 13px;
+                border-bottom: 1px solid #E7EBEF;
+                vertical-align: middle;
+                background: transparent;
+            }
+
+            .vip-pasajeros .vip-tabla tbody tr:nth-child(odd) {
+                background: #F6F8FA;
+            }
+
+            .vip-pasajeros .vip-tabla tbody tr:hover {
+                background: #EDF1F5;
+            }
+
+        /* DOCUMENTO */
+        .vip-pasajeros .vip-documento {
+            font-weight: 700;
+            font-size: 13px;
+            color: #34414C;
+        }
+
+        .vip-pasajeros .vip-texto-secundario {
+            display: block;
+            color: #74818D;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* PASAJERO */
+        .vip-pasajeros .vip-persona {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vip-pasajeros .vip-avatar {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            background: #DCE4EB;
+            color: #34414C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .vip-pasajeros .vip-nombre {
+            font-weight: 600;
+            font-size: 13px;
+            color: #34414C;
+        }
+
+        /* CONTACTO */
+        .vip-pasajeros .vip-correo {
+            display: block;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        /* FECHA */
+        .vip-pasajeros .vip-fecha {
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        /* ACCIONES */
+        .vip-pasajeros .vip-acciones {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 6px;
+        }
+
+        .vip-pasajeros .vip-btn {
+            display: inline-block;
+            padding: 7px 11px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.15s;
+        }
+
+        .vip-pasajeros .vip-btn-editar {
+            background: #34414C;
+            color: #FFFFFF;
+            border: 1px solid #34414C;
+        }
+
+            .vip-pasajeros .vip-btn-editar:hover {
+                background: #26323B;
+                color: #FFFFFF;
+            }
+
+        .vip-pasajeros .vip-btn-detalles {
+            background: #FFFFFF;
+            color: #34414C;
+            border: 1px solid #C4CDD5;
+        }
+
+            .vip-pasajeros .vip-btn-detalles:hover {
+                background: #E7EBEF;
+                color: #34414C;
+            }
+
+        .vip-pasajeros .vip-btn-eliminar {
+            background: #FFFFFF;
+            color: #B33D48;
+            border: 1px solid #DCA7AD;
+        }
+
+            .vip-pasajeros .vip-btn-eliminar:hover {
+                background: #FCEDEF;
+                color: #9C2633;
+            }
+
+        /* ESTADOS VACIOS */
+        .vip-pasajeros .vip-vacio {
+            background: #F6F8FA;
+            border: 1px dashed #C4CDD5;
+            border-radius: 8px;
+            padding: 28px;
+            text-align: center;
+            color: #647482;
+            margin-top: 18px;
+        }
+
+        /* PIE */
+        .vip-pasajeros .vip-footer {
+            background: #F6F8FA;
+            color: #74818D;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid #E7EBEF;
+        }
+
+    /* ADAPTACION A PANTALLAS PEQUEÑAS */
+    @@media (max-width: 768px) {
+        .vip-pasajeros .vip-header,
+        .vip-pasajeros .vip-contenido {
+            padding: 18px;
+        }
+
+        .vip-pasajeros .vip-titulo {
+            font-size: 22px;
+        }
+
+        .vip-pasajeros .vip-herramientas {
+            align-items: stretch;
+        }
+
+            .vip-pasajeros .vip-herramientas .btn {
+                width: 100%;
+            }
+
+        .vip-pasajeros .vip-tabla {
+            min-width: 850px;
+        }
+    }
+</style>
+
+<main class="container py-4 vip-pasajeros">
+
+    <div class="vip-card">
+
+        <!-- =====================================
+             CABECERA
+             ===================================== -->
+        <div class="vip-header">
+
+            <div class="vip-marca">
+                Sistema de administración
+            </div>
+
+            <h2 class="vip-titulo">
+                Gestión de pasajeros
+            </h2>
+
+            <p class="vip-subtitulo">
+                Consulta y administración de pasajeros registrados
+                en Aerolínea VIP.
+            </p>
+
+        </div>
+
+        <!-- =====================================
+             CONTENIDO
+             ===================================== -->
+        <div class="vip-contenido">
+
+            <!-- CONTADOR Y NUEVO REGISTRO -->
+            <div class="vip-herramientas">
+
+                <div class="vip-contador">
+
+                    <strong>@totalPasajeros</strong>
+
+                    Pasajeros registrados
+
+                </div>
+
+                @Html.ActionLink(
+                    "+ Nuevo pasajero",
+                    "Create",
+                    null,
+                    new { @class = "btn btn-vip" }
+                )
+
+            </div>
+
+            <!-- =====================================
+                 BUSCADOR
+                 ===================================== -->
+            <div class="vip-busqueda">
+
+                <label for="buscarPasajero">
+                    Buscar pasajero
+                </label>
+
+                <input type="search"
+                       id="buscarPasajero"
+                       class="vip-input"
+                       placeholder="Buscar por nombre, apellido, documento o correo..."
+                       autocomplete="off" />
+
+            </div>
+
+            <!-- =====================================
+                 TABLA DE PASAJEROS
+                 ===================================== -->
+            <div class="table-responsive">
+
+                <table class="table vip-tabla"
+                       id="tablaPasajeros">
+
+                    <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Pasajero</th>
+                            <th>Nacimiento</th>
+                            <th>Contacto</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr class="fila-pasajero">
+
+                                    <!-- DOCUMENTO -->
+                                    <td>
+
+                                        <span class="vip-documento">
+                                            @item.NumeroDocumento
+                                        </span>
+
+                                        <span class="vip-texto-secundario">
+                                            @(item.TipoDocumentoIdentidad != null
+                                                ? item.TipoDocumentoIdentidad.Descripcion
+                                                : "Sin especificar")
+                                        </span>
+
+                                    </td>
+
+                                    <!-- NOMBRE COMPLETO -->
+                                    <td>
+
+                                        <div class="vip-persona">
+
+                                            <div class="vip-avatar">
+                                                @(string.IsNullOrWhiteSpace(item.Nombres)
+                                                    ? "P"
+                                                    : item.Nombres.Substring(0, 1).ToUpper())
+                                            </div>
+
+                                            <div>
+
+                                                <div class="vip-nombre">
+                                                    @item.Nombres
+                                                    @item.Apellidos
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <!-- NACIMIENTO -->
+                                    <td>
+
+                                        <span class="vip-fecha">
+                                            @String.Format(
+                                                "{0:dd/MM/yyyy}",
+                                                item.FechaNacimiento)
+                                        </span>
+
+                                    </td>
+
+                                    <!-- CONTACTO -->
+                                    <td>
+
+                                        <span class="vip-correo">
+                                            @item.Correo
+                                        </span>
+
+                                        <span class="vip-texto-secundario">
+                                            @item.Telefono
+                                        </span>
+
+                                    </td>
+
+                                    <!-- FECHA REGISTRO -->
+                                    <td>
+
+                                        <span class="vip-fecha">
+                                            @String.Format(
+                                                "{0:dd/MM/yyyy}",
+                                                item.FechaRegistro)
+                                        </span>
+
+                                        <span class="vip-texto-secundario">
+                                            @String.Format(
+                                                "{0:HH:mm}",
+                                                item.FechaRegistro)
+                                        </span>
+
+                                    </td>
+
+                                    <!-- ACCIONES -->
+                                    <td>
+
+                                        <div class="vip-acciones">
+
+                                            @Html.ActionLink(
+                                                "Editar",
+                                                "Edit",
+                                                new { id = item.PasajeroId },
+                                                new
+                                                     {
+                                                    @class = "vip-btn vip-btn-editar"
+                                                }
+                                            )
+
+                                            @Html.ActionLink(
+                                                "Detalles",
+                                                "Details",
+                                                new { id = item.PasajeroId },
+                                                new
+                                                     {
+                                                    @class = "vip-btn vip-btn-detalles"
+                                                }
+                                            )
+
+                                            @Html.ActionLink(
+                                                "Eliminar",
+                                                "Delete",
+                                                new { id = item.PasajeroId },
+                                                new
+                                                     {
+                                                    @class = "vip-btn vip-btn-eliminar"
+                                                }
+                                            )
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- SIN REGISTROS -->
+            @if (totalPasajeros == 0)
+            {
+                <div class="vip-vacio">
+                    No existen pasajeros registrados.
+                </div>
+            }
+
+            <!-- SIN COINCIDENCIAS -->
+            <div class="vip-vacio"
+                 id="sinResultados"
+                 style="display:none;">
+
+                No se encontraron pasajeros con ese criterio de búsqueda.
+
+            </div>
+
+            <!-- RESULTADOS DE BUSQUEDA -->
+            <div class="mt-3">
+
+                <small class="vip-texto-secundario"
+                       id="contadorBusqueda">
+
+                    Mostrando @totalPasajeros de @totalPasajeros pasajeros
+
+                </small>
+
+            </div>
+
+        </div>
+
+        <!-- =====================================
+             PIE
+             ===================================== -->
+        <div class="vip-footer">
+
+            Aerolínea VIP - Sistema de gestión de pasajeros
+
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ==========================================
+     BUSQUEDA EN TIEMPO REAL
+     ========================================== -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var buscador = document.getElementById("buscarPasajero");
+        var filas = document.querySelectorAll(
+            "#tablaPasajeros .fila-pasajero"
+        );
+
+        var sinResultados = document.getElementById("sinResultados");
+        var contador = document.getElementById("contadorBusqueda");
+
+        function normalizar(texto) {
+            return texto.toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+
+        buscador.addEventListener("input", function () {
+
+            var texto = normalizar(this.value.trim());
+            var visibles = 0;
+
+            filas.forEach(function (fila) {
+
+                var contenido = normalizar(fila.textContent);
+
+                if (contenido.indexOf(texto) !== -1) {
+                    fila.style.display = "";
+                    visibles++;
+                }
+                else {
+                    fila.style.display = "none";
+                }
+
+            });
+
+            if (sinResultados) {
+                sinResultados.style.display =
+                    visibles === 0 && filas.length > 0
+                    ? "block"
+                    : "none";
+            }
+
+            if (contador) {
+                contador.textContent =
+                    "Mostrando " + visibles +
+                    " de " + filas.length + " pasajeros";
+            }
+
+        });
+
+    });
+</script>
