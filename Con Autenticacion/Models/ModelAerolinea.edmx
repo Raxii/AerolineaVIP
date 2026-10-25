@@ -263,7 +263,6 @@
           <Property Name="RutaId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="AeropuertoOrigenId" Type="int" Nullable="false" />
           <Property Name="AeropuertoDestinoId" Type="int" Nullable="false" />
-          <Property Name="TarifaReferencial" Type="decimal" Precision="12" Scale="2" Nullable="false" />
           <Property Name="Activa" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="TipoComprobante">
@@ -1123,7 +1122,6 @@
           <Property Name="RutaId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="AeropuertoOrigenId" Type="Int32" Nullable="false" />
           <Property Name="AeropuertoDestinoId" Type="Int32" Nullable="false" />
-          <Property Name="TarifaReferencial" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
           <Property Name="Activa" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="Aeropuerto" Relationship="Self.FK_Ruta_Destino" FromRole="Ruta" ToRole="Aeropuerto" />
           <NavigationProperty Name="Aeropuerto1" Relationship="Self.FK_Ruta_Origen" FromRole="Ruta" ToRole="Aeropuerto" />
@@ -1972,7 +1970,7 @@
                 <ScalarProperty Name="RutaId" ColumnName="RutaId" />
                 <ScalarProperty Name="AeropuertoOrigenId" ColumnName="AeropuertoOrigenId" />
                 <ScalarProperty Name="AeropuertoDestinoId" ColumnName="AeropuertoDestinoId" />
-                <ScalarProperty Name="TarifaReferencial" ColumnName="TarifaReferencial" />
+                
                 <ScalarProperty Name="Activa" ColumnName="Activa" />
               </MappingFragment>
             </EntityTypeMapping>
