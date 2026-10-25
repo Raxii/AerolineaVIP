@@ -23,7 +23,6 @@ namespace Con_Autenticacion.Models
         public int RutaId { get; set; }
         public int AeropuertoOrigenId { get; set; }
         public int AeropuertoDestinoId { get; set; }
-        public decimal TarifaReferencial { get; set; }
         public bool Activa { get; set; }
     
         public virtual Aeropuerto Aeropuerto { get; set; }
