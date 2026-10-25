@@ -302,6 +302,15 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="ViewModels\AsientoMapaViewModels.cs" />
+    <Compile Include="ViewModels\DbErrorHelper.cs" />
+    <Compile Include="ViewModels\EntityMetadata.cs" />
+    <Compile Include="ViewModels\FrecuenciaViewModels.cs" />
+    <Compile Include="ViewModels\ItinerarioTramoViewModels.cs" />
+    <Compile Include="ViewModels\MenuReportesViewModels.cs" />
+    <Compile Include="ViewModels\RutaViewModels.cs" />
+    <Compile Include="ViewModels\VueloAdministracionViewModels.cs" />
+    <Compile Include="ViewModels\VueloBusquedaPublicaViewModels.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
