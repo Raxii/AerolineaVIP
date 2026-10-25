@@ -1,53 +1,950 @@
-﻿<!DOCTYPE html>
-<html>
+﻿
+@{
+    bool autenticado = Request.IsAuthenticated;
+
+    bool esSuper = autenticado &&
+        User.IsInRole("SuperUsuario");
+
+    bool esAdmin = autenticado &&
+        User.IsInRole("Administrador");
+
+    bool esCounter = autenticado &&
+        User.IsInRole("Counter");
+
+    bool esCliente = autenticado &&
+        User.IsInRole("Cliente");
+
+    bool esPersonalAdmin = esSuper || esAdmin;
+}
+
+<!DOCTYPE html>
+<html lang="es">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=utf-8" />
+
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Mi aplicación ASP.NET</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewBag.Title - Aerolínea VIP</title>
+
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 
-</head>
-<body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
-        <div class="container">
-            @Html.ActionLink("Tarea 2", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Alternar navegación" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                @if (User.Identity.IsAuthenticated)
-                {
-                 <ul class="navbar-nav flex-grow-1">
-                    <li>
-                        @Html.ActionLink("Ver peliculas", "Index", "Peliculas", new { area = "" }, new { @class = "nav-link" })
-                    </li>
-                </ul>
-                }else
-            {
-            <ul class="navbar-nav flex-grow-1">
-                <li>@Html.ActionLink("Inicio", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                <li>@Html.ActionLink("Acerca de", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                <li>@Html.ActionLink("Contacto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-            </ul>
+    <style>
+        /* =====================================
+           AEROLINEA VIP - MENU PRINCIPAL
+           ===================================== */
+        .vip-navbar .dropdown {
+            position: relative;
+        }
+
+        .vip-navbar .dropdown-menu.show {
+            display: block;
+        }
+
+        .vip-navbar {
+            background-color: #34414C;
+            border-bottom: 1px solid #51616E;
+            padding: 14px 0;
+        }
+
+            .vip-navbar .navbar-brand {
+                color: #FFFFFF;
+                font-weight: 700;
+                font-size: 20px;
+                letter-spacing: 0.5px;
             }
-                
-                @Html.Partial("_LoginPartial")
+
+                .vip-navbar .navbar-brand:hover {
+                    color: #FFFFFF;
+                }
+
+            .vip-navbar .vip-marca-subtitulo {
+                display: block;
+                font-size: 9px;
+                letter-spacing: 2px;
+                color: #DCE4EB;
+                font-weight: 400;
+            }
+
+            /* ENLACES DEL MENU */
+
+            .vip-navbar .navbar-nav {
+                gap: 5px;
+            }
+
+            .vip-navbar .nav-link {
+                color: #F6F8FA !important;
+                font-weight: 500;
+                font-size: 14px;
+                padding: 10px 15px !important;
+                border-radius: 20px;
+                transition: background-color 0.2s;
+            }
+
+                .vip-navbar .nav-link:hover,
+                .vip-navbar .nav-link:focus {
+                    color: #34414C !important;
+                    background-color: #E7EBEF;
+                }
+
+                .vip-navbar .dropdown.show > .nav-link,
+                .vip-navbar .nav-link[aria-expanded="true"] {
+                    background-color: #E7EBEF;
+                    color: #34414C !important;
+                }
+
+            /* =====================================
+           MENU DESPLEGABLE
+           ===================================== */
+
+            .vip-navbar .dropdown-menu {
+                background: #FFFFFF;
+                border: 1px solid #E7EBEF;
+                border-radius: 12px;
+                padding: 12px;
+                min-width: 280px;
+                max-height: 75vh;
+                overflow-y: auto;
+                box-shadow: 0 12px 30px rgba(20,30,40,0.15);
+                margin-top: 10px;
+            }
+
+            .vip-navbar .dropdown-header {
+                color: #778592;
+                font-weight: 700;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 12px 14px 7px;
+            }
+
+            .vip-navbar .dropdown-item {
+                display: flex;
+                align-items: center;
+                gap: 13px;
+                color: #34414C;
+                padding: 13px 14px;
+                border-radius: 8px;
+                font-size: 14px;
+                white-space: normal;
+            }
+
+                .vip-navbar .dropdown-item:hover,
+                .vip-navbar .dropdown-item:focus {
+                    background-color: #F6F8FA;
+                    color: #34414C;
+                }
+
+            .vip-navbar .dropdown-divider {
+                border-top: 1px solid #E7EBEF;
+                margin: 9px 0;
+            }
+
+            /* ICONOS DE LOS ELEMENTOS */
+
+            .vip-navbar .vip-icono {
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                flex-shrink: 0;
+                width: 36px;
+                height: 36px;
+                border-radius: 9px;
+                background-color: #E7EBEF;
+                color: #34414C;
+                font-size: 17px;
+            }
+
+            /* OPCIONES TODAVIA NO HABILITADAS */
+
+            .vip-navbar .vip-pendiente {
+                color: #87939D;
+                cursor: default;
+            }
+
+                .vip-navbar .vip-pendiente:hover {
+                    background-color: #FFFFFF;
+                    color: #87939D;
+                }
+
+                .vip-navbar .vip-pendiente small {
+                    display: block;
+                    font-size: 11px;
+                    color: #95A0AA;
+                }
+
+            /* ALINEAR LOGIN A LA DERECHA */
+
+            .vip-navbar .vip-login-menu {
+                margin-left: auto;
+            }
+
+                .vip-navbar .vip-login-menu .navbar-nav {
+                    align-items: center;
+                }
+
+        /* CONTENIDO GENERAL */
+
+        .vip-body {
+            min-height: 70vh;
+            padding-top: 24px;
+            padding-bottom: 30px;
+        }
+
+        .vip-footer-global {
+            border-top: 1px solid #E7EBEF;
+            color: #74818D;
+            padding: 22px 0;
+            font-size: 13px;
+        }
+
+        /* RESPONSIVE */
+
+        @@media (max-width: 991px) {
+
+            .vip-navbar .navbar-nav {
+                gap: 3px;
+                margin-top: 12px;
+            }
+
+            .vip-navbar .dropdown-menu {
+                max-height: none;
+                overflow: visible;
+                min-width: 100%;
+                box-shadow: none;
+                margin-top: 5px;
+            }
+
+            .vip-navbar .vip-login-menu {
+                margin-left: 0;
+            }
+
+                .vip-navbar .vip-login-menu .navbar-nav {
+                    align-items: flex-start;
+                }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =====================================
+         BARRA PRINCIPAL
+         ===================================== -->
+
+    <nav class="navbar navbar-expand-lg navbar-dark vip-navbar">
+
+        <div class="container">
+
+            <!-- LOGO / NOMBRE -->
+
+            <a class="navbar-brand"
+               href="@Url.Action("Index", "Home")">
+
+                AEROLÍNEA VIP
+
+                <span class="vip-marca-subtitulo">
+                    SISTEMA DE RESERVAS
+                </span>
+
+            </a>
+
+            <!-- BOTON MENU MOVIL -->
+
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#vipMenuPrincipal"
+                    aria-controls="vipMenuPrincipal"
+                    aria-expanded="false"
+                    aria-label="Alternar navegación">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+            <div class="collapse navbar-collapse"
+                 id="vipMenuPrincipal">
+
+                <ul class="navbar-nav">
+
+                    <!-- ===========================
+                         INICIO
+                         =========================== -->
+
+                    <li class="nav-item">
+
+                        @Html.ActionLink(
+                            "Inicio",
+                            "Index",
+                            "Home",
+                            null,
+                            new { @class = "nav-link" })
+
+                    </li>
+
+                    <!-- ===========================
+                         DESCUBRE
+                         TODOS LOS USUARIOS
+                         =========================== -->
+
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link dropdown-toggle"
+                           href="#"
+                           id="menuDescubre"
+                           role="button"
+                           data-vip-toggle="dropdown"
+                           aria-expanded="false">
+
+                            Descubre
+
+                        </a>
+
+                        <ul class="dropdown-menu"
+                            aria-labelledby="menuDescubre">
+
+                            <li>
+                                <h6 class="dropdown-header">
+                                    Explorar Aerolínea VIP
+                                </h6>
+                            </li>
+
+                            <li>
+
+                                <a class="dropdown-item"
+                                   href="@Url.Action("Index", "Home")">
+
+                                    <span class="vip-icono">✈</span>
+                                    Página principal
+
+                                </a>
+
+                            </li>
+
+                            <li>
+                                <span class="dropdown-item vip-pendiente"
+                                      aria-disabled="true">
+
+                                    <span class="vip-icono">⌕</span>
+
+                                    <span>
+                                        Buscar vuelos
+                                        <small>
+                                            Pendiente de integrar
+                                        </small>
+                                    </span>
+
+                                </span>
+                            </li>
+
+                            <li>
+                                <span class="dropdown-item vip-pendiente"
+                                      aria-disabled="true">
+
+                                    <span class="vip-icono">◷</span>
+
+                                    <span>
+                                        Horarios y disponibilidad
+                                        <small>
+                                            Pendiente de integrar
+                                        </small>
+                                    </span>
+
+                                </span>
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+                    <!-- ===========================
+                         MIS VIAJES
+                         USUARIOS AUTENTICADOS
+                         =========================== -->
+
+                    @if (autenticado)
+                    {
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="menuViajes"
+                               role="button"
+                               data-vip-toggle="dropdown"
+                               aria-expanded="false">
+
+                                Mis viajes
+
+                            </a>
+
+                            <ul class="dropdown-menu"
+                                aria-labelledby="menuViajes">
+
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        Reservas y operaciones
+                                    </h6>
+                                </li>
+
+                                @if (esPersonalAdmin)
+                                {
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="@Url.Action("Index", "Reservas")">
+
+                                            <span class="vip-icono">▤</span>
+                                            Consultar reservas
+
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="@Url.Action("Index", "Compras")">
+
+                                            <span class="vip-icono">▣</span>
+                                            Compras
+
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="@Url.Action("Index", "CheckIns")">
+
+                                            <span class="vip-icono">✓</span>
+                                            Check-in
+
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="@Url.Action("Index", "Comprobantes")">
+
+                                            <span class="vip-icono">▧</span>
+                                            Comprobantes
+
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <span class="dropdown-item vip-pendiente"
+                                              aria-disabled="true">
+
+                                            <span class="vip-icono">▤</span>
+
+                                            <span>
+                                                Mis reservas
+                                                <small>
+                                                    En preparación
+                                                </small>
+                                            </span>
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <span class="dropdown-item vip-pendiente"
+                                              aria-disabled="true">
+
+                                            <span class="vip-icono">✓</span>
+
+                                            <span>
+                                                Check-in
+                                                <small>
+                                                    En preparación
+                                                </small>
+                                            </span>
+                                        </span>
+                                    </li>
+
+                                    if (esCliente)
+                                    {
+                                        <li>
+                                            <span class="dropdown-item vip-pendiente"
+                                                  aria-disabled="true">
+                                                <span class="vip-icono">▧</span>
+                                                <span>
+                                                    Mis comprobantes
+                                                    <small>En preparación</small>
+                                                </span>
+                                            </span>
+                                        </li>
+                                    }
+                                }
+
+                            </ul>
+
+                        </li>
+                    }
+
+                    <!-- ===========================
+                         OPERACIONES
+                         SUPER / ADMIN
+                         =========================== -->
+
+                    @if (esPersonalAdmin)
+                    {
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="menuOperaciones"
+                               role="button"
+                               data-vip-toggle="dropdown"
+                               aria-expanded="false">
+
+                                Operaciones
+
+                            </a>
+
+                            <ul class="dropdown-menu"
+                                aria-labelledby="menuOperaciones">
+
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        Gestión comercial
+                                    </h6>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Pasajeroes")">
+
+                                        <span class="vip-icono">♙</span>
+                                        Pasajeros
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Reservas")">
+
+                                        <span class="vip-icono">▤</span>
+                                        Reservas
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Compras")">
+
+                                        <span class="vip-icono">▣</span>
+                                        Compras
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Comprobantes")">
+
+                                        <span class="vip-icono">▧</span>
+                                        Comprobantes
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "CheckIns")">
+
+                                        <span class="vip-icono">✓</span>
+                                        Check-in
+
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                    }
+
+                    <!-- ===========================
+                         FLOTA Y RUTAS
+                         SUPER / ADMIN
+                         =========================== -->
+
+                    @if (esPersonalAdmin)
+                    {
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="menuFlota"
+                               role="button"
+                               data-vip-toggle="dropdown"
+                               aria-expanded="false">
+
+                                Flota y rutas
+
+                            </a>
+
+                            <ul class="dropdown-menu"
+                                aria-labelledby="menuFlota">
+
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        Aeronaves y vuelos
+                                    </h6>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Aeronaves")">
+
+                                        <span class="vip-icono">✈</span>
+                                        Aeronaves
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "ModeloAeronaves")">
+
+                                        <span class="vip-icono">▤</span>
+                                        Modelos de aeronave
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Vueloes")">
+
+                                        <span class="vip-icono">◷</span>
+                                        Vuelos
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider" />
+                                </li>
+
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        Planificación
+                                    </h6>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Aeropuerto")">
+
+                                        <span class="vip-icono">⌖</span>
+                                        Aeropuertos
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Rutas")">
+
+                                        <span class="vip-icono">↗</span>
+                                        Rutas
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Frecuencias")">
+
+                                        <span class="vip-icono">◷</span>
+                                        Frecuencias
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Itinerarios")">
+
+                                        <span class="vip-icono">▦</span>
+                                        Itinerarios
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "TramoItinerarios")">
+
+                                        <span class="vip-icono">↔</span>
+                                        Tramos de itinerarios
+
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Asientoes")">
+
+                                        <span class="vip-icono">▣</span>
+                                        Asientos
+
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                    }
+
+                    <!-- ===========================
+                         USUARIOS
+                         SOLO SUPERUSUARIO
+                         =========================== -->
+
+                    @if (esSuper)
+                    {
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="menuUsuarios"
+                               role="button"
+                               data-vip-toggle="dropdown"
+                               aria-expanded="false">
+
+                                Administración
+
+                            </a>
+
+                            <ul class="dropdown-menu"
+                                aria-labelledby="menuUsuarios">
+
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        Acceso SuperUsuario
+                                    </h6>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("Index", "Usuarios")">
+
+                                        <span class="vip-icono">♙</span>
+                                        Gestión de usuarios y roles
+
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                    }
+
+                    <!-- ===========================
+                         COUNTER
+                         =========================== -->
+
+                    @if (esCounter)
+                    {
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="menuCounter"
+                               role="button"
+                               data-vip-toggle="dropdown"
+                               aria-expanded="false">
+
+                                Atención
+
+                            </a>
+
+                            <ul class="dropdown-menu"
+                                aria-labelledby="menuCounter">
+
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        Atención al pasajero
+                                    </h6>
+                                </li>
+
+                                <li>
+                                    <span class="dropdown-item vip-pendiente"
+                                          aria-disabled="true">
+
+                                        <span class="vip-icono">▤</span>
+
+                                        <span>
+                                            Consulta de reservas
+                                            <small>
+                                                Pendiente de permisos
+                                            </small>
+                                        </span>
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="dropdown-item vip-pendiente"
+                                          aria-disabled="true">
+
+                                        <span class="vip-icono">✓</span>
+
+                                        <span>
+                                            Atención de check-in
+                                            <small>
+                                                Pendiente de permisos
+                                            </small>
+                                        </span>
+                                    </span>
+                                </li>
+
+                            </ul>
+                        </li>
+                    }
+
+                    <!-- ===========================
+                         MI CUENTA
+                         =========================== -->
+
+                    @if (autenticado)
+                    {
+                        <li class="nav-item">
+                            @Html.ActionLink(
+                                "Mi cuenta",
+                                "Index",
+                                "Manage",
+                                null,
+                                new { @class = "nav-link" })
+                        </li>
+                    }
+
+                </ul>
+
+                <!-- LOGIN / CERRAR SESION -->
+                <div class="vip-login-menu">
+
+                    @Html.Partial("_LoginPartial")
+
+                </div>
+
             </div>
+
         </div>
+
     </nav>
-    <div class="container body-content">
+
+    <!-- =====================================
+         CONTENIDO DE LAS VISTAS
+         ===================================== -->
+
+    <div class="container body-content vip-body">
+
         @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - Grupo 3</p>
-        </footer>
+
     </div>
+
+    <!-- =====================================
+         PIE DE PAGINA
+         ===================================== -->
+
+    <footer class="vip-footer-global">
+
+        <div class="container">
+
+            <p class="mb-0">
+
+                &copy; @DateTime.Now.Year -
+                Grupo 3 | Aerolínea VIP
+
+            </p>
+
+        </div>
+
+    </footer>
+
+    <!-- =====================================
+         SCRIPTS ORIGINALES MVC
+         ===================================== -->
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Menus desplegables de Aerolinea VIP
+            var botones = document.querySelectorAll(
+                ".vip-navbar [data-vip-toggle='dropdown']"
+            );
+
+            function cerrarMenus(excepto) {
+
+                botones.forEach(function (boton) {
+
+                    var contenedor = boton.parentElement;
+                    var menu = contenedor.querySelector(".dropdown-menu");
+
+                    if (!menu) {
+                        return;
+                    }
+
+                    var abrir = boton === excepto;
+
+                    contenedor.classList.toggle("show", abrir);
+                    menu.classList.toggle("show", abrir);
+
+                    boton.setAttribute(
+                        "aria-expanded",
+                        abrir ? "true" : "false"
+                    );
+                });
+            }
+
+            // Abrir y cerrar al hacer clic
+            botones.forEach(function (boton) {
+
+                boton.addEventListener("click", function (evento) {
+
+                    evento.preventDefault();
+                    evento.stopPropagation();
+
+                    var abierto =
+                        boton.getAttribute("aria-expanded") === "true";
+
+                    if (abierto) {
+                        cerrarMenus(null);
+                    } else {
+                        cerrarMenus(boton);
+                    }
+
+                });
+            });
+
+            // Cerrar al hacer clic fuera del menu
+            document.addEventListener("click", function (evento) {
+
+                if (!evento.target.closest(".vip-navbar .dropdown")) {
+                    cerrarMenus(null);
+                }
+
+            });
+
+            // Cerrar con Escape
+            document.addEventListener("keydown", function (evento) {
+
+                if (evento.key === "Escape") {
+                    cerrarMenus(null);
+                }
+
+            });
+
+        });
+    </script>
+
 </body>
 </html>
