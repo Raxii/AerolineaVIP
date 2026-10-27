@@ -13,42 +13,10 @@ namespace Con_Autenticacion.Controllers
     public class UsuariosController : Controller
     {
         // GET: /Usuarios/Index
+        // PLANTILLA #20
         public ActionResult Index()
         {
-            var modelo = new List<UsuarioRolViewModel>();
-
-            using (var db = new ApplicationDbContext())
-            {
-                var store = new UserStore<ApplicationUser>(db)
-                {
-                    DisposeContext = false
-                };
-
-                using (var manager = new UserManager<ApplicationUser>(store))
-                {
-                    var usuarios = db.Users.OrderBy(u => u.UserName).ToList();
-
-                    foreach (var usuario in usuarios)
-                    {
-                        var roles = manager.GetRoles(usuario.Id).ToList();
-                        var rolActual = roles.FirstOrDefault(r =>
-                            r == "Cliente" || r == "Administrador" || r == "Counter");
-
-                        modelo.Add(new UsuarioRolViewModel
-                        {
-                            Id = usuario.Id,
-                            Usuario = usuario.UserName,
-                            Correo = usuario.Email,
-                            Roles = roles.Count == 0 ? "Sin rol" : string.Join(", ", roles),
-                            RolSeleccionado = rolActual ?? "Cliente",
-                            PuedeCambiarRol = !roles.Contains("SuperUsuario") &&
-                                              usuario.Id != User.Identity.GetUserId()
-                        });
-                    }
-                }
-            }
-
-            return View(modelo);
+            return View();
         }
 
         // POST: /Usuarios/CambiarRol

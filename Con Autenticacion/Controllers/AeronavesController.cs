@@ -15,10 +15,12 @@ namespace Con_Autenticacion.Controllers
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
 
         // GET: Aeronaves
+        // PLANTILLA #19
         public ActionResult Index()
         {
-            var aeronave = db.Aeronave.Include(a => a.EstadoAeronave).Include(a => a.ModeloAeronave);
-            return View(aeronave.ToList());
+            //var aeronave = db.Aeronave.Include(a => a.EstadoAeronave).Include(a => a.ModeloAeronave);
+            //return View(aeronave.ToList());
+            return View();
         }
 
         // GET: Aeronaves/Details/5

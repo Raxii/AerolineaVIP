@@ -1,0 +1,113 @@
+@{
+    ViewBag.Title = "Selección de Vuelo y Asiento";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5" style="max-width: 1150px;">
+    <div class="mb-4">
+        <h2 class="h4 fw-bold text-dark mb-1">Selección de Vuelo y Asiento</h2>
+        <p class="small text-muted mb-4">Confirma tu vuelo y elige tus asientos antes de continuar con el registro de pasajeros.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <div class="row align-items-center">
+            <div class="col-md-6 d-flex align-items-center gap-4">
+                <div class="text-center">
+                    <div class="fw-bold fs-5 text-dark">08:30</div>
+                    <div class="small text-muted">UIO - Quito</div>
+                </div>
+
+                <div class="text-muted small" style="width: 80px; border-top: 2px dashed #adb5bd;"></div>
+
+                <div class="text-center">
+                    <div class="fw-bold fs-5 text-dark">09:45</div>
+                    <div class="small text-muted">GYE - Guayaquil</div>
+                </div>
+
+                <div class="ms-3">
+                    <span class="badge bg-light text-dark border">VIP-401</span>
+                    <div class="small text-muted mt-1">28 Oct 2026 · Airbus A320</div>
+                </div>
+            </div>
+
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2 me-2">Disponible</span>
+                <span class="small text-muted">35 asientos libres</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold text-dark mb-0">Elige tus asientos</h5>
+            <div>
+                <span class="badge bg-light text-dark border me-2">Libre</span>
+                <span class="badge bg-secondary text-white me-2">Ocupado</span>
+                <span class="badge bg-success text-white me-2">Seleccionado</span>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column align-items-center gap-2">
+            <div class="d-flex gap-3 justify-content-center">
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">1A</button>
+                <button class="btn btn-sm btn-secondary fw-bold" style="width: 45px; height: 45px;" disabled>1B</button>
+                <button class="btn btn-sm btn-success fw-bold" style="width: 45px; height: 45px;">1C</button>
+                <div style="width: 30px;"></div>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">1D</button>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">1E</button>
+                <button class="btn btn-sm btn-secondary fw-bold" style="width: 45px; height: 45px;" disabled>1F</button>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center">
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">2A</button>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">2B</button>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">2C</button>
+                <div style="width: 30px;"></div>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">2D</button>
+                <button class="btn btn-sm btn-success fw-bold" style="width: 45px; height: 45px;">2E</button>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">2F</button>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center">
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">3A</button>
+                <button class="btn btn-sm btn-secondary fw-bold" style="width: 45px; height: 45px;" disabled>3B</button>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">3C</button>
+                <div style="width: 30px;"></div>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">3D</button>
+                <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">3E</button>
+                <button class="btn btn-sm btn-secondary fw-bold" style="width: 45px; height: 45px;" disabled>3F</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <h6 class="fw-bold text-dark mb-3">Resumen de tu selección</h6>
+
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+                <span class="fw-semibold text-dark">Pasajero 1</span>
+                <span class="small text-muted">(Adulto)</span>
+            </div>
+            <div>
+                <span class="badge bg-light text-dark border px-3 py-2">Asiento 1C</span>
+            </div>
+            <button class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 12px;">Quitar</button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+                <span class="fw-semibold text-dark">Pasajero 2</span>
+                <span class="small text-muted">(Adulto)</span>
+            </div>
+            <div>
+                <span class="badge bg-light text-dark border px-3 py-2">Asiento 2E</span>
+            </div>
+            <button class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 12px;">Quitar</button>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <button class="btn btn-outline-secondary px-4">← Regresar</button>
+        <button class="btn px-4 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">Continuar al registro</button>
+    </div>
+</div>

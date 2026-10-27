@@ -1,85 +1,93 @@
-﻿@using Con_Autenticacion.ViewModels
-@using System.Linq
-@model BusquedaVueloViewModel
-
-@{
-    ViewBag.Title = "Inicio";
+﻿@{
+    ViewBag.Title = "Home";
 }
 
-<div class="container py-4">
-    <div class="p-5 mb-4 bg-dark text-white rounded-3 shadow-sm">
-        <h1 class="display-5 fw-bold">Vuela con comodidad y confianza</h1>
-        <p class="lead mb-3">
-            Consulta la programación de vuelos y encuentra la mejor opción para tu viaje.
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h2 class="display-5 fw-bold text-dark mb-3 text-center">Descubre el mundo con nosotros</h2>
+        <p class="lead text-muted mx-auto text-center mb-5" style="max-width: 600px;">
+            Vuela con la mejor atención, tarifas competitivas y destinos increíbles. Encuentra tu próximo vuelo aquí.
         </p>
-        <p class="mb-0">Rutas domésticas e internacionales con la mejor disponibilidad.</p>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Buscar vuelos</h4>
-        </div>
-        <div class="card-body">
-            @using (Html.BeginForm("Buscar", "Home", FormMethod.Get, new { @class = "row g-3" }))
-            {
-                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+    <div class="card shadow-sm border-0 rounded-4 p-4 mx-auto" style="max-width: 900px; border: 1px solid #e0e0e0 !important;">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Origen</label>
+                <select class="form-select form-control-lg" required>
+                    <option value="">Seleccione origen</option>
+                    <option>Quito</option>
+                    <option>Guayaquil</option>
+                    <option>Bogotá</option>
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    @Html.LabelFor(m => m.AeropuertoOrigenId, "Aeropuerto de origen", new { @class = "form-label fw-bold" })
-                    @Html.DropDownListFor(m => m.AeropuertoOrigenId, Model.Aeropuertos, "-- Origen --", new { @class = "form-select" })
-                    @Html.ValidationMessageFor(m => m.AeropuertoOrigenId, "", new { @class = "text-danger" })
-                </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Destino</label>
+                <select class="form-select form-control-lg" required>
+                    <option value="">Seleccione destino</option>
+                    <option>Madrid</option>
+                    <option>Lima</option>
+                    <option>Ciudad de México</option>
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    @Html.LabelFor(m => m.AeropuertoDestinoId, "Aeropuerto de destino", new { @class = "form-label fw-bold" })
-                    @Html.DropDownListFor(m => m.AeropuertoDestinoId, Model.Aeropuertos, "-- Destino --", new { @class = "form-select" })
-                    @Html.ValidationMessageFor(m => m.AeropuertoDestinoId, "", new { @class = "text-danger" })
-                </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Fecha</label>
+                <input type="date" class="form-control form-control-lg" required>
+            </div>
 
-                <div class="col-md-3">
-                    @Html.LabelFor(m => m.Fecha, "Fecha de vuelo", new { @class = "form-label fw-bold" })
-                    @Html.TextBoxFor(m => m.Fecha, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                    @Html.ValidationMessageFor(m => m.Fecha, "", new { @class = "text-danger" })
-                </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Pasajeros</label>
+                <input type="number" class="form-control form-control-lg" min="1" max="10" value="1" required>
+            </div>
 
-                <div class="col-md-2">
-                    @Html.LabelFor(m => m.CantidadPasajeros, "Cantidad de pasajeros", new { @class = "form-label fw-bold" })
-                    @Html.TextBoxFor(m => m.CantidadPasajeros, new { @class = "form-control", type = "number", min = "1", max = "20" })
-                    @Html.ValidationMessageFor(m => m.CantidadPasajeros, "", new { @class = "text-danger" })
-                </div>
-
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Buscar</button>
-                </div>
-            }
+            <div class="col-12 mt-4">
+                <button class="btn btn-lg w-100 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">
+                    Buscar Vuelos
+                </button>
+            </div>
         </div>
     </div>
 
-    @if (Model.BusquedaRealizada)
-    {
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Resultados</h5>
+    <div class="mx-auto mt-4" style="max-width: 900px;">
+        <div class="alert alert-warning d-flex align-items-center rounded-3 border-0" role="alert">
+            <span class="small">¡Alta demanda! Se recomienda reservar con anticipación para viajar en temporada alta.</span>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3 class="h5 fw-bold text-dark mb-4 mt-5">Destinos Populares</h3>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
+                    <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold text-dark">Madrid</h5>
+                        <p class="card-text text-muted small mb-0">Desde $450 USD</p>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                @if (Model.Resultados != null && Model.Resultados.Any())
-                {
-                    foreach (var vuelo in Model.Resultados)
-                    {
-                        <div class="border rounded p-3 mb-2">
-                            <strong>@vuelo.Origen → @vuelo.Destino</strong>
-                            <div>Fecha: @vuelo.FechaOperacion.ToShortDateString()</div>
-                            <div>Salida: @vuelo.HoraSalida</div>
-                            <div>Llegada: @vuelo.HoraLlegada</div>
-                            <div>Disponibles: @vuelo.Disponibles</div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="text-muted mb-0">No hay vuelos disponibles para los criterios seleccionados.</p>
-                }
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
+                    <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold text-dark">Lima</h5>
+                        <p class="card-text text-muted small mb-0">Desde $320 USD</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
+                    <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold text-dark">Ciudad de México</h5>
+                        <p class="card-text text-muted small mb-0">Desde $390 USD</p>
+                    </div>
+                </div>
             </div>
         </div>
-    }
+    </div>
 </div>
