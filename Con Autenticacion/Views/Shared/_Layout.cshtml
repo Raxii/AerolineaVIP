@@ -1,4 +1,7 @@
-﻿@{
+﻿@* Layout compartido Aerolinea VIP. Navegacion MVC 5 / Bootstrap 5.
+    Los enlaces requieren una accion del controlador; tener la carpeta Views no es suficiente.
+    Los permisos reales deben validarse con [Authorize] en los controladores. *@
+@{
     // Usuarios y roles de Aerolínea VIP (ASP.NET Identity).
     bool autenticado = Request.IsAuthenticated;
     bool esSuper = autenticado && User.IsInRole("SuperUsuario");
@@ -184,15 +187,24 @@
                         @Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })
                     </li>
 
-                    <!-- Búsqueda real: Home/Index contiene el formulario y Home/Buscar devuelve resultados. -->
+                    <!-- Pantallas 05 y 06: el formulario y los resultados estan en Home/Index. -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">Vuelos</a>
                         <ul class="dropdown-menu">
                             <li><span class="dropdown-header">Planifica tu viaje</span></li>
-                            <li>@Html.ActionLink("Buscar vuelos y consultar resultados", "Index", "Home", null, new { @class = "dropdown-item" })</li>
-                            <li><span class="vip-pendiente" aria-disabled="true">Disponibilidad de asientos<small>Acción pendiente en VueloesController</small></span></li>
-                            <li><span class="vip-pendiente" aria-disabled="true">Seleccionar vuelo y asiento<small>Acción pendiente en VueloesController</small></span></li>
+                            <li>@Html.ActionLink("Buscar vuelos y ver resultados", "Index", "Home", null, new { @class = "dropdown-item" })</li>
+                            @if (esPersonalAdmin)
+                            {
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><span class="dropdown-header">Consultas del personal</span></li>
+                                <li>@Html.ActionLink("Vuelos registrados", "Index", "Vueloes", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Catalogo de asientos", "Index", "Asientoes", null, new { @class = "dropdown-item" })</li>
+                            }
+                            <li><hr class="dropdown-divider" /></li>
+                            <!-- Pantallas 07 y 08: requieren acciones y validaciones de disponibilidad. -->
+                            <li><span class="vip-pendiente" aria-disabled="true">Disponibilidad real por vuelo<small>Pendiente de accion del controlador</small></span></li>
+                            <li><span class="vip-pendiente" aria-disabled="true">Elegir asiento en un vuelo<small>Pendiente de accion del controlador</small></span></li>
                         </ul>
                     </li>
 
@@ -241,7 +253,7 @@
                                data-bs-toggle="dropdown" aria-expanded="false">Flota y rutas</a>
                             <ul class="dropdown-menu">
                                 <li><span class="dropdown-header">Administración de vuelos</span></li>
-                                <li>@Html.ActionLink("Vuelos", "Index", "Vueloes", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Administrar vuelos", "Index", "Vueloes", null, new { @class = "dropdown-item" })</li>
                                 <li>@Html.ActionLink("Aeronaves", "Index", "Aeronaves", null, new { @class = "dropdown-item" })</li>
                                 <li>@Html.ActionLink("Modelos de aeronaves", "Index", "ModeloAeronaves", null, new { @class = "dropdown-item" })</li>
                                 <li>@Html.ActionLink("Asientos", "Index", "Asientoes", null, new { @class = "dropdown-item" })</li>
@@ -264,8 +276,10 @@
                                 {
                                     <li>@Html.ActionLink("Usuarios y roles", "Index", "Usuarios", null, new { @class = "dropdown-item" })</li>
                                 }
-                                <li><span class="vip-pendiente" aria-disabled="true">Menú CRUD general<small>CrudController todavía no tiene Index()</small></span></li>
-                                <li><span class="vip-pendiente" aria-disabled="true">Reportes administrativos<small>ReportesController todavía no tiene Index()</small></span></li>
+                                <!-- Pantalla 17: necesita CrudController.Index() y Views/Crud/Index.cshtml. -->
+                                <li>@Html.ActionLink("Menu administrativo CRUD", "Index", "Crud", null, new { @class = "dropdown-item" })</li>
+                                <!-- Pantalla 21: necesita ReportesController.Index() y Views/Reportes/Index.cshtml. -->
+                                <li>@Html.ActionLink("Reportes administrativos", "Index", "Reportes", null, new { @class = "dropdown-item" })</li>
                             </ul>
                         </li>
                     }
