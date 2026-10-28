@@ -1,59 +1,87 @@
-﻿@model Con_Autenticacion.Models.Reserva
+﻿@using Con_Autenticacion.Models;
+@model Reserva
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Reserva - Detalles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Details</h2>
+<style>
+    .byron-vip .card-header {
+        background-color: #34414C;
+        color: white;
+    }
 
-<div>
-    <h4>Reserva</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.CodigoReserva)
-        </dt>
+    .byron-vip .btn-vip {
+        background-color: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.CodigoReserva)
-        </dd>
+        .byron-vip .btn-vip:hover {
+            background-color: #26323B;
+            color: white;
+        }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.UsuarioId)
-        </dt>
+    .byron-vip .table thead th {
+        background-color: #E7EBEF;
+        color: #34414C;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.UsuarioId)
-        </dd>
+    .byron-vip .card {
+        border: 1px solid #E7EBEF;
+    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaCreacion)
-        </dt>
+    .byron-vip .table td {
+        vertical-align: middle;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.FechaCreacion)
-        </dd>
+    .byron-vip .card-body {
+        background-color: #FFFFFF;
+    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaExpiracion)
-        </dt>
+    .byron-vip .text-muted {
+        color: #607281 !important;
+    }
+</style>
 
-        <dd>
-            @Html.DisplayFor(model => model.FechaExpiracion)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.EstadoReserva.Descripcion)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.EstadoReserva.Descripcion)
-        </dd>
-
-    </dl>
+<div class="container py-4 byron-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Reserva - Detalles</p>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Información de la reserva y sus pasajeros</p>
+            <dl class="row">
+                <dt class="col-sm-4">Reserva</dt>
+                <dd class="col-sm-8">@Model.CodigoReserva</dd>
+                <dt class="col-sm-4">Pasajero(s)</dt>
+                <dd class="col-sm-8">
+                    @if (Model.ReservaPasajeroVuelo != null && Model.ReservaPasajeroVuelo.Count > 0)
+                    {
+                        foreach (var asignacion in Model.ReservaPasajeroVuelo)
+                        {
+                            if (asignacion.Pasajero != null)
+                            {
+                                <div>@asignacion.Pasajero.Nombres @asignacion.Pasajero.Apellidos — Asiento @asignacion.NumeroAsiento</div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">Sin pasajero asignado</span>
+                    }
+            </dd>
+            <dt class="col-sm-4">Fecha de creación</dt>
+            <dd class="col-sm-8">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+            <dt class="col-sm-4">Fecha límite</dt>
+            <dd class="col-sm-8">@(Model.FechaExpiracion.HasValue ? Model.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm") : "Sin fecha")</dd>
+            <dt class="col-sm-4">Estado</dt>
+            <dd class="col-sm-8">@(Model.EstadoReserva != null ? Model.EstadoReserva.Descripcion : Model.EstadoReservaCodigo)</dd>
+        </dl>
+        @Html.ActionLink("Editar", "Edit", new { id = Model.ReservaId }, new { @class = "btn btn-vip" })
+        @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ReservaId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+</div>

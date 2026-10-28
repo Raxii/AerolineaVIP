@@ -1,49 +1,77 @@
-﻿@model Con_Autenticacion.Models.CheckIn
+﻿@using Con_Autenticacion.Models;
+@model CheckIn
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Check-in - Eliminar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Delete</h2>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>CheckIn</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaRegistro)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.FechaRegistro)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ReservaPasajeroVuelo.EstadoAsignacionCodigo)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ReservaPasajeroVuelo.EstadoAsignacionCodigo)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.EstadoCheckIn.Descripcion)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.EstadoCheckIn.Descripcion)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
-        </div>
+<style>
+    .byron-vip .card-header {
+        background-color: #34414C;
+        color: white;
     }
+
+    .byron-vip .btn-vip {
+        background-color: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
+
+        .byron-vip .btn-vip:hover {
+            background-color: #26323B;
+            color: white;
+        }
+
+    .byron-vip .table thead th {
+        background-color: #E7EBEF;
+        color: #34414C;
+    }
+
+    .byron-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .byron-vip .table td {
+        vertical-align: middle;
+    }
+
+    .byron-vip .card-body {
+        background-color: #FFFFFF;
+    }
+
+    .byron-vip .text-muted {
+        color: #607281 !important;
+    }
+</style>
+
+<div class="container py-4 byron-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Check-in - Eliminar</p>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Datos del registro de check-in</p>
+            <dl class="row">
+                <dt class="col-sm-4">Reserva</dt>
+                <dd class="col-sm-8">@(Model.ReservaPasajeroVuelo != null && Model.ReservaPasajeroVuelo.Reserva != null ? Model.ReservaPasajeroVuelo.Reserva.CodigoReserva : "Sin código")</dd>
+                <dt class="col-sm-4">Pasajero</dt>
+                <dd class="col-sm-8">@(Model.ReservaPasajeroVuelo != null && Model.ReservaPasajeroVuelo.Pasajero != null ? Model.ReservaPasajeroVuelo.Pasajero.Nombres + " " + Model.ReservaPasajeroVuelo.Pasajero.Apellidos : "Sin pasajero")</dd>
+                <dt class="col-sm-4">Asiento</dt>
+                <dd class="col-sm-8">@(Model.ReservaPasajeroVuelo != null ? Model.ReservaPasajeroVuelo.NumeroAsiento.ToString() : "—")</dd>
+                <dt class="col-sm-4">Fecha de registro</dt>
+                <dd class="col-sm-8">@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4">Estado</dt>
+                <dd class="col-sm-8">@(Model.EstadoCheckIn != null ? Model.EstadoCheckIn.Descripcion : Model.EstadoCheckInCodigo)</dd>
+            </dl>
+            <div class="alert alert-warning">Confirma que deseas eliminar este registro. Esta operación puede fallar si existen registros relacionados.</div>
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-outline-secondary" })
+            }
+        </div>
+    </div>
 </div>
