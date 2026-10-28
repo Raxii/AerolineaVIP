@@ -18,8 +18,93 @@ namespace Con_Autenticacion.Controllers
         // PLANTILLA #19
         public ActionResult Index()
         {
-            //var aeronave = db.Aeronave.Include(a => a.EstadoAeronave).Include(a => a.ModeloAeronave);
-            //return View(aeronave.ToList());
+            var aeronaves = new List<Aeronave>();
+            var totalAeronaves = 0;
+            var aeronavesActivas = 0;
+            var aeronavesEnMantenimiento = 0;
+            var capacidadTotal = 0;
+            var modelos = new List<ModeloAeronave>();
+            var estados = new List<EstadoAeronave>();
+            var vuelosPorAeronave = new Dictionary<int, int>();
+
+            try
+            {
+                // Cargar todas las aeronaves
+                foreach (var aeronave in db.Aeronave)
+                {
+                    aeronaves.Add(aeronave);
+                    totalAeronaves++;
+
+                    // Contar vuelos por aeronave
+                    var vuelosCount = 0;
+                    try
+                    {
+                        foreach (var vuelo in db.Vuelo)
+                        {
+                            if (vuelo.AeronaveId == aeronave.AeronaveId)
+                            {
+                                vuelosCount++;
+                            }
+                        }
+                    }
+                    catch { }
+                    vuelosPorAeronave[aeronave.AeronaveId] = vuelosCount;
+
+                    // Contar capacidad
+                    try
+                    {
+                        if (aeronave.ModeloAeronave != null)
+                        {
+                            capacidadTotal += aeronave.ModeloAeronave.CapacidadAsientos;
+                        }
+                    }
+                    catch { }
+
+                    // Contar por estado
+                    try
+                    {
+                        if (aeronave.EstadoAeronave != null)
+                        {
+                            if (aeronave.EstadoAeronave.Descripcion == "Activa")
+                            {
+                                aeronavesActivas++;
+                            }
+                            else if (aeronave.EstadoAeronave.Descripcion.Contains("mantenimiento"))
+                            {
+                                aeronavesEnMantenimiento++;
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
+                // Cargar modelos para dropdown
+                foreach (var modelo in db.ModeloAeronave)
+                {
+                    modelos.Add(modelo);
+                }
+
+                // Cargar estados para dropdown
+                foreach (var estado in db.EstadoAeronave)
+                {
+                    estados.Add(estado);
+                }
+            }
+            catch { }
+
+            // Calcular capacidad promedio
+            var capacidadPromedio = totalAeronaves > 0 ? capacidadTotal / totalAeronaves : 0;
+
+            // Pasar datos a la vista
+            ViewBag.TotalAeronaves = totalAeronaves;
+            ViewBag.AeronavesActivas = aeronavesActivas;
+            ViewBag.AeronavesEnMantenimiento = aeronavesEnMantenimiento;
+            ViewBag.CapacidadPromedio = capacidadPromedio;
+            ViewBag.ListaAeronaves = aeronaves;
+            ViewBag.Modelos = modelos;
+            ViewBag.Estados = estados;
+            ViewBag.VuelosPorAeronave = vuelosPorAeronave;
+
             return View();
         }
 

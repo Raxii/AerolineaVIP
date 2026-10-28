@@ -1,16 +1,40 @@
+﻿@model IEnumerable<Con_Autenticacion.Models.Vuelo>
+
 @{
     ViewBag.Title = "Resultados de Búsqueda";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var hayResultados = ViewBag.HayResultados != null ? (bool)ViewBag.HayResultados : false;
+    var totalResultados = ViewBag.TotalResultados != null ? (int)ViewBag.TotalResultados : 0;
+    var aeropuertoOrigen = ViewBag.AeropuertoOrigen ?? "Origen";
+    var aeropuertoDestino = ViewBag.AeropuertoDestino ?? "Destino";
+    var fechaBusqueda = ViewBag.Fecha as DateTime?;
+    var pasajeros = ViewBag.CantidadPasajeros != null ? (int)ViewBag.CantidadPasajeros : 1;
+    var vuelos = ViewBag.Vuelos ?? new List<Con_Autenticacion.Models.Vuelo>();
+    var ocupadosPorVuelo = ViewBag.OcupadosPorVuelo as Dictionary<int, int> ?? new Dictionary<int, int>();
 }
 
 <div class="container py-5" style="max-width: 1200px;">
     <div class="mb-4">
         <h2 class="h4 fw-bold text-dark mb-1">Resultados de Búsqueda</h2>
-        <p class="small text-muted mb-4">
-            Vuelos encontrados para <strong>Quito (UIO)</strong> → <strong>Guayaquil (GYE)</strong> el <strong>28 Oct 2026</strong> · <strong>2 pasajeros</strong>.
-        </p>
+        @if (hayResultados)
+        {
+            <p class="small text-muted mb-4">
+                Vuelos encontrados para <strong>@aeropuertoOrigen</strong> → <strong>@aeropuertoDestino</strong>
+                @if (fechaBusqueda.HasValue)
+                {
+                    <span>el <strong>@fechaBusqueda.Value.ToString("dd MMM yyyy")</strong></span>
+                }
+                · <strong>@pasajeros pasajeros</strong>.
+            </p>
+        }
+        else
+        {
+            <p class="small text-muted mb-4">No se encontraron vuelos con los criterios de búsqueda.</p>
+        }
     </div>
 
+    @*AUN NO SE APLICAN FILTROS*@
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
         <div class="row g-2 align-items-center">
             <div class="col-md-3">
@@ -46,94 +70,111 @@
     </div>
 
     <div class="d-flex flex-column gap-3">
-        <div class="card border-0 shadow-sm rounded-4" style="border: 1px solid #e0e0e0 !important;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <span class="fw-bold text-dark">Aerolínea VIP</span>
-                        <span class="badge bg-light text-dark ms-2">VIP-401</span>
-                    </div>
-                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
-                </div>
-
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="text-center">
-                        <div class="fw-bold fs-4 text-dark">08:30</div>
-                        <div class="small text-muted">UIO - Quito</div>
-                    </div>
-
-                    <div class="flex-grow-1 px-4 text-center">
-                        <div class="small text-muted mb-1">1h 15m</div>
-                        <div style="border-top: 2px dashed #adb5bd; position: relative;">
-                            <span class="badge bg-warning text-dark rounded-pill position-absolute top-50 start-50 translate-middle" style="font-size: 10px;">1 escala</span>
-                        </div>
-                        <div class="small text-muted mt-1">Directo</div>
-                    </div>
-
-                    <div class="text-center">
-                        <div class="fw-bold fs-4 text-dark">09:45</div>
-                        <div class="small text-muted">GYE - Guayaquil</div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <div>
-                        <span class="small text-muted">Desde</span>
-                        <span class="fw-bold fs-5 text-dark">$120.00</span>
-                        <span class="small text-muted">/ pasajero</span>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary px-3">Ver detalles</button>
-                        <button class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</button>
-                    </div>
-                </div>
+        @if (!hayResultados)
+        {
+            <div class="alert alert-info" role="alert">
+                No hay vuelos disponibles para los criterios seleccionados.
             </div>
-        </div>
+        }
+        else
+        {
+            foreach (var vuelo in vuelos)
+            {
+                var capacidad = 0;
+                if (vuelo.Aeronave != null && vuelo.Aeronave.ModeloAeronave != null)
+                {
+                    capacidad = vuelo.Aeronave.ModeloAeronave.CapacidadAsientos;
+                }
 
-        <div class="card border-0 shadow-sm rounded-4" style="border: 1px solid #e0e0e0 !important;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <span class="fw-bold text-dark">Aerolínea VIP</span>
-                        <span class="badge bg-light text-dark ms-2">VIP-705</span>
-                    </div>
-                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
-                </div>
+                var ocupados = 0;
+                if (ocupadosPorVuelo.ContainsKey(vuelo.VueloId))
+                {
+                    ocupados = ocupadosPorVuelo[vuelo.VueloId];
+                }
 
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="text-center">
-                        <div class="fw-bold fs-4 text-dark">10:15</div>
-                        <div class="small text-muted">UIO - Quito</div>
-                    </div>
+                var restantes = capacidad > 0 ? capacidad - ocupados : 0;
+                var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
+                var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
+                var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
+                var precio = restantes > 0 ? 120 + (restantes * 5) : 0;
+                var horaSalida = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraSalida.ToString("hh\\:mm") : "--:--";
+                var horaLlegada = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada.ToString("hh\\:mm") : "--:--";
 
-                    <div class="flex-grow-1 px-4 text-center">
-                        <div class="small text-muted mb-1">1h 25m</div>
-                        <div style="border-top: 2px dashed #adb5bd; position: relative;">
-                            <span class="badge bg-warning text-dark rounded-pill position-absolute top-50 start-50 translate-middle" style="font-size: 10px;">1 escala</span>
+                <div class="card border-0 shadow-sm rounded-4" style="border: 1px solid #e0e0e0 !important;">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <span class="fw-bold text-dark">Aerolínea VIP</span>
+                                <span class="badge bg-light text-dark ms-2">
+                                    @if (vuelo.Aeronave != null)
+                                    {
+                                        @vuelo.Aeronave.Matricula
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </span>
+                            </div>
+                            <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">@restantes disponibles</span>
                         </div>
-                        <div class="small text-muted mt-1">Vía Guayaquil</div>
-                    </div>
 
-                    <div class="text-center">
-                        <div class="fw-bold fs-4 text-dark">11:40</div>
-                        <div class="small text-muted">GYE - Guayaquil</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-center">
+                                <div class="fw-bold fs-4 text-dark">@horaSalida</div>
+                                <div class="small text-muted">@origenIata</div>
+                                <div class="small text-muted">
+                                    @if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null)
+                                    {
+                                        @vuelo.Frecuencia.Ruta.Aeropuerto.Nombre
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="flex-grow-1 px-4 text-center">
+                                <div class="small text-muted mb-1">@duracion.Hours h @duracion.Minutes m</div>
+                                <div style="border-top: 2px dashed #adb5bd; position: relative;">
+                                    <span class="badge bg-warning text-dark rounded-pill position-absolute top-50 start-50 translate-middle" style="font-size: 10px;">Directo</span>
+                                </div>
+                                <div class="small text-muted mt-1">Vuelo directo</div>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="fw-bold fs-4 text-dark">@horaLlegada</div>
+                                <div class="small text-muted">@destinoIata</div>
+                                <div class="small text-muted">
+                                    @if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
+                                    {
+                                        @vuelo.Frecuencia.Ruta.Aeropuerto1.Nombre
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                            <div>
+                                <span class="small text-muted">Capacidad total:</span>
+                                <span class="fw-bold text-dark">@capacidad</span>
+                                <span class="small text-muted ms-2">| Ocupados: @ocupados</span>
+                                <span class="small text-muted ms-2">| Disponibles: @restantes</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <span class="small text-muted">Desde</span>
+                                <span class="fw-bold fs-5 text-dark">$@precio.ToString("0.00")</span>
+                                <span class="small text-muted">/ pasajero</span>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-secondary px-3">Ver detalles</button>
+                                <a href="@Url.Action("DisponibilidadAsientos", "Vueloes", new { vueloId = vuelo.VueloId })" class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <div>
-                        <span class="small text-muted">Desde</span>
-                        <span class="fw-bold fs-5 text-dark">$135.00</span>
-                        <span class="small text-muted">/ pasajero</span>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary px-3">Ver detalles</button>
-                        <button class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+            }
+        }
     </div>
 </div>

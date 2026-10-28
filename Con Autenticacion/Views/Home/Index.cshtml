@@ -1,6 +1,11 @@
-﻿@{
+﻿@model IEnumerable<Con_Autenticacion.Models.Vuelo>
+
+@{
     ViewBag.Title = "Home";
+    var origenes = ViewBag.Origenes as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+    var destinos = ViewBag.Destinos as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
 }
+
 
 <div class="container py-5">
     <div class="text-center mb-4">
@@ -11,83 +16,78 @@
     </div>
 
     <div class="card shadow-sm border-0 rounded-4 p-4 mx-auto" style="max-width: 900px; border: 1px solid #e0e0e0 !important;">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Origen</label>
-                <select class="form-select form-control-lg" required>
-                    <option value="">Seleccione origen</option>
-                    <option>Quito</option>
-                    <option>Guayaquil</option>
-                    <option>Bogotá</option>
-                </select>
-            </div>
+        @using (Html.BeginForm("Buscar", "Vueloes", FormMethod.Get))
+        {
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold">Origen</label>
+                    <select class="form-select form-control-lg" name="AeropuertoOrigenId" required>
+                        @foreach (var origen in origenes)
+                        {
+                            <option value="@origen.Value">@origen.Text</option>
+                        }
+                    </select>
+                </div>
 
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Destino</label>
-                <select class="form-select form-control-lg" required>
-                    <option value="">Seleccione destino</option>
-                    <option>Madrid</option>
-                    <option>Lima</option>
-                    <option>Ciudad de México</option>
-                </select>
-            </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold">Destino</label>
+                    <select class="form-select form-control-lg" name="AeropuertoDestinoId" required>
+                        @foreach (var destino in destinos)
+                        {
+                            <option value="@destino.Value">@destino.Text</option>
+                        }
+                    </select>
+                </div>
 
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Fecha</label>
-                <input type="date" class="form-control form-control-lg" required>
-            </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold">Fecha</label>
+                    <input type="date" class="form-control form-control-lg" name="Fecha" required>
+                </div>
 
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Pasajeros</label>
-                <input type="number" class="form-control form-control-lg" min="1" max="10" value="1" required>
-            </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold">Pasajeros</label>
+                    <input type="number" class="form-control form-control-lg" name="CantidadPasajeros" min="1" max="7" value="1" required>
+                </div>
 
-            <div class="col-12 mt-4">
-                <button class="btn btn-lg w-100 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">
-                    Buscar Vuelos
-                </button>
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-lg w-100 text-white fw-bold rounded-3"
+                            style="background-color: #37474f; border-color: #37474f;">
+                        Buscar Vuelos
+                    </button>
+                </div>
             </div>
-        </div>
+        }
     </div>
 
     <div class="mx-auto mt-4" style="max-width: 900px;">
         <div class="alert alert-warning d-flex align-items-center rounded-3 border-0" role="alert">
-            <span class="small">¡Alta demanda! Se recomienda reservar con anticipación para viajar en temporada alta.</span>
+            <span class="small">Alta demanda por el Feriado</span>
         </div>
     </div>
 
     <div class="mt-5">
         <h3 class="h5 fw-bold text-dark mb-4 mt-5">Destinos Populares</h3>
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
-                    <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold text-dark">Madrid</h5>
-                        <p class="card-text text-muted small mb-0">Desde $450 USD</p>
-                    </div>
-                </div>
-            </div>
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    var nombreDestino = item.Frecuencia != null && item.Frecuencia.Ruta != null && item.Frecuencia.Ruta.Aeropuerto1 != null
+                        ? item.Frecuencia.Ruta.Aeropuerto1.Nombre
+                        : "Destino";
+                    var matricula = item.Aeronave != null ? item.Aeronave.Matricula : "N/A";
 
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
-                    <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold text-dark">Lima</h5>
-                        <p class="card-text text-muted small mb-0">Desde $320 USD</p>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
+                            <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
+                            <div class="card-body text-center">
+                                <h5 class="card-title fw-bold text-dark">@nombreDestino</h5>
+                                <p class="card-text text-muted small mb-0">@matricula</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
-                    <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold text-dark">Ciudad de México</h5>
-                        <p class="card-text text-muted small mb-0">Desde $390 USD</p>
-                    </div>
-                </div>
-            </div>
+                }
+            }
         </div>
     </div>
 </div>
