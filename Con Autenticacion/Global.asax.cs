@@ -14,6 +14,9 @@ namespace Con_Autenticacion
 {
     public class MvcApplication : HttpApplication
     {
+        // =====================================
+        // INICIO DE LA APLICACION
+        // =====================================
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
@@ -27,15 +30,19 @@ namespace Con_Autenticacion
             BundleConfig.RegisterBundles(
                 BundleTable.Bundles);
 
+            // =====================================
             // CONFIGURACION DE IDENTITY
+            // =====================================
             using (var db = new ApplicationDbContext())
             {
+                // Crear los roles si no existen.
                 CrearRoles(db);
 
 #if DEBUG
-                // CUENTAS INICIALES DE PRUEBA LOCAL
+                // Cuentas iniciales de prueba local.
                 CrearAdministrador(db);
                 CrearCounter(db);
+                CrearSuperUsuario(db);
 #endif
             }
         }
@@ -78,6 +85,7 @@ namespace Con_Autenticacion
         }
 
 #if DEBUG
+
         // =====================================
         // 2. CREAR ADMINISTRADOR
         // =====================================
@@ -107,7 +115,23 @@ namespace Con_Autenticacion
         }
 
         // =====================================
-        // 4. CREAR USUARIO INICIAL
+        // 4. CREAR SUPERUSUARIO
+        // =====================================
+        private static void CrearSuperUsuario(
+            ApplicationDbContext db)
+        {
+            // Cuenta inicial de prueba académica.
+            // Contraseña solo para desarrollo local.
+            CrearUsuarioInicial(
+                db,
+                "SuperUsuario",
+                "superusuario@aerolineavip.test",
+                "superadmin123",
+                "SuperUsuario");
+        }
+
+        // =====================================
+        // 5. CREAR USUARIO INICIAL
         // =====================================
         private static void CrearUsuarioInicial(
             ApplicationDbContext db,
@@ -124,20 +148,22 @@ namespace Con_Autenticacion
             using (var usermanager =
                 new UserManager<ApplicationUser>(store))
             {
-                // COMPROBAR SI YA EXISTE
+                // Comprobar si el usuario existe.
                 var existente = usermanager.FindByName(nombre);
 
                 if (existente != null)
                 {
-                    // No modificar usuarios existentes
-                    // ni concederles roles automaticamente
-                    if (!string.Equals(
+                    bool correoCorrecto =
+                        string.Equals(
                             existente.Email,
                             correo,
-                            StringComparison.OrdinalIgnoreCase)
-                        ||
-                        !usermanager.IsInRole(
-                            existente.Id, rol))
+                            StringComparison.OrdinalIgnoreCase);
+
+                    bool rolCorrecto =
+                        usermanager.IsInRole(
+                            existente.Id, rol);
+
+                    if (!correoCorrecto || !rolCorrecto)
                     {
                         throw new InvalidOperationException(
                             "La cuenta " + nombre +
@@ -145,10 +171,11 @@ namespace Con_Autenticacion
                             "revision de identidad y rol.");
                     }
 
+                    // No duplicar ni modificar cuentas existentes.
                     return;
                 }
 
-                // VERIFICAR CORREO
+                // Comprobar que el correo no esté registrado.
                 if (usermanager.FindByEmail(correo) != null)
                 {
                     throw new InvalidOperationException(
@@ -156,7 +183,7 @@ namespace Con_Autenticacion
                         " ya esta registrado.");
                 }
 
-                // COMPROBAR CONTRASEÑA
+                // Validar contraseña.
                 if (string.IsNullOrWhiteSpace(clave))
                 {
                     throw new InvalidOperationException(
@@ -164,9 +191,7 @@ namespace Con_Autenticacion
                         nombre);
                 }
 
-                // =====================================
-                // VALIDACION TEMPORAL DE PRUEBA LOCAL
-                // =====================================
+                // Validación para las cuentas de prueba.
                 usermanager.PasswordValidator =
                     new PasswordValidator
                     {
@@ -177,33 +202,31 @@ namespace Con_Autenticacion
                         RequireNonLetterOrDigit = false
                     };
 
-                // =====================================
-                // CREAR USUARIO EN IDENTITY
-                // =====================================
+                // Crear usuario.
                 var usuario = new ApplicationUser
                 {
                     UserName = nombre,
                     Email = correo
                 };
 
-                var resultado = usermanager.Create(
-                    usuario, clave);
+                var resultado =
+                    usermanager.Create(usuario, clave);
 
                 VerificarResultado(
                     resultado,
                     "Crear usuario " + nombre);
 
-                // =====================================
-                // ASIGNAR ROL
-                // =====================================
-                var resultadoRol = usermanager.AddToRole(
-                    usuario.Id, rol);
+                // Asignar el rol correspondiente.
+                var resultadoRol =
+                    usermanager.AddToRole(
+                        usuario.Id,
+                        rol);
 
                 if (!resultadoRol.Succeeded)
                 {
-                    // ELIMINAR USUARIO INCOMPLETO
-                    var eliminacion = usermanager.Delete(
-                        usuario);
+                    // Revertir creación si falla el rol.
+                    var eliminacion =
+                        usermanager.Delete(usuario);
 
                     VerificarResultado(
                         eliminacion,
@@ -215,10 +238,11 @@ namespace Con_Autenticacion
                 }
             }
         }
+
 #endif
 
         // =====================================
-        // 5. VERIFICAR RESULTADOS DE IDENTITY
+        // 6. VERIFICAR RESULTADOS
         // =====================================
         private static void VerificarResultado(
             IdentityResult resultado,

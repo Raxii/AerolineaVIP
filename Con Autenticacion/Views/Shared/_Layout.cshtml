@@ -1,27 +1,38 @@
-﻿@* Layout compartido Aerolinea VIP. Navegacion MVC 5 / Bootstrap 5.
-    Los enlaces requieren una accion del controlador; tener la carpeta Views no es suficiente.
-    Los permisos reales deben validarse con [Authorize] en los controladores. *@
+﻿@* Layout compartido Aerolinea VIP.
+    ASP.NET MVC 5 / Bootstrap 5.
+    Los permisos reales se validan en los controladores.
+*@
+
 @{
-    // Usuarios y roles de Aerolínea VIP (ASP.NET Identity).
     bool autenticado = Request.IsAuthenticated;
-    bool esSuper = autenticado && User.IsInRole("SuperUsuario");
-    bool esAdmin = autenticado && User.IsInRole("Administrador");
-    bool esCounter = autenticado && User.IsInRole("Counter");
+
+    bool esSuper = autenticado &&
+        User.IsInRole("SuperUsuario");
+
+    bool esAdmin = autenticado &&
+        User.IsInRole("Administrador");
+
+    bool esCounter = autenticado &&
+        User.IsInRole("Counter");
+
     bool esPersonalAdmin = esSuper || esAdmin;
 }
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewBag.Title - Aerolínea VIP</title>
 
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 
     <style>
-        /* Diseño sencillo con Bootstrap 5, sin bibliotecas adicionales. */
         body {
             background-color: #F6F8FA;
             color: #34414C;
@@ -166,167 +177,603 @@
         }
     </style>
 </head>
+
 <body>
+
+    <!-- BARRA PRINCIPAL -->
     <nav class="navbar navbar-expand-lg navbar-dark vip-navbar">
+
         <div class="container-fluid px-3 px-lg-4">
-            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+
+            <!-- LOGOTIPO -->
+            <a class="navbar-brand"
+               href="@Url.Action("Index", "Home")">
+
                 <span class="vip-logo">✈</span>AEROLÍNEA VIP
-                <span class="vip-subtitulo">VUELOS EJECUTIVOS</span>
+
+                <span class="vip-subtitulo">
+                    VUELOS EJECUTIVOS
+                </span>
             </a>
 
-            <button class="navbar-toggler" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#menuVip"
-                    aria-controls="menuVip" aria-expanded="false"
+            <!-- BOTÓN MÓVIL -->
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuVip"
+                    aria-controls="menuVip"
+                    aria-expanded="false"
                     aria-label="Mostrar u ocultar menú">
+
                 <span class="navbar-toggler-icon"></span>
             </button>
 
+            <!-- CONTENEDOR DE NAVEGACIÓN -->
             <div class="collapse navbar-collapse" id="menuVip">
+
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    <!-- INICIO -->
                     <li class="nav-item">
-                        @Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })
+                        @Html.ActionLink(
+                            "Inicio",
+                            "Index",
+                            "Home",
+                            null,
+                            new { @class = "nav-link" }
+                        )
                     </li>
 
-                    <!-- Pantallas 05 y 06: el formulario y los resultados estan en Home/Index. -->
+                    <!-- VUELOS -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button"
-                           data-bs-toggle="dropdown" aria-expanded="false">Vuelos</a>
+
+                        <a class="nav-link dropdown-toggle"
+                           href="#"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Vuelos
+                        </a>
+
                         <ul class="dropdown-menu">
-                            <li><span class="dropdown-header">Planifica tu viaje</span></li>
-                            <li>@Html.ActionLink("Buscar vuelos y ver resultados", "Index", "Home", null, new { @class = "dropdown-item" })</li>
+
+                            <li>
+                                <span class="dropdown-header">
+                                    Planifica tu viaje
+                                </span>
+                            </li>
+
+                            <li>
+                                @Html.ActionLink(
+                                    "Buscar vuelos y ver resultados",
+                                    "Index",
+                                    "Home",
+                                    null,
+                                    new { @class = "dropdown-item" }
+                                )
+                            </li>
+
+                            <li>
+                                @Html.ActionLink(
+                                    "Buscar vuelos disponibles",
+                                    "Buscar",
+                                    "Vueloes",
+                                    null,
+                                    new { @class = "dropdown-item" }
+                                )
+                            </li>
+
+                            <li>
+                                @Html.ActionLink(
+                                    "Ver vuelos y elegir asiento",
+                                    "Index",
+                                    "Vueloes",
+                                    null,
+                                    new { @class = "dropdown-item" }
+                                )
+                            </li>
+
                             @if (esPersonalAdmin)
                             {
-                                <li><hr class="dropdown-divider" /></li>
-                                <li><span class="dropdown-header">Consultas del personal</span></li>
-                                <li>@Html.ActionLink("Vuelos registrados", "Index", "Vueloes", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Catalogo de asientos", "Index", "Asientoes", null, new { @class = "dropdown-item" })</li>
-                            }
-                            <li><hr class="dropdown-divider" /></li>
-                            <!-- Pantallas 07 y 08: requieren acciones y validaciones de disponibilidad. -->
-                            <li><span class="vip-pendiente" aria-disabled="true">Disponibilidad real por vuelo<small>Pendiente de accion del controlador</small></span></li>
-                            <li><span class="vip-pendiente" aria-disabled="true">Elegir asiento en un vuelo<small>Pendiente de accion del controlador</small></span></li>
-                        </ul>
-                    </li>
+                                <li>
+                                    <hr class="dropdown-divider" />
+                                </li>
 
+                                <li>
+                                    <span class="dropdown-header">
+                                        Consultas del personal
+                                    </span>
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Vuelos registrados",
+                                        "Index",
+                                        "Vueloes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Catálogo de asientos",
+                                        "Index",
+                                        "Asientoes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+                            }
+
+                        </ul>
+
+                    </li>
+                    <!-- FIN VUELOS -->
+                    <!-- MIS VIAJES -->
                     @if (autenticado)
                     {
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">Mis viajes</a>
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Mis viajes
+                            </a>
+
                             <ul class="dropdown-menu">
-                                <li><span class="dropdown-header">Reservas de pasajeros</span></li>
+
+                                <li>
+                                    <span class="dropdown-header">
+                                        Reservas de pasajeros
+                                    </span>
+                                </li>
+
                                 @if (esPersonalAdmin)
                                 {
-                                    <li>@Html.ActionLink("Consultar reservas", "Index", "Reservas", null, new { @class = "dropdown-item" })</li>
-                                    <li>@Html.ActionLink("Consultar compras", "Index", "Compras", null, new { @class = "dropdown-item" })</li>
-                                    <li>@Html.ActionLink("Comprobantes", "Index", "Comprobantes", null, new { @class = "dropdown-item" })</li>
-                                    <li>@Html.ActionLink("Registros de check-in", "Index", "CheckIns", null, new { @class = "dropdown-item" })</li>
+                                    <li>
+                                        @Html.ActionLink(
+                                            "Consultar reservas",
+                                            "Index",
+                                            "Reservas",
+                                            null,
+                                            new { @class = "dropdown-item" }
+                                        )
+                                    </li>
+
+                                    <li>
+                                        @Html.ActionLink(
+                                            "Consultar compras",
+                                            "Index",
+                                            "Compras",
+                                            null,
+                                            new { @class = "dropdown-item" }
+                                        )
+                                    </li>
+
+                                    <li>
+                                        @Html.ActionLink(
+                                            "Comprobantes",
+                                            "Index",
+                                            "Comprobantes",
+                                            null,
+                                            new { @class = "dropdown-item" }
+                                        )
+                                    </li>
+
+                                    <li>
+                                        @Html.ActionLink(
+                                            "Registros de check-in",
+                                            "Index",
+                                            "CheckIns",
+                                            null,
+                                            new { @class = "dropdown-item" }
+                                        )
+                                    </li>
                                 }
                                 else
                                 {
-                                    <!-- No enlazar los CRUD generales a clientes: falta filtrado por titular. -->
-                                    <li><span class="vip-pendiente" aria-disabled="true">Mis reservas<small>Pendiente de consulta segura por usuario</small></span></li>
-                                    <li><span class="vip-pendiente" aria-disabled="true">Mis comprobantes<small>Pendiente de consulta segura por usuario</small></span></li>
-                                    <li><span class="vip-pendiente" aria-disabled="true">Check-in<small>Pendiente de validaciones del servidor</small></span></li>
+                                    <li>
+                                        <span class="vip-pendiente"
+                                              aria-disabled="true">
+                                            Mis reservas
+                                            <small>
+                                                Pendiente de consulta segura por usuario
+                                            </small>
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <span class="vip-pendiente"
+                                              aria-disabled="true">
+                                            Mis comprobantes
+                                            <small>
+                                                Pendiente de consulta segura por usuario
+                                            </small>
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <span class="vip-pendiente"
+                                              aria-disabled="true">
+                                            Check-in
+                                            <small>
+                                                Pendiente de validaciones del servidor
+                                            </small>
+                                        </span>
+                                    </li>
                                 }
+
                             </ul>
+
                         </li>
                     }
 
+                    <!-- MENÚS DE ADMINISTRACIÓN -->
                     @if (esPersonalAdmin)
                     {
+                        <!-- OPERACIONES -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">Operaciones</a>
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Operaciones
+                            </a>
+
                             <ul class="dropdown-menu">
-                                <li><span class="dropdown-header">Gestión comercial</span></li>
-                                <li>@Html.ActionLink("Pasajeros", "Index", "Pasajeroes", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Reservas", "Index", "Reservas", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Compras", "Index", "Compras", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Comprobantes", "Index", "Comprobantes", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Check-in", "Index", "CheckIns", null, new { @class = "dropdown-item" })</li>
+
+                                <li>
+                                    <span class="dropdown-header">
+                                        Gestión comercial
+                                    </span>
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Pasajeros",
+                                        "Index",
+                                        "Pasajeroes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Reservas",
+                                        "Index",
+                                        "Reservas",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Compras",
+                                        "Index",
+                                        "Compras",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Comprobantes",
+                                        "Index",
+                                        "Comprobantes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Check-in",
+                                        "Index",
+                                        "CheckIns",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
                             </ul>
+
                         </li>
 
+                        <!-- FLOTA Y RUTAS -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">Flota y rutas</a>
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Flota y rutas
+                            </a>
+
                             <ul class="dropdown-menu">
-                                <li><span class="dropdown-header">Administración de vuelos</span></li>
-                                <li>@Html.ActionLink("Administrar vuelos", "Index", "Vueloes", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Aeronaves", "Index", "Aeronaves", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Modelos de aeronaves", "Index", "ModeloAeronaves", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Asientos", "Index", "Asientoes", null, new { @class = "dropdown-item" })</li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li><span class="dropdown-header">Programación</span></li>
-                                <li>@Html.ActionLink("Aeropuertos", "Index", "Aeropuerto", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Rutas", "Index", "Rutas", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Frecuencias", "Index", "Frecuencias", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Itinerarios", "Index", "Itinerarios", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Tramos de itinerarios", "Index", "TramoItinerarios", null, new { @class = "dropdown-item" })</li>
+
+                                <li>
+                                    <span class="dropdown-header">
+                                        Administración de vuelos
+                                    </span>
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Administrar vuelos",
+                                        "Index",
+                                        "Vueloes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Aeronaves",
+                                        "Index",
+                                        "Aeronaves",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Modelos de aeronaves",
+                                        "Index",
+                                        "ModeloAeronaves",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Asientos",
+                                        "Index",
+                                        "Asientoes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider" />
+                                </li>
+
+                                <li>
+                                    <span class="dropdown-header">
+                                        Programación
+                                    </span>
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Aeropuertos",
+                                        "Index",
+                                        "Aeropuerto",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Rutas",
+                                        "Index",
+                                        "Rutas",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Frecuencias",
+                                        "Index",
+                                        "Frecuencias",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Itinerarios",
+                                        "Index",
+                                        "Itinerarios",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Tramos de itinerarios",
+                                        "Index",
+                                        "TramoItinerarios",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
                             </ul>
+
                         </li>
 
+                        <!-- ADMINISTRACIÓN -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">Administración</a>
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Administración
+                            </a>
+
                             <ul class="dropdown-menu">
-                                <li><span class="dropdown-header">Herramientas de gestión</span></li>
+
+                                <li>
+                                    <span class="dropdown-header">
+                                        Herramientas de gestión
+                                    </span>
+                                </li>
+
                                 @if (esSuper)
                                 {
-                                    <li>@Html.ActionLink("Usuarios y roles", "Index", "Usuarios", null, new { @class = "dropdown-item" })</li>
+                                    <li>
+                                        @Html.ActionLink(
+                                            "Usuarios y roles",
+                                            "Index",
+                                            "Usuarios",
+                                            null,
+                                            new { @class = "dropdown-item" }
+                                        )
+                                    </li>
                                 }
-                                <!-- Pantalla 17: necesita CrudController.Index() y Views/Crud/Index.cshtml. -->
-                                <li>@Html.ActionLink("Menu administrativo CRUD", "Index", "Crud", null, new { @class = "dropdown-item" })</li>
-                                <!-- Pantalla 21: necesita ReportesController.Index() y Views/Reportes/Index.cshtml. -->
-                                <li>@Html.ActionLink("Reportes administrativos", "Index", "Reportes", null, new { @class = "dropdown-item" })</li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Menú administrativo CRUD",
+                                        "Index",
+                                        "Crud",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
+                                <li>
+                                    @Html.ActionLink(
+                                        "Reportes administrativos",
+                                        "Index",
+                                        "Reportes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+
                             </ul>
+
                         </li>
                     }
 
+                    <!-- ATENCIÓN / COUNTER -->
                     @if (esCounter)
                     {
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">Atención</a>
+
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Atención
+                            </a>
+
                             <ul class="dropdown-menu">
-                                <li><span class="dropdown-header">Personal Counter</span></li>
-                                <li><span class="vip-pendiente" aria-disabled="true">Consulta de reservas<small>Esperando autorización específica del servidor</small></span></li>
-                                <li><span class="vip-pendiente" aria-disabled="true">Asistencia de check-in<small>Esperando autorización específica del servidor</small></span></li>
+
+                                <li>
+                                    <span class="dropdown-header">
+                                        Personal Counter
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="vip-pendiente"
+                                          aria-disabled="true">
+                                        Consulta de reservas
+                                        <small>
+                                            Esperando autorización específica del servidor
+                                        </small>
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="vip-pendiente"
+                                          aria-disabled="true">
+                                        Asistencia de check-in
+                                        <small>
+                                            Esperando autorización específica del servidor
+                                        </small>
+                                    </span>
+                                </li>
+
                             </ul>
+
                         </li>
                     }
 
+                    <!-- MI CUENTA -->
                     @if (autenticado)
                     {
                         <li class="nav-item">
-                            @Html.ActionLink("Mi cuenta", "Index", "Manage", null, new { @class = "nav-link" })
+                            @Html.ActionLink(
+                                "Mi cuenta",
+                                "Index",
+                                "Manage",
+                                null,
+                                new { @class = "nav-link" }
+                            )
                         </li>
                     }
-                </ul>
 
-                <!-- Partial original: registro, inicio y cierre de sesión con antiforgery. -->
+                </ul>
+                <!-- FIN MENÚ PRINCIPAL -->
+                <!-- LOGIN / REGISTRO -->
                 <div class="vip-cuenta">
+
                     @Html.Partial("_LoginPartial")
+
                 </div>
+
             </div>
+
         </div>
+
     </nav>
 
+    <!-- CONTENIDO DE LA PÁGINA -->
     <main class="container vip-contenido">
+
         @RenderBody()
+
     </main>
 
+    <!-- PIE DE PÁGINA -->
     <footer class="vip-pie">
+
         <div class="container d-flex flex-wrap justify-content-between gap-2">
-            <span><strong>AEROLÍNEA VIP</strong> &copy; @DateTime.Now.Year · Proyecto académico</span>
-            <span>Grupo 3 · Sistema de reservas y administración de vuelos</span>
+
+            <span>
+                <strong>AEROLÍNEA VIP</strong>
+                &copy; @DateTime.Now.Year
+                · Proyecto académico
+            </span>
+
+            <span>
+                Grupo 3 · Sistema de reservas y administración de vuelos
+            </span>
+
         </div>
+
     </footer>
 
+    <!-- SCRIPTS -->
     @Scripts.Render("~/bundles/jquery")
-    <!-- Bootstrap 5 con Popper integrado: necesario para los menus desplegables. -->
+
     <script src="@Url.Content("~/Scripts/bootstrap.bundle.min.js")"></script>
+
     @RenderSection("scripts", required: false)
+
 </body>
 </html>
