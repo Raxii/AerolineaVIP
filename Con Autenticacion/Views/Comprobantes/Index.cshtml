@@ -1,58 +1,92 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Comprobante>
+﻿@using Con_Autenticacion.Models;
+@model IEnumerable<Comprobante>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Comprobantes";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Index</h2>
+<style>
+    .byron-vip .card-header {
+        background-color: #34414C;
+        color: white;
+    }
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.NumeroComprobante)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.FechaEmision)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Compra.MonedaCodigo)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EstadoComprobante.Descripcion)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.TipoComprobante.Descripcion)
-        </th>
-        <th></th>
-    </tr>
+    .byron-vip .btn-vip {
+        background-color: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.NumeroComprobante)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FechaEmision)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Compra.MonedaCodigo)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EstadoComprobante.Descripcion)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.TipoComprobante.Descripcion)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ComprobanteId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ComprobanteId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ComprobanteId })
-        </td>
-    </tr>
-}
+        .byron-vip .btn-vip:hover {
+            background-color: #26323B;
+            color: white;
+        }
 
-</table>
+    .byron-vip .table thead th {
+        background-color: #E7EBEF;
+        color: #34414C;
+    }
+
+    .byron-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .byron-vip .table td {
+        vertical-align: middle;
+    }
+
+    .byron-vip .card-body {
+        background-color: #FFFFFF;
+    }
+
+    .byron-vip .text-muted {
+        color: #607281 !important;
+    }
+</style>
+
+<div class="container py-4 byron-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Comprobantes</p>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Documentos académicos de la aerolínea</p>
+            <div class="mb-3">
+                @Html.ActionLink("Nuevo registro", "Create", null, new { @class = "btn btn-vip" })
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Número de comprobante</th>
+                            <th>Reserva</th>
+                            <th>Fecha de emisión</th>
+                            <th>Total de la compra</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.NumeroComprobante</td>
+                                <td>@(item.Compra != null && item.Compra.Reserva != null ? item.Compra.Reserva.CodigoReserva : "Sin código")</td>
+                                <td>@item.FechaEmision.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(item.Compra != null ? item.Compra.Importe.ToString("N2") : "—")</td>
+                                <td>@(item.EstadoComprobante != null ? item.EstadoComprobante.Descripcion : item.EstadoComprobanteCodigo)</td>
+                                <td class="text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new { id = item.ComprobanteId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                    @Html.ActionLink("Editar", "Edit", new { id = item.ComprobanteId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                    @Html.ActionLink("Eliminar", "Delete", new { id = item.ComprobanteId }, new { @class = "btn btn-sm btn-outline-danger" })
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

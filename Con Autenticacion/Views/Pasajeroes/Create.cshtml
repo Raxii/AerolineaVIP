@@ -1,97 +1,138 @@
-﻿@model Con_Autenticacion.Models.Pasajero
+﻿@using Con_Autenticacion.Models;
+@model Pasajero
 
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "Nuevo pasajero";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
+<style>
+    .clase-vip .card-header {
+        background: #34414C;
+        color: white;
+    }
+
+    .clase-vip .btn-vip {
+        background: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
+
+        .clase-vip .btn-vip:hover {
+            background: #26323B;
+            color: white;
+        }
+
+    .clase-vip .table thead {
+        background: #E7EBEF;
+    }
+
+    .clase-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .clase-vip .form-control, .clase-vip .form-select {
+        background: #FFFFFF;
+    }
+</style>
 
 
-@using (Html.BeginForm()) 
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Pasajero</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.TipoDocumentoCodigo, "TipoDocumentoCodigo", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("TipoDocumentoCodigo", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.TipoDocumentoCodigo, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4 clase-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Nuevo pasajero</p>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.NumeroDocumento, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.NumeroDocumento, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.NumeroDocumento, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Nombres, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Nombres, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Nombres, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Apellidos, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Apellidos, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Apellidos, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.FechaNacimiento, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FechaNacimiento, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FechaNacimiento, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Correo, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Correo, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Correo, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Telefono, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Telefono, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Telefono, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.FechaRegistro, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FechaRegistro, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FechaRegistro, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Administración de pasajeros</p>
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "formPasajero" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.TipoDocumentoCodigo, "Tipo de documento", new { @class = "form-label" })
+                        @Html.DropDownList("TipoDocumentoCodigo", null, new { @class = "form-select" })
+                        @Html.ValidationMessageFor(model => model.TipoDocumentoCodigo, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.NumeroDocumento, "Número de documento", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.NumeroDocumento, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.NumeroDocumento, "", new { @class = "text-danger" })
+                        <span id="errorCedula" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.Nombres, "Nombres", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.Nombres, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Nombres, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.Apellidos, "Apellidos", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.Apellidos, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Apellidos, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.FechaNacimiento, "Fecha de nacimiento", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.FechaNacimiento, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FechaNacimiento, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.Correo, "Correo electrónico", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.Correo, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Correo, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.Telefono, "Teléfono", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.Telefono, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Telefono, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.FechaRegistro, "Fecha de registro", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.FechaRegistro, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FechaRegistro, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-vip">Guardar</button>
+                @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+                // Validación básica de cédula ecuatoriana.
+                function validarCedula(numero) {
+                    if (!/^\d{10}$/.test(numero)) return false;
+                    var provincia = parseInt(numero.substring(0, 2), 10);
+                    var tercerDigito = parseInt(numero.charAt(2), 10);
+                    if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false;
+                    var suma = 0;
+                    for (var i = 0; i < 9; i++) {
+                        var digito = parseInt(numero.charAt(i), 10);
+                        if (i % 2 == 0) {
+                            digito = digito * 2;
+                            if (digito > 9) digito = digito - 9;
+                        }
+                        suma += digito;
+                    }
+                    var verificador = (10 - (suma % 10)) % 10;
+                    return verificador == parseInt(numero.charAt(9), 10);
+                }
+
+                $(function () {
+                    $("#formPasajero").on("submit", function (evento) {
+                        var tipo = $("#TipoDocumentoCodigo").val() || "";
+                        var nombreTipo = $("#TipoDocumentoCodigo option:selected").text().toUpperCase();
+                        var esCedula = tipo.toUpperCase() == "CEDULA" || tipo.toUpperCase() == "CI" ||
+                            nombreTipo.indexOf("CEDULA") >= 0 || nombreTipo.indexOf("CÉDULA") >= 0;
+                        $("#errorCedula").text("");
+                        if (esCedula && !validarCedula($("#NumeroDocumento").val() || "")) {
+                            $("#errorCedula").text("Ingrese una cédula ecuatoriana válida.");
+                            evento.preventDefault();
+                        }
+                    });
+                });
+    </script>
 }

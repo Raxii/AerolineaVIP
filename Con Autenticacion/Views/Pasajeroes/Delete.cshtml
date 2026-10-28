@@ -1,89 +1,74 @@
-﻿@model Con_Autenticacion.Models.Pasajero
+﻿@using Con_Autenticacion.Models;
+@model Pasajero
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Eliminar registro";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Delete</h2>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Pasajero</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.NumeroDocumento)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.NumeroDocumento)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Nombres)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Nombres)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Apellidos)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Apellidos)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaNacimiento)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.FechaNacimiento)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Correo)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Correo)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Telefono)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Telefono)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaRegistro)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.FechaRegistro)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.TipoDocumentoIdentidad.Descripcion)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.TipoDocumentoIdentidad.Descripcion)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
-        </div>
+<style>
+    .clase-vip .card-header {
+        background: #34414C;
+        color: white;
     }
+
+    .clase-vip .btn-vip {
+        background: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
+
+        .clase-vip .btn-vip:hover {
+            background: #26323B;
+            color: white;
+        }
+
+    .clase-vip .table thead {
+        background: #E7EBEF;
+    }
+
+    .clase-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .clase-vip .form-control, .clase-vip .form-select {
+        background: #FFFFFF;
+    }
+</style>
+
+<div class="container py-4 clase-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Eliminar registro</p>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Administración de pasajeros</p>
+            <div class="alert alert-warning">¿Está seguro de que desea eliminar este registro?</div>
+            <dl class="row">
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.NumeroDocumento)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.NumeroDocumento)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Nombres)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Nombres)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Apellidos)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Apellidos)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.FechaNacimiento)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.FechaNacimiento)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Correo)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Correo)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Telefono)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Telefono)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.FechaRegistro)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.FechaRegistro)</dd>
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TipoDocumentoIdentidad.Descripcion)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.TipoDocumentoIdentidad.Descripcion)</dd>
+            </dl>
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-outline-secondary" })
+            }
+        </div>
+    </div>
 </div>
