@@ -15,10 +15,30 @@ namespace Con_Autenticacion.Controllers
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
 
         // GET: Vueloes
-        public ActionResult Index()
+        // PLANTILLA #5
+        public ActionResult Buscar()
         {
-            var vuelo = db.Vuelo.Include(v => v.Aeronave).Include(v => v.EstadoVuelo).Include(v => v.Frecuencia);
-            return View(vuelo.ToList());
+            return View();
+        }
+        // PLANTILLA #6
+        public ActionResult Resultados()
+        {
+            return View();
+        }
+        // PLANTILLA #7
+        public ActionResult DisponibilidadAsientos()
+        {
+            return View();
+        }
+        // PLANTILLA #8
+        public ActionResult Seleccionar()
+        {
+            return View();
+        }
+        //PLANTILLA #18
+        public ActionResult Administrar()
+        {
+            return View();
         }
 
         // GET: Vueloes/Details/5

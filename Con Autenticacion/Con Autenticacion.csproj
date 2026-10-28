@@ -426,7 +426,7 @@
     <Content Include="Views\Vueloes\Delete.cshtml" />
     <Content Include="Views\Vueloes\Details.cshtml" />
     <Content Include="Views\Vueloes\Edit.cshtml" />
-    <Content Include="Views\Vueloes\Index.cshtml" />
+    <Content Include="Views\Vueloes\Buscar.cshtml" />
     <Content Include="Views\ModeloAeronaves\Create.cshtml" />
     <Content Include="Views\ModeloAeronaves\Delete.cshtml" />
     <Content Include="Views\ModeloAeronaves\Details.cshtml" />
@@ -473,6 +473,12 @@
     <Content Include="Views\CheckIns\Edit.cshtml" />
     <Content Include="Views\CheckIns\Index.cshtml" />
     <Content Include="Views\Usuarios\Index.cshtml" />
+    <Content Include="Views\Vueloes\Resultados.cshtml" />
+    <Content Include="Views\Vueloes\DisponibilidadAsientos.cshtml" />
+    <Content Include="Views\Vueloes\Seleccionar.cshtml" />
+    <Content Include="Views\Crud\Index.cshtml" />
+    <Content Include="Views\Vueloes\Administrar.cshtml" />
+    <Content Include="Views\Reportes\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
