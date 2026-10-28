@@ -1,0 +1,150 @@
+﻿@model IEnumerable<Con_Autenticacion.Models.Vuelo>
+
+@{
+    ViewBag.Title = "Buscar Vuelos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5" style="max-width: 1100px;">
+    <div class="mb-4">
+        <h2 class="h4 fw-bold text-dark mb-1">Buscar Vuelos</h2>
+        <p class="small text-muted mb-4">Encuentra vuelos disponibles según tu origen, destino, fecha y cantidad de pasajeros.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Origen</label>
+                <select class="form-select form-control-lg" required>
+                    <option value="">Seleccione aeropuerto...</option>
+                    <option>Quito (UIO)</option>
+                    <option>Guayaquil (GYE)</option>
+                    <option>Cuenca (CUE)</option>
+                    <option>Loja (LOH)</option>
+                </select>
+                <div class="invalid-feedback">Seleccione un aeropuerto de origen.</div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Destino</label>
+                <select class="form-select form-control-lg" required>
+                    <option value="">Seleccione aeropuerto...</option>
+                    <option>Quito (UIO)</option>
+                    <option>Guayaquil (GYE)</option>
+                    <option>Cuenca (CUE)</option>
+                    <option>Loja (LOH)</option>
+                </select>
+                <div class="invalid-feedback">Seleccione un aeropuerto de destino.</div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Fecha de salida</label>
+                <input type="date" class="form-control form-control-lg" required min="2026-10-28">
+                <div class="invalid-feedback">Seleccione una fecha válida (posterior a hoy).</div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Pasajeros</label>
+                <input type="number" class="form-control form-control-lg" min="1" max="10" value="1" required>
+                <div class="invalid-feedback">Máximo 10 pasajeros por reserva.</div>
+            </div>
+
+            <div class="col-12 mt-4 d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-outline-secondary px-4">Limpiar filtros</button>
+                <button type="button" class="btn px-4 text-white fw-bold" style="background-color: #37474f; border-color: #37474f;">Buscar vuelos</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
+        <div class="card-header bg-light border-bottom py-3 px-4">
+            <span class="small text-muted">Mostrando <strong>3 vuelos</strong> disponibles para <strong>2 pasajeros</strong> el <strong>28 Oct 2026</strong>.</span>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">08:30</div>
+                        <div class="small text-muted">UIO</div>
+                    </div>
+                    <div class="text-muted small" style="width: 100px; border-top: 2px dashed #adb5bd;"></div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">09:45</div>
+                        <div class="small text-muted">GYE</div>
+                    </div>
+                    <div class="small text-muted ms-3">1h 15m</div>
+                </div>
+
+                <div class="text-center">
+                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
+                    <div class="small text-muted mt-1">12 asientos restantes</div>
+                </div>
+
+                <div class="text-end d-flex align-items-center gap-3">
+                    <div>
+                        <div class="small text-muted">Desde</div>
+                        <div class="fw-bold fs-5 text-dark">$120.00</div>
+                    </div>
+                    <button type="button" class="btn btn-sm px-3 py-2 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar</button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">10:15</div>
+                        <div class="small text-muted">UIO</div>
+                    </div>
+                    <div class="text-muted small" style="width: 100px; border-top: 2px dashed #adb5bd;"></div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">11:40</div>
+                        <div class="small text-muted">GYE</div>
+                    </div>
+                    <div class="small text-muted ms-3">1h 25m</div>
+                </div>
+
+                <div class="text-center">
+                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
+                    <div class="small text-muted mt-1">8 asientos restantes</div>
+                </div>
+
+                <div class="text-end d-flex align-items-center gap-3">
+                    <div>
+                        <div class="small text-muted">Desde</div>
+                        <div class="fw-bold fs-5 text-dark">$135.00</div>
+                    </div>
+                    <button type="button" class="btn btn-sm px-3 py-2 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar</button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">14:05</div>
+                        <div class="small text-muted">UIO</div>
+                    </div>
+                    <div class="text-muted small" style="width: 100px; border-top: 2px dashed #adb5bd;"></div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">15:40</div>
+                        <div class="small text-muted">GYE</div>
+                    </div>
+                    <div class="small text-muted ms-3">1h 35m</div>
+                </div>
+
+                <div class="text-center">
+                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
+                    <div class="small text-muted mt-1">5 asientos restantes</div>
+                </div>
+
+                <div class="text-end d-flex align-items-center gap-3">
+                    <div>
+                        <div class="small text-muted">Desde</div>
+                        <div class="fw-bold fs-5 text-dark">$145.00</div>
+                    </div>
+                    <button type="button" class="btn btn-sm px-3 py-2 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

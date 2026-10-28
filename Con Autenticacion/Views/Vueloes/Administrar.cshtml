@@ -1,0 +1,138 @@
+@{
+    ViewBag.Title = "Administración de Vuelos e Itinerarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5" style="max-width: 1200px;">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="h4 fw-bold text-dark mb-1">Administración de Vuelos e Itinerarios</h2>
+            <p class="small text-muted mb-0">Gestión de la programación aprobada, rutas, horarios y estados operativos.</p>
+        </div>
+
+        <button class="btn px-4 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">+ Crear Programación</button>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Fecha</label>
+                <input type="date" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Ruta</label>
+                <select class="form-select form-select-sm">
+                    <option>Todas</option>
+                    <option>UIO - GYE</option>
+                    <option>UIO - MEC</option>
+                    <option>GYE - UIO</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Estado</label>
+                <select class="form-select form-select-sm">
+                    <option>Todos</option>
+                    <option>Programado</option>
+                    <option>En vuelo</option>
+                    <option>Retrasado</option>
+                    <option>Cancelado</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button class="btn btn-sm btn-outline-danger w-100">Consultar Conflictos</button>
+                <button class="btn btn-sm px-3 text-white fw-semibold w-100" style="background-color: #37474f; border-color: #37474f;">Filtrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <h6 class="fw-bold text-dark mb-3">Calendario de Operaciones - Octubre 2026</h6>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <div class="border rounded-3 p-2 text-center" style="width: 60px; background-color: #37474f; color: white;">
+                <div class="small">Lun</div>
+                <div class="fw-bold">28</div>
+            </div>
+
+            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
+                <div class="small text-muted">Mar</div>
+                <div class="fw-bold text-dark">29</div>
+            </div>
+
+            <div class="border rounded-3 p-2 text-center bg-white text-muted" style="width: 60px; opacity: 0.5;">
+                <div class="small">Mié</div>
+                <div class="fw-bold">30</div>
+            </div>
+
+            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
+                <div class="small text-muted">Jue</div>
+                <div class="fw-bold text-dark">31</div>
+            </div>
+
+            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
+                <div class="small text-muted">Vie</div>
+                <div class="fw-bold text-dark">01</div>
+            </div>
+
+            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
+                <div class="small text-muted">Sáb</div>
+                <div class="fw-bold text-dark">02</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
+        <div class="card-header bg-light border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+            <span class="small fw-bold text-dark">Itinerarios Programados</span>
+            <span class="badge bg-light text-dark border">12 vuelos</span>
+        </div>
+
+        <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-light text-dark">
+                <tr>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Vuelo</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Ruta</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Fecha / Hora</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Aeronave</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Secuencia</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Estado</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="py-3 px-4 fw-semibold">VIP-401</td>
+                    <td class="py-3 px-4">UIO → GYE</td>
+                    <td class="py-3 px-4">28 Oct 2026<br><span class="small text-muted">08:30 - 09:45</span></td>
+                    <td class="py-3 px-4">Airbus A320</td>
+                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">Directo</span></td>
+                    <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">Programado</span></td>
+                    <td class="py-3 px-4">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary">Modificar</button>
+                            <button class="btn btn-sm btn-outline-danger">Cancelar</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="py-3 px-4 fw-semibold">VIP-705</td>
+                    <td class="py-3 px-4">GYE → UIO</td>
+                    <td class="py-3 px-4">29 Oct 2026<br><span class="small text-muted">10:15 - 11:40</span></td>
+                    <td class="py-3 px-4">Airbus A321</td>
+                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">1 escala</span></td>
+                    <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">Programado</span></td>
+                    <td class="py-3 px-4">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary">Modificar</button>
+                            <button class="btn btn-sm btn-outline-danger">Cancelar</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

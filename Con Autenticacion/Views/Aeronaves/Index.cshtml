@@ -1,46 +1,130 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Aeronave>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Administración de Aeronaves";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Index</h2>
+<div class="container py-5" style="max-width: 1200px;">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="h4 fw-bold text-dark mb-1">Administración de Aeronaves</h2>
+            <p class="small text-muted mb-0">Mantenimiento de la información de la flota: registro, modelo, capacidad y estado operativo.</p>
+        </div>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Matricula)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EstadoAeronave.Descripcion)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ModeloAeronave.Fabricante)
-        </th>
-        <th></th>
-    </tr>
+        <span class="badge bg-light text-dark border px-3 py-2">3 aeronaves registradas</span>
+    </div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Matricula)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EstadoAeronave.Descripcion)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ModeloAeronave.Fabricante)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AeronaveId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AeronaveId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AeronaveId })
-        </td>
-    </tr>
-}
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label small text-muted fw-bold">Buscar aeronave</label>
+                <input type="text" class="form-control form-control-sm" placeholder="Identificador o registro...">
+            </div>
 
-</table>
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Modelo</label>
+                <select class="form-select form-select-sm">
+                    <option>Todos</option>
+                    <option>Airbus A320</option>
+                    <option>Boeing 737</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-bold">Estado operativo</label>
+                <select class="form-select form-select-sm">
+                    <option>Todos</option>
+                    <option>Activa</option>
+                    <option>En mantenimiento</option>
+                    <option>Fuera de servicio</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100 px-3 text-white fw-semibold" style="background-color: #37474f; border-color: #37474f;">Filtrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
+                <div class="small text-muted fw-bold">Total de aeronaves</div>
+                <div class="fs-3 fw-bold text-dark">3</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
+                <div class="small text-muted fw-bold">Activas</div>
+                <div class="fs-3 fw-bold text-success">2</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
+                <div class="small text-muted fw-bold">En mantenimiento</div>
+                <div class="fs-3 fw-bold text-warning">1</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
+                <div class="small text-muted fw-bold">Capacidad promedio</div>
+                <div class="fs-3 fw-bold text-dark">180</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
+        <div class="card-header bg-light border-bottom py-3 px-4">
+            <span class="small fw-bold text-dark">Flota Registrada</span>
+        </div>
+
+        <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-light text-dark">
+                <tr>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Identificador</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Registro</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Modelo</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Capacidad</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Estado</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Asignaciones</th>
+                    <th class="py-3 px-4 fw-bold border-bottom-0">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="py-3 px-4 fw-semibold">A320-01</td>
+                    <td class="py-3 px-4">HC-BAA</td>
+                    <td class="py-3 px-4">Airbus A320</td>
+                    <td class="py-3 px-4">180 asientos</td>
+                    <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">Activa</span></td>
+                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">2 vuelos</span></td>
+                    <td class="py-3 px-4">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary">Modificar estado</button>
+                            <button class="btn btn-sm btn-outline-secondary">Revisar asignaciones</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="py-3 px-4 fw-semibold">B737-01</td>
+                    <td class="py-3 px-4">HC-BBB</td>
+                    <td class="py-3 px-4">Boeing 737</td>
+                    <td class="py-3 px-4">170 asientos</td>
+                    <td class="py-3 px-4"><span class="badge bg-warning bg-opacity-75 rounded-pill text-dark">En mantenimiento</span></td>
+                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">1 vuelo</span></td>
+                    <td class="py-3 px-4">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary">Modificar estado</button>
+                            <button class="btn btn-sm btn-outline-secondary">Revisar asignaciones</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
