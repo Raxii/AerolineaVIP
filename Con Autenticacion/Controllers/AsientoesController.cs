@@ -10,6 +10,7 @@ using Con_Autenticacion.Models;
 
 namespace Con_Autenticacion.Controllers
 {
+    [Authorize(Roles = "SuperUsuario,Administrador")]
     public class AsientoesController : Controller
     {
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
