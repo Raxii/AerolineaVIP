@@ -472,6 +472,7 @@
     <Content Include="Views\Crud\Index.cshtml" />
     <Content Include="Views\Vueloes\Administrar.cshtml" />
     <Content Include="Views\Reportes\Index.cshtml" />
+    <Content Include="Views\Vueloes\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
