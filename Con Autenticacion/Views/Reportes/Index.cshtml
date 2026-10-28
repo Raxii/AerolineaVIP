@@ -1,181 +1,439 @@
+
+@using System
+@using System.Collections.Generic
+@using Con_Autenticacion.Models
+
 @{
     ViewBag.Title = "Consultas y Reportes Administrativos";
 
-    // Extraer datos de ViewBag
-    var vuelosTotales = (int)(ViewBag.VuelosTotales ?? 0);
-    var ocupacionPromedio = (int)(ViewBag.OcupacionPromedio ?? 0);
-    var reservasConfirmadas = (int)(ViewBag.ReservasConfirmadas ?? 0);
-    var cancelaciones = (int)(ViewBag.Cancelaciones ?? 0);
-    var rutas = (List<string>)(ViewBag.Rutas ?? new List<string>());
-    var aeronaves = (List<Con_Autenticacion.Models.Aeronave>)(ViewBag.Aeronaves ?? new List<Con_Autenticacion.Models.Aeronave>());
-    var estados = (List<string>)(ViewBag.Estados ?? new List<string>());
-    var reporteRutas = (List<dynamic>)(ViewBag.ReporteRutas ?? new List<dynamic>());
+    int vuelosTotales = ViewBag.VuelosTotales ?? 0;
+    int ocupacionPromedio = ViewBag.OcupacionPromedio ?? 0;
+    int reservasConfirmadas = ViewBag.ReservasConfirmadas ?? 0;
+    int cancelaciones = ViewBag.Cancelaciones ?? 0;
+
+    var rutas = ViewBag.Rutas as List<string>
+        ?? new List<string>();
+
+    var aeronaves = ViewBag.Aeronaves as List<Aeronave>
+        ?? new List<Aeronave>();
+
+    var estados = ViewBag.Estados as List<string>
+        ?? new List<string>();
+
+    // Corrección principal: usar el modelo público.
+    var reporteRutas = ViewBag.ReporteRutas as List<ReporteRuta>
+        ?? new List<ReporteRuta>();
+
+    string desde = ViewBag.Desde ?? "";
+    string hasta = ViewBag.Hasta ?? "";
+    string rutaSeleccionada = ViewBag.RutaSeleccionada ?? "";
+    string estadoSeleccionado = ViewBag.EstadoSeleccionado ?? "";
+    string agruparSeleccionado = ViewBag.AgruparSeleccionado ?? "Ruta";
+
+    int? aeronaveSeleccionada =
+        ViewBag.AeronaveSeleccionada as int?;
+
+    string tituloAgrupacion = "Ruta";
+
+    if (agruparSeleccionado == "Dia")
+    {
+        tituloAgrupacion = "Día";
+    }
+    else if (agruparSeleccionado == "Mes")
+    {
+        tituloAgrupacion = "Mes";
+    }
+    else if (agruparSeleccionado == "Aeronave")
+    {
+        tituloAgrupacion = "Aeronave";
+    }
 }
 
-<div class="container py-5" style="max-width: 1250px;">
-    <div class="d-flex justify-content-between align-items-start mb-4">
+<div class="container py-5" style="max-width:1250px;">
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex flex-wrap justify-content-between
+                align-items-start gap-3 mb-4">
+
         <div>
-            <h2 class="h4 fw-bold text-dark mb-1">Consultas y Reportes Administrativos</h2>
-            <p class="small text-muted mb-0">Informacion consolidada para la supervision de la operacion: vuelos, reservas, ocupacion y comercializacion.</p>
+            <h2 class="h4 fw-bold text-dark mb-1">
+                Consultas y Reportes Administrativos
+            </h2>
+
+            <p class="small text-muted mb-0">
+                Información consolidada de vuelos, reservas,
+                ocupación y comercialización.
+            </p>
         </div>
 
         <div class="text-end">
-            <div class="small text-muted">Fecha de corte</div>
-            <div class="fw-bold text-dark">28 Oct 2026 - 14:30</div>
+            <div class="small text-muted">
+                Fecha de consulta
+            </div>
+
+            <div class="fw-bold text-dark">
+                @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+            </div>
         </div>
+
     </div>
 
-    @*FALTA MODIFICAR EL FILTRO - Y EL MODO DE EXPORTACION DEL REPORTE*@
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="row g-3 align-items-end mb-3">
-            <div class="col-md-2">
-                <label class="form-label small text-muted fw-bold">Desde</label>
-                <input type="date" class="form-control form-control-sm" />
-            </div>
+    @Html.ValidationSummary(
+        true, "",
+        new { @class = "text-danger mb-3" })
 
-            <div class="col-md-2">
-                <label class="form-label small text-muted fw-bold">Hasta</label>
-                <input type="date" class="form-control form-control-sm" />
-            </div>
+    <!-- FILTROS -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4"
+         style="border:1px solid #e0e0e0 !important;">
 
-            <div class="col-md-2">
-                <label class="form-label small text-muted fw-bold">Ruta</label>
-                <select class="form-select form-select-sm">
-                    <option>Todas</option>
-                    @{
-                        foreach (var ruta in rutas)
+        @using (Html.BeginForm(
+            "Index",
+            "Reportes",
+            FormMethod.Get,
+            new { id = "formReportes" }))
+        {
+            <div class="row g-3 align-items-end mb-3">
+
+                <!-- DESDE -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">
+                        Desde
+                    </label>
+
+                    <input type="date"
+                           name="desde"
+                           class="form-control form-control-sm"
+                           value="@desde" />
+                </div>
+
+                <!-- HASTA -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">
+                        Hasta
+                    </label>
+
+                    <input type="date"
+                           name="hasta"
+                           class="form-control form-control-sm"
+                           value="@hasta" />
+                </div>
+
+                <!-- RUTA -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">
+                        Ruta
+                    </label>
+
+                    <select name="ruta"
+                            class="form-select form-select-sm">
+
+                        <option value="">Todas</option>
+
+                        @foreach (var ruta in rutas)
                         {
-                            <option>@ruta</option>
+                            <option value="@ruta"
+                                    selected="@(ruta == rutaSeleccionada ? "selected" : null)">
+                                @ruta
+                            </option>
                         }
-                    }
-                </select>
-            </div>
 
-            <div class="col-md-2">
-                <label class="form-label small text-muted fw-bold">Aeronave</label>
-                <select class="form-select form-select-sm">
-                    <option>Todas</option>
-                    @{
-                        foreach (var aeronave in aeronaves)
+                    </select>
+                </div>
+
+                <!-- AERONAVE -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">
+                        Aeronave
+                    </label>
+
+                    <select name="aeronaveId"
+                            class="form-select form-select-sm">
+
+                        <option value="">Todas</option>
+
+                        @foreach (var aeronave in aeronaves)
                         {
-                            <option>@aeronave.AeronaveId - @aeronave.Matricula</option>
+                            <option value="@aeronave.AeronaveId"
+                                    selected="@(aeronaveSeleccionada == aeronave.AeronaveId ? "selected" : null)">
+                                @aeronave.Matricula
+                            </option>
                         }
-                    }
-                </select>
-            </div>
 
-            <div class="col-md-2">
-                <label class="form-label small text-muted fw-bold">Estado</label>
-                <select class="form-select form-select-sm">
-                    <option>Todos</option>
-                    @{
-                        foreach (var estado in estados)
+                    </select>
+                </div>
+
+                <!-- ESTADO -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">
+                        Estado
+                    </label>
+
+                    <select name="estado"
+                            class="form-select form-select-sm">
+
+                        <option value="">Todos</option>
+
+                        @foreach (var estado in estados)
                         {
-                            <option>@estado</option>
+                            <option value="@estado"
+                                    selected="@(estado == estadoSeleccionado ? "selected" : null)">
+                                @estado
+                            </option>
                         }
-                    }
-                </select>
+
+                    </select>
+                </div>
+
+                <!-- AGRUPAR POR -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">
+                        Agrupar por
+                    </label>
+
+                    <select name="agrupar"
+                            class="form-select form-select-sm">
+
+                        <option value="Ruta"
+                                selected="@(agruparSeleccionado == "Ruta" ? "selected" : null)">
+                            Ruta
+                        </option>
+
+                        <option value="Dia"
+                                selected="@(agruparSeleccionado == "Dia" ? "selected" : null)">
+                            Día
+                        </option>
+
+                        <option value="Aeronave"
+                                selected="@(agruparSeleccionado == "Aeronave" ? "selected" : null)">
+                            Aeronave
+                        </option>
+
+                        <option value="Mes"
+                                selected="@(agruparSeleccionado == "Mes" ? "selected" : null)">
+                            Mes
+                        </option>
+
+                    </select>
+                </div>
+
             </div>
 
-            <div class="col-md-2">
-                <label class="form-label small text-muted fw-bold">Agrupar por</label>
-                <select class="form-select form-select-sm">
-                    <option>Dia</option>
-                    <option>Ruta</option>
-                    <option>Aeronave</option>
-                    <option>Mes</option>
-                </select>
-            </div>
-        </div>
+            <!-- BOTONES -->
+            <div class="row g-2">
 
-        <div class="row g-2">
-            <div class="col-md-2">
-                <button class="btn btn-sm w-100 px-3 text-white fw-semibold" style="background-color: #37474f; border-color: #37474f;">Consultar</button>
-            </div>
+                <div class="col-md-2">
+                    <button type="submit"
+                            class="btn btn-sm w-100 text-white fw-semibold"
+                            style="background-color:#37474f;">
+                        Consultar
+                    </button>
+                </div>
 
-            <div class="col-md-2">
-                <button class="btn btn-sm btn-outline-secondary w-100">Actualizar resultados</button>
-            </div>
+                <div class="col-md-2">
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-secondary w-100">
+                        Actualizar resultados
+                    </button>
+                </div>
 
-            <div class="col-md-2 ms-auto">
-                <button class="btn btn-sm btn-outline-dark w-100">Exportar CSV</button>
+                <div class="col-md-2 ms-auto">
+                    <button type="submit"
+                            formaction="@Url.Action("ExportarCSV", "Reportes")"
+                            formmethod="get"
+                            class="btn btn-sm btn-outline-dark w-100">
+                        Exportar CSV
+                    </button>
+                </div>
+
             </div>
-        </div>
+        }
+
     </div>
 
+    <!-- TARJETAS DE INDICADORES -->
     <div class="row g-3 mb-4">
+
+        <!-- TOTAL VUELOS -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Vuelos operados</div>
-                <div class="fs-3 fw-bold text-dark">@vuelosTotales</div>
-                <span class="small text-muted">En el rango seleccionado</span>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Vuelos del período
+                </div>
+
+                <div class="fs-3 fw-bold text-dark">
+                    @vuelosTotales
+                </div>
+
+                <span class="small text-muted">
+                    Según filtros seleccionados
+                </span>
             </div>
         </div>
 
+        <!-- OCUPACIÓN -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Ocupacion promedio</div>
-                <div class="fs-3 fw-bold text-success">@ocupacionPromedio%</div>
-                <span class="small text-muted">Asientos vendidos / disponibles</span>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Ocupación promedio
+                </div>
+
+                <div class="fs-3 fw-bold text-success">
+                    @ocupacionPromedio%
+                </div>
+
+                <span class="small text-muted">
+                    Asientos confirmados / capacidad total
+                </span>
             </div>
         </div>
 
+        <!-- RESERVAS -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Reservas confirmadas</div>
-                <div class="fs-3 fw-bold text-dark">@reservasConfirmadas</div>
-                <span class="small text-muted">Reservas vigentes</span>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Reservas confirmadas
+                </div>
+
+                <div class="fs-3 fw-bold text-dark">
+                    @reservasConfirmadas
+                </div>
+
+                <span class="small text-muted">
+                    Reservas vinculadas a los vuelos consultados
+                </span>
             </div>
         </div>
 
+        <!-- CANCELACIONES -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Cancelaciones</div>
-                <div class="fs-3 fw-bold text-danger">@cancelaciones</div>
-                <span class="small text-muted">Tasa: @(vuelosTotales > 0 ? ((cancelaciones * 100) / vuelosTotales) : 0)%</span>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Vuelos cancelados
+                </div>
+
+                <div class="fs-3 fw-bold text-danger">
+                    @cancelaciones
+                </div>
+
+                <span class="small text-muted">
+                    Tasa:
+                    @(vuelosTotales > 0
+                        ? Math.Round(cancelaciones * 100.0 / vuelosTotales, 1)
+                        : 0)%
+                </span>
             </div>
         </div>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
-        <div class="card-header bg-light border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-            <span class="small fw-bold text-dark">Reporte Detallado por Ruta</span>
-            <span class="small text-muted">Definiciones: Ocupacion = asientos vendidos / capacidad total</span>
+    <!-- REPORTE DETALLADO -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden"
+         style="border:1px solid #e0e0e0 !important;">
+
+        <div class="card-header bg-light border-bottom py-3 px-4
+                    d-flex flex-wrap justify-content-between
+                    align-items-center gap-2">
+
+            <span class="small fw-bold text-dark">
+                Reporte detallado por @tituloAgrupacion
+            </span>
+
+            <span class="small text-muted">
+                Ocupación = asientos confirmados / capacidad
+            </span>
+
         </div>
 
-        <table class="table table-hover table-striped align-middle mb-0">
-            <thead class="table-light text-dark">
-                <tr>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Ruta</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Vuelos</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Pasajeros</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Ocupacion</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Ingresos</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (reporteRutas.Count > 0)
-                {
-                    foreach (var reporte in reporteRutas)
+        <div class="table-responsive">
+
+            <table class="table table-hover table-striped align-middle mb-0">
+
+                <thead class="table-light text-dark">
+                    <tr>
+                        <th class="py-3 px-4">
+                            @tituloAgrupacion
+                        </th>
+
+                        <th class="py-3 px-4">Vuelos</th>
+                        <th class="py-3 px-4">Pasajeros</th>
+                        <th class="py-3 px-4">Ocupación</th>
+                        <th class="py-3 px-4">Ingresos simulados</th>
+                        <th class="py-3 px-4">Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (reporteRutas.Count > 0)
+                    {
+                        foreach (var reporte in reporteRutas)
+                        {
+                            <tr>
+
+                                <!-- CORREGIDO: propiedades de ReporteRuta -->
+                                <td class="py-3 px-4 fw-semibold">
+                                    @reporte.Ruta
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    @reporte.Vuelos
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    @reporte.Pasajeros
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    <span class="badge bg-success bg-opacity-75 rounded-pill">
+                                        @reporte.Ocupacion.ToString("N2")%
+                                    </span>
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    $@reporte.Ingresos.ToString("N2")
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    <span class="badge bg-light text-dark border">
+                                        @reporte.Estado
+                                    </span>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td class="py-3 px-4 fw-semibold">@reporte.ruta</td>
-                            <td class="py-3 px-4">@reporte.vuelos</td>
-                            <td class="py-3 px-4">@reporte.pasajeros</td>
-                            <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">@reporte.ocupacion%</span></td>
-                            <td class="py-3 px-4">@reporte.ingresos</td>
-                            <td class="py-3 px-4"><span class="badge bg-light text-dark border">@reporte.estado</span></td>
+                            <td colspan="6"
+                                class="text-center py-4 text-muted">
+
+                                No hay datos para mostrar con los
+                                filtros seleccionados.
+
+                            </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">No hay datos para mostrar</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+
+                </tbody>
+
+            </table>
+        </div>
     </div>
+
+    <p class="small text-muted mt-3">
+        Reporte académico. Los ingresos corresponden
+        a importes de tramos con compra simulada pagada;
+        no incluyen necesariamente descuentos ni cargos
+        adicionales de la compra.
+    </p>
+
 </div>

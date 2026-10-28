@@ -1,189 +1,489 @@
+
+@using System
+@using System.Collections.Generic
 @using Con_Autenticacion.Models
-@model Vuelo
 
 @{
-    ViewBag.Title = "Seleccion de Vuelo y Asiento";
+    ViewBag.Title = "Panel del Administrador";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var capacidad = (int)(ViewBag.Capacidad ?? 0);
-    var ocupados = (int)(ViewBag.Ocupados ?? 0);
-    var restantes = (int)(ViewBag.Restantes ?? 0);
-    var aeropuertoOrigen = (string)(ViewBag.AeropuertoOrigen ?? "N/A");
-    var aeropuertoDestino = (string)(ViewBag.AeropuertoDestino ?? "N/A");
-    var horaPartida = (string)(ViewBag.HoraPartida ?? "--:--");
-    var horaLlegada = (string)(ViewBag.HoraLlegada ?? "--:--");
-    var fechaOperacion = (DateTime?)(ViewBag.FechaOperacion ?? null);
-    var matricula = (string)(ViewBag.Matricula ?? "N/A");
-    var asientosOcupados = (List<string>)(ViewBag.AsientosOcupados ?? new List<string>());
-    var asientos = (List<Asiento>)(ViewBag.Asientos ?? new List<Asiento>());
+    // Datos enviados desde CrudController.
+    var vuelosProgramados =
+        (int)(ViewBag.VuelosProgramados ?? 0);
+
+    var aeronavesActivas =
+        (int)(ViewBag.AeronavesActivas ?? 0);
+
+    // Se conserva el nombre original del ViewBag.
+    // Ahora representa aeronaves NO DISPONIBLES.
+    var aeronavesEnMantenimiento =
+        (int)(ViewBag.AeronavesEnMantenimiento ?? 0);
+
+    var reservasDelDia =
+        (int)(ViewBag.ReservasDelDia ?? 0);
+
+    // Se conserva el nombre original del ViewBag.
+    // Ahora representa vuelos CANCELADOS.
+    var incidenciasAbiertas =
+        (int)(ViewBag.IncidenciasAbiertas ?? 0);
+
+    var incidenciasRecientes =
+        ViewBag.IncidenciasRecientes as List<Vuelo>
+        ?? new List<Vuelo>();
 }
 
-<div class="container py-5" style="max-width: 1150px;">
+<div class="container py-5" style="max-width:1200px;">
+
+    <!-- ENCABEZADO -->
     <div class="mb-4">
-        <h2 class="h4 fw-bold text-dark mb-1">Seleccion de Vuelo y Asiento</h2>
-        <p class="small text-muted mb-4">Confirma tu vuelo y elige tus asientos antes de continuar con el registro de pasajeros.</p>
+
+        <h2 class="h4 fw-bold text-dark mb-1">
+            Panel del Administrador
+        </h2>
+
+        <p class="small text-muted mb-0">
+            Vista general de la operación administrativa
+            de Aerolínea VIP.
+        </p>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="row align-items-center">
-            <div class="col-md-6 d-flex align-items-center gap-4">
-                <div class="text-center">
-                    <div class="fw-bold fs-5 text-dark">@horaPartida</div>
-                    <div class="small text-muted">@aeropuertoOrigen</div>
-                </div>
+    <!-- FILTROS DE LA TABLA -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4"
+         style="border:1px solid #e0e0e0 !important;">
 
-                <div class="text-muted small" style="width: 80px; border-top: 2px dashed #adb5bd;"></div>
+        <div class="row g-2 align-items-end">
 
-                <div class="text-center">
-                    <div class="fw-bold fs-5 text-dark">@horaLlegada</div>
-                    <div class="small text-muted">@aeropuertoDestino</div>
-                </div>
+            <div class="col-md-4">
+                <label for="filtroFecha"
+                       class="form-label small text-muted fw-bold">
+                    Fecha de operación
+                </label>
 
-                <div class="ms-3">
-                    <span class="badge bg-light text-dark border">@Html.DisplayFor(modelItem => modelItem.VueloId)</span>
-                    <div class="small text-muted mt-1">@(fechaOperacion.HasValue ? fechaOperacion.Value.ToString("dd MMM yyyy") : "N/A") · @matricula</div>
-                </div>
+                <input type="date"
+                       id="filtroFecha"
+                       class="form-control form-control-sm" />
             </div>
 
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                @if (restantes > 0)
-                {
-                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2 me-2">Disponible</span>
-                }
-                else
-                {
-                    <span class="badge bg-danger bg-opacity-75 rounded-pill px-3 py-2 me-2">Sin disponibilidad</span>
-                }
-                <span class="small text-muted">@restantes asientos libres</span>
+            <div class="col-md-4">
+                <label for="filtroEstado"
+                       class="form-label small text-muted fw-bold">
+                    Estado
+                </label>
+
+                <select id="filtroEstado"
+                        class="form-select form-select-sm">
+
+                    <option value="">Todos los registros</option>
+                    <option value="CANCELADO">Cancelado</option>
+
+                </select>
             </div>
+
+            <div class="col-md-4 d-flex gap-2">
+
+                <button type="button"
+                        id="btnAplicarFiltros"
+                        class="btn btn-sm px-3 text-white fw-semibold"
+                        style="background-color:#37474f;
+                               border-color:#37474f;">
+
+                    Aplicar filtros
+
+                </button>
+
+                <button type="button"
+                        id="btnLimpiarFiltros"
+                        class="btn btn-sm btn-outline-secondary">
+
+                    Limpiar
+
+                </button>
+
+            </div>
+
         </div>
+
+        <p class="small text-muted mt-3 mb-0">
+            Los filtros se aplican únicamente a la tabla
+            de vuelos cancelados recientes.
+            Los indicadores superiores muestran los
+            valores generales del sistema.
+        </p>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="fw-bold text-dark mb-0">Elige tus asientos</h5>
-            <div>
-                <span class="badge bg-light text-dark border me-2">Libre</span>
-                <span class="badge bg-secondary text-white me-2">Ocupado</span>
-                <span class="badge bg-success text-white me-2">Seleccionado</span>
+    <!-- INDICADORES -->
+    <div class="row g-3 mb-4">
+
+        <!-- VUELOS PROGRAMADOS -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Vuelos programados
+                </div>
+
+                <div class="fs-3 fw-bold text-dark">
+                    @vuelosProgramados
+                </div>
+
+                <span class="small text-success">
+                    Programados y confirmados desde hoy
+                </span>
+
             </div>
         </div>
 
-        <div class="d-flex flex-column align-items-center gap-2">
-            @{
-                var asientosPorFila = new System.Collections.Hashtable();
+        <!-- AERONAVES -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
 
-                foreach (var asiento in asientos)
-                {
-                    var filaKey = asiento.Fila.ToString();
-                    if (!asientosPorFila.ContainsKey(filaKey))
+                <div class="small text-muted fw-bold">
+                    Aeronaves disponibles
+                </div>
+
+                <div class="fs-3 fw-bold text-dark">
+                    @aeronavesActivas
+                </div>
+
+                <span class="small text-muted">
+                    @aeronavesEnMantenimiento no disponibles
+                </span>
+
+            </div>
+        </div>
+
+        <!-- RESERVAS DEL DÍA -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Reservas del día
+                </div>
+
+                <div class="fs-3 fw-bold text-dark">
+                    @reservasDelDia
+                </div>
+
+                <span class="small text-success">
+                    Creadas hoy
+                </span>
+
+            </div>
+        </div>
+
+        <!-- VUELOS CANCELADOS -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
+                 style="border:1px solid #e0e0e0 !important;">
+
+                <div class="small text-muted fw-bold">
+                    Vuelos cancelados
+                </div>
+
+                <div class="fs-3 fw-bold text-danger">
+                    @incidenciasAbiertas
+                </div>
+
+                <span class="small text-muted">
+                    Cancelaciones registradas
+                </span>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ACCESOS RÁPIDOS -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4"
+         style="border:1px solid #e0e0e0 !important;">
+
+        <h6 class="fw-bold text-dark mb-3">
+            Accesos rápidos
+        </h6>
+
+        <div class="row g-3">
+
+            <!-- ADMINISTRAR VUELOS -->
+            <div class="col-md-3">
+
+                <a href="@Url.Action("Administrar", "Vueloes")"
+                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
+                   style="background-color:#37474f;
+                          border-color:#37474f;">
+
+                    Administrar Vuelos
+
+                </a>
+
+            </div>
+
+            <!-- GESTIONAR AERONAVES -->
+            <div class="col-md-3">
+
+                <a href="@Url.Action("Index", "Aeronaves")"
+                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
+                   style="background-color:#37474f;
+                          border-color:#37474f;">
+
+                    Gestionar Aeronaves
+
+                </a>
+
+            </div>
+
+            <!-- CONSULTAR RESERVAS -->
+            <div class="col-md-3">
+
+                <a href="@Url.Action("Index", "Reservas")"
+                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
+                   style="background-color:#37474f;
+                          border-color:#37474f;">
+
+                    Consultar Reservas
+
+                </a>
+
+            </div>
+
+            <!-- REPORTES -->
+            <div class="col-md-3">
+
+                <a href="@Url.Action("Index", "Reportes")"
+                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
+                   style="background-color:#37474f;
+                          border-color:#37474f;">
+
+                    Abrir Reportes
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABLA DE CANCELACIONES -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden"
+         style="border:1px solid #e0e0e0 !important;">
+
+        <div class="card-header bg-light border-bottom py-3 px-4">
+
+            <span class="small fw-bold text-dark">
+                Vuelos cancelados recientes
+            </span>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover table-striped align-middle mb-0">
+
+                <thead class="table-light text-dark">
+
+                    <tr>
+                        <th class="py-3 px-4 fw-bold">
+                            Vuelo
+                        </th>
+
+                        <th class="py-3 px-4 fw-bold">
+                            Tipo
+                        </th>
+
+                        <th class="py-3 px-4 fw-bold">
+                            Estado
+                        </th>
+
+                        <th class="py-3 px-4 fw-bold">
+                            Fecha
+                        </th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="tablaIncidencias">
+
+                    @if (incidenciasRecientes.Count > 0)
                     {
-                        asientosPorFila[filaKey] = new List<Asiento>();
-                    }
-                    ((List<Asiento>)asientosPorFila[filaKey]).Add(asiento);
-                }
-
-                var filasKeys = new List<string>();
-                foreach (var key in asientosPorFila.Keys)
-                {
-                    filasKeys.Add(key.ToString());
-                }
-
-                for (int i = 0; i < filasKeys.Count - 1; i++)
-                {
-                    for (int j = 0; j < filasKeys.Count - 1 - i; j++)
-                    {
-                        if (int.Parse(filasKeys[j]) > int.Parse(filasKeys[j + 1]))
+                        foreach (var incidencia in incidenciasRecientes)
                         {
-                            var temp = filasKeys[j];
-                            filasKeys[j] = filasKeys[j + 1];
-                            filasKeys[j + 1] = temp;
+                            // El controlador actualizado solamente
+                            // envía vuelos con estado CANCELADO.
+
+                            var estadoTexto =
+                                incidencia.EstadoVuelo != null &&
+                                !string.IsNullOrWhiteSpace(
+                                    incidencia.EstadoVuelo.Descripcion)
+                                ? incidencia.EstadoVuelo.Descripcion
+                                : "Cancelado";
+
+                            var tipoIncidencia = "Cancelación";
+
+                            <tr class="fila-incidencia"
+                                data-fecha="@incidencia.FechaOperacion.ToString("yyyy-MM-dd")"
+                                data-estado="@incidencia.EstadoVueloCodigo">
+
+                                <!-- CÓDIGO DEL VUELO -->
+                                <td class="py-3 px-4 fw-semibold">
+
+                                    @("VIP" + incidencia.VueloId.ToString("D5"))
+
+                                </td>
+
+                                <!-- TIPO -->
+                                <td class="py-3 px-4">
+
+                                    @tipoIncidencia
+
+                                </td>
+
+                                <!-- ESTADO -->
+                                <td class="py-3 px-4">
+
+                                    <span class="badge bg-danger
+                                                 bg-opacity-75 rounded-pill">
+
+                                        @estadoTexto
+
+                                    </span>
+
+                                </td>
+
+                                <!-- FECHA -->
+                                <td class="py-3 px-4">
+
+                                    @incidencia.FechaOperacion.ToString("dd/MM/yyyy")
+
+                                </td>
+
+                            </tr>
                         }
                     }
-                }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4"
+                                class="py-4 px-4 text-center text-muted small">
 
-                foreach (var filaKey in filasKeys)
-                {
-                    var asientosEnFila = (List<Asiento>)asientosPorFila[filaKey];
-                    <div class="d-flex gap-3 justify-content-center">
-                        @{
-                            for (int i = 0; i < asientosEnFila.Count - 1; i++)
-                            {
-                                for (int j = 0; j < asientosEnFila.Count - 1 - i; j++)
-                                {
-                                    if (asientosEnFila[j].Lado.CompareTo(asientosEnFila[j + 1].Lado) > 0)
-                                    {
-                                        var temp = asientosEnFila[j];
-                                        asientosEnFila[j] = asientosEnFila[j + 1];
-                                        asientosEnFila[j + 1] = temp;
-                                    }
-                                }
-                            }
+                                No hay vuelos cancelados registrados.
 
-                            int contador = 0;
-                            foreach (var asiento in asientosEnFila)
-                            {
-                                var estaOcupado = false;
-                                foreach (var codigoOcupado in asientosOcupados)
-                                {
-                                    if (codigoOcupado == asiento.Codigo)
-                                    {
-                                        estaOcupado = true;
-                                        break;
-                                    }
-                                }
+                            </td>
+                        </tr>
+                    }
 
-                                if (contador == 3)
-                                {
-                                    <div style="width: 30px;"></div>
-                                }
+                    @if (incidenciasRecientes.Count > 0)
+                    {
+                        <tr id="filaSinResultados"
+                            style="display:none;">
 
-                                if (estaOcupado)
-                                {
-                                    <button class="btn btn-sm btn-secondary fw-bold" style="width: 45px; height: 45px;" disabled>@asiento.Codigo</button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;" data-asiento="@asiento.Codigo">@asiento.Codigo</button>
-                                }
+                            <td colspan="4"
+                                class="py-4 px-4 text-center text-muted">
 
-                                contador++;
-                            }
-                        }
-                    </div>
-                }
-            }
+                                No se encontraron vuelos con los filtros
+                                seleccionados.
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <h6 class="fw-bold text-dark mb-3">Resumen de tu seleccion</h6>
-
-        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <div>
-                <span class="fw-semibold text-dark">Pasajero 1</span>
-                <span class="small text-muted">(Adulto)</span>
-            </div>
-            <div>
-                <span class="badge bg-light text-dark border px-3 py-2">Asiento 1C</span>
-            </div>
-            <button class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 12px;">Quitar</button>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <div>
-                <span class="fw-semibold text-dark">Pasajero 2</span>
-                <span class="small text-muted">(Adulto)</span>
-            </div>
-            <div>
-                <span class="badge bg-light text-dark border px-3 py-2">Asiento 2E</span>
-            </div>
-            <button class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 12px;">Quitar</button>
-        </div>
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <button class="btn btn-outline-secondary px-4">Regresar</button>
-        <button class="btn px-4 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">Continuar al registro</button>
-    </div>
 </div>
+
+@section scripts {
+
+    <script>
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    var filtroFecha =
+                        document.getElementById("filtroFecha");
+
+                    var filtroEstado =
+                        document.getElementById("filtroEstado");
+
+                    var btnAplicar =
+                        document.getElementById("btnAplicarFiltros");
+
+                    var btnLimpiar =
+                        document.getElementById("btnLimpiarFiltros");
+
+                    var filas =
+                        document.querySelectorAll(".fila-incidencia");
+
+                    var filaSinResultados =
+                        document.getElementById("filaSinResultados");
+
+                    function aplicarFiltros() {
+
+                        var fechaSeleccionada = filtroFecha.value;
+                        var estadoSeleccionado = filtroEstado.value;
+
+                        var encontrados = 0;
+
+                        filas.forEach(function (fila) {
+
+                            var fechaVuelo =
+                                fila.getAttribute("data-fecha");
+
+                            var estadoVuelo =
+                                fila.getAttribute("data-estado");
+
+                            var coincideFecha =
+                                fechaSeleccionada === "" ||
+                                fechaVuelo === fechaSeleccionada;
+
+                            var coincideEstado =
+                                estadoSeleccionado === "" ||
+                                estadoVuelo === estadoSeleccionado;
+
+                            if (coincideFecha && coincideEstado) {
+
+                                fila.style.display = "";
+                                encontrados++;
+
+                            }
+                            else {
+
+                                fila.style.display = "none";
+
+                            }
+
+                        });
+
+                        if (filaSinResultados) {
+
+                            filaSinResultados.style.display =
+                                encontrados === 0 ? "" : "none";
+
+                        }
+                    }
+
+                    // Aplicar filtros.
+                    btnAplicar.addEventListener("click", function () {
+                        aplicarFiltros();
+                    });
+
+                    // Limpiar filtros.
+                    btnLimpiar.addEventListener("click", function () {
+
+                        filtroFecha.value = "";
+                        filtroEstado.value = "";
+
+                        aplicarFiltros();
+                    });
+
+                });
+    </script>
+
+}
