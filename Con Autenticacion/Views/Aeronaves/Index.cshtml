@@ -1,8 +1,18 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Aeronave>
+﻿@model Con_Autenticacion.Models.Aeronave
 
 @{
     ViewBag.Title = "Administración de Aeronaves";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Extraer datos de ViewBag
+    var totalAeronaves = (int)(ViewBag.TotalAeronaves ?? 0);
+    var aeronavesActivas = (int)(ViewBag.AeronavesActivas ?? 0);
+    var aeronavesEnMantenimiento = (int)(ViewBag.AeronavesEnMantenimiento ?? 0);
+    var capacidadPromedio = (int)(ViewBag.CapacidadPromedio ?? 0);
+    var listaAeronaves = (List<Con_Autenticacion.Models.Aeronave>)(ViewBag.ListaAeronaves ?? new List<Con_Autenticacion.Models.Aeronave>());
+    var modelos = (List<Con_Autenticacion.Models.ModeloAeronave>)(ViewBag.Modelos ?? new List<Con_Autenticacion.Models.ModeloAeronave>());
+    var estados = (List<Con_Autenticacion.Models.EstadoAeronave>)(ViewBag.Estados ?? new List<Con_Autenticacion.Models.EstadoAeronave>());
+    var vuelosPorAeronave = (Dictionary<int, int>)(ViewBag.VuelosPorAeronave ?? new Dictionary<int, int>());
 }
 
 <div class="container py-5" style="max-width: 1200px;">
@@ -12,7 +22,7 @@
             <p class="small text-muted mb-0">Mantenimiento de la información de la flota: registro, modelo, capacidad y estado operativo.</p>
         </div>
 
-        <span class="badge bg-light text-dark border px-3 py-2">3 aeronaves registradas</span>
+        <span class="badge bg-light text-dark border px-3 py-2">@totalAeronaves aeronaves registradas</span>
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
@@ -26,8 +36,12 @@
                 <label class="form-label small text-muted fw-bold">Modelo</label>
                 <select class="form-select form-select-sm">
                     <option>Todos</option>
-                    <option>Airbus A320</option>
-                    <option>Boeing 737</option>
+                    @{
+                        foreach (var modelo in modelos)
+                        {
+                            <option>@(modelo.Nombre ?? "Desconocido")</option>
+                        }
+                    }
                 </select>
             </div>
 
@@ -35,9 +49,12 @@
                 <label class="form-label small text-muted fw-bold">Estado operativo</label>
                 <select class="form-select form-select-sm">
                     <option>Todos</option>
-                    <option>Activa</option>
-                    <option>En mantenimiento</option>
-                    <option>Fuera de servicio</option>
+                    @{
+                        foreach (var estado in estados)
+                        {
+                            <option>@(estado.Descripcion ?? "Desconocido")</option>
+                        }
+                    }
                 </select>
             </div>
 
@@ -51,28 +68,28 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">Total de aeronaves</div>
-                <div class="fs-3 fw-bold text-dark">3</div>
+                <div class="fs-3 fw-bold text-dark">@totalAeronaves</div>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">Activas</div>
-                <div class="fs-3 fw-bold text-success">2</div>
+                <div class="fs-3 fw-bold text-success">@aeronavesActivas</div>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">En mantenimiento</div>
-                <div class="fs-3 fw-bold text-warning">1</div>
+                <div class="fs-3 fw-bold text-warning">@aeronavesEnMantenimiento</div>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">Capacidad promedio</div>
-                <div class="fs-3 fw-bold text-dark">180</div>
+                <div class="fs-3 fw-bold text-dark">@capacidadPromedio</div>
             </div>
         </div>
     </div>
@@ -95,35 +112,70 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="py-3 px-4 fw-semibold">A320-01</td>
-                    <td class="py-3 px-4">HC-BAA</td>
-                    <td class="py-3 px-4">Airbus A320</td>
-                    <td class="py-3 px-4">180 asientos</td>
-                    <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">Activa</span></td>
-                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">2 vuelos</span></td>
-                    <td class="py-3 px-4">
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary">Modificar estado</button>
-                            <button class="btn btn-sm btn-outline-secondary">Revisar asignaciones</button>
-                        </div>
-                    </td>
-                </tr>
+                @if (listaAeronaves.Count > 0)
+                {
+                    foreach (var aeronave in listaAeronaves)
+                    {
+                        var modeloNombre = "Desconocido";
+                        var estadoBadge = "bg-secondary";
+                        var estadoTexto = "Desconocido";
+                        var capacidad = 0;
+                        var vuelosCount = 0;
 
-                <tr>
-                    <td class="py-3 px-4 fw-semibold">B737-01</td>
-                    <td class="py-3 px-4">HC-BBB</td>
-                    <td class="py-3 px-4">Boeing 737</td>
-                    <td class="py-3 px-4">170 asientos</td>
-                    <td class="py-3 px-4"><span class="badge bg-warning bg-opacity-75 rounded-pill text-dark">En mantenimiento</span></td>
-                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">1 vuelo</span></td>
-                    <td class="py-3 px-4">
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary">Modificar estado</button>
-                            <button class="btn btn-sm btn-outline-secondary">Revisar asignaciones</button>
-                        </div>
-                    </td>
-                </tr>
+                        try
+                        {
+                            if (aeronave.ModeloAeronave != null)
+                            {
+                                modeloNombre = aeronave.ModeloAeronave.Nombre ?? "Desconocido";
+                                capacidad = aeronave.ModeloAeronave.CapacidadAsientos;
+                            }
+                        }
+                        catch { }
+
+                        try
+                        {
+                            if (aeronave.EstadoAeronave != null)
+                            {
+                                estadoTexto = aeronave.EstadoAeronave.Descripcion ?? "Desconocido";
+                                if (estadoTexto == "Activa")
+                                {
+                                    estadoBadge = "bg-success";
+                                }
+                                else if (estadoTexto.Contains("mantenimiento"))
+                                {
+                                    estadoBadge = "bg-warning";
+                                }
+                            }
+                        }
+                        catch { }
+
+                        if (vuelosPorAeronave.ContainsKey(aeronave.AeronaveId))
+                        {
+                            vuelosCount = vuelosPorAeronave[aeronave.AeronaveId];
+                        }
+
+                        <tr>
+                            <td class="py-3 px-4 fw-semibold">@Html.DisplayFor(modelItem => aeronave.AeronaveId)</td>
+                            <td class="py-3 px-4">@Html.DisplayFor(modelItem => aeronave.Matricula)</td>
+                            <td class="py-3 px-4">@modeloNombre</td>
+                            <td class="py-3 px-4">@capacidad asientos</td>
+                            <td class="py-3 px-4"><span class="badge @estadoBadge bg-opacity-75 rounded-pill">@estadoTexto</span></td>
+                            <td class="py-3 px-4"><span class="badge bg-light text-dark border">@vuelosCount @(vuelosCount == 1 ? "vuelo" : "vuelos")</span></td>
+                            <td class="py-3 px-4">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-secondary">Modificar estado</button>
+                                    <button class="btn btn-sm btn-outline-secondary">Revisar asignaciones</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No hay aeronaves registradas</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
