@@ -211,6 +211,7 @@
     <Compile Include="Models\DatosEmisor.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\DestinoPopularViewModel.cs" />
     <Compile Include="Models\EstadoAeronave.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
@@ -279,6 +280,7 @@
     <Compile Include="Models\Pasajero.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\ReporteRuta.cs" />
     <Compile Include="Models\Reserva.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
@@ -302,15 +304,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="ViewModels\AsientoMapaViewModels.cs" />
-    <Compile Include="ViewModels\DbErrorHelper.cs" />
-    <Compile Include="ViewModels\EntityMetadata.cs" />
-    <Compile Include="ViewModels\FrecuenciaViewModels.cs" />
-    <Compile Include="ViewModels\ItinerarioTramoViewModels.cs" />
-    <Compile Include="ViewModels\MenuReportesViewModels.cs" />
-    <Compile Include="ViewModels\RutaViewModels.cs" />
-    <Compile Include="ViewModels\VueloAdministracionViewModels.cs" />
-    <Compile Include="ViewModels\VueloBusquedaPublicaViewModels.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
@@ -479,6 +472,7 @@
     <Content Include="Views\Crud\Index.cshtml" />
     <Content Include="Views\Vueloes\Administrar.cshtml" />
     <Content Include="Views\Reportes\Index.cshtml" />
+    <Content Include="Views\Vueloes\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -3,12 +3,21 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@{
+    var vuelosProgramados = (int)(ViewBag.VuelosProgramados ?? 0);
+    var aeronavesActivas = (int)(ViewBag.AeronavesActivas ?? 0);
+    var aeronavesEnMantenimiento = (int)(ViewBag.AeronavesEnMantenimiento ?? 0);
+    var reservasDelDia = (int)(ViewBag.ReservasDelDia ?? 0);
+    var incidenciasAbiertas = (int)(ViewBag.IncidenciasAbiertas ?? 0);
+    var incidenciasRecientes = (List<Con_Autenticacion.Models.Vuelo>)(ViewBag.IncidenciasRecientes ?? new List<Con_Autenticacion.Models.Vuelo>());
+}
+
 <div class="container py-5" style="max-width: 1200px;">
     <div class="mb-4">
         <h2 class="h4 fw-bold text-dark mb-1">Panel del Administrador</h2>
-        <p class="small text-muted mb-4">Vista general de la operación administrativa de Aerolínea VIP.</p>
+        <p class="small text-muted mb-4">Vista general de la operacion administrativa de Aerolinea VIP.</p>
     </div>
-
+    @*FALTA AGREGAR EL FILTRO*@
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
         <div class="row g-2 align-items-center">
             <div class="col-md-4">
@@ -36,46 +45,46 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">Vuelos programados</div>
-                <div class="fs-3 fw-bold text-dark">45</div>
-                <span class="small text-success">↑ 5% vs. ayer</span>
+                <div class="fs-3 fw-bold text-dark">@vuelosProgramados</div>
+                <span class="small text-success">Desde hoy en adelante</span>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">Aeronaves activas</div>
-                <div class="fs-3 fw-bold text-dark">12</div>
-                <span class="small text-muted">2 en mantenimiento</span>
+                <div class="fs-3 fw-bold text-dark">@aeronavesActivas</div>
+                <span class="small text-muted">@aeronavesEnMantenimiento en mantenimiento</span>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Reservas del día</div>
-                <div class="fs-3 fw-bold text-dark">128</div>
-                <span class="small text-success">↑ 12% vs. ayer</span>
+                <div class="small text-muted fw-bold">Reservas del dia</div>
+                <div class="fs-3 fw-bold text-dark">@reservasDelDia</div>
+                <span class="small text-success">Creadas hoy</span>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
                 <div class="small text-muted fw-bold">Incidencias abiertas</div>
-                <div class="fs-3 fw-bold text-danger">3</div>
-                <span class="small text-muted">Requieren atención</span>
+                <div class="fs-3 fw-bold text-danger">@incidenciasAbiertas</div>
+                <span class="small text-muted">Requieren atencion</span>
             </div>
         </div>
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <h6 class="fw-bold text-dark mb-3">Accesos rápidos</h6>
+        <h6 class="fw-bold text-dark mb-3">Accesos rapidos</h6>
 
         <div class="row g-3">
             <div class="col-md-3">
-                <button class="btn w-100 text-white fw-semibold rounded-3 py-2" style="background-color: #37474f; border-color: #37474f;">Administrar Vuelos</button>
+                <a href="@Url.Action("Administrar", "Vueloes")" class="btn w-100 text-white fw-semibold rounded-3 py-2" style="background-color: #37474f; border-color: #37474f;">Administrar Vuelos</a>
             </div>
 
             <div class="col-md-3">
-                <button class="btn w-100 btn-outline-secondary fw-semibold rounded-3 py-2">Gestionar Aeronaves</button>
+                <a href="@Url.Action("Index", "Aeronaves")" class="btn w-100 text-white fw-semibold rounded-3 py-2" style="background-color: #37474f; border-color: #37474f;">Gestionar Aeronaves</a>
             </div>
 
             <div class="col-md-3">
@@ -83,7 +92,7 @@
             </div>
 
             <div class="col-md-3">
-                <button class="btn w-100 btn-outline-secondary fw-semibold rounded-3 py-2">Abrir Reportes</button>
+                <a href="@Url.Action("Index", "Reportes")" class="btn w-100 text-white fw-semibold rounded-3 py-2" style="background-color: #37474f; border-color: #37474f;">Abrir Reportes</a>
             </div>
         </div>
     </div>
@@ -103,24 +112,59 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="py-3 px-4">VIP-401</td>
-                    <td class="py-3 px-4">Retraso de salida</td>
-                    <td class="py-3 px-4"><span class="badge bg-warning text-dark bg-opacity-75 rounded-pill">En revisión</span></td>
-                    <td class="py-3 px-4">28 Oct 2026</td>
-                </tr>
-                <tr>
-                    <td class="py-3 px-4">VIP-705</td>
-                    <td class="py-3 px-4">Cambio de aeronave</td>
-                    <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">Resuelto</span></td>
-                    <td class="py-3 px-4">27 Oct 2026</td>
-                </tr>
-                <tr>
-                    <td class="py-3 px-4">VIP-210</td>
-                    <td class="py-3 px-4">Asiento no disponible</td>
-                    <td class="py-3 px-4"><span class="badge bg-warning text-dark bg-opacity-75 rounded-pill">En revisión</span></td>
-                    <td class="py-3 px-4">26 Oct 2026</td>
-                </tr>
+                @if (incidenciasRecientes.Count > 0)
+                {
+                    foreach (var incidencia in incidenciasRecientes)
+                    {
+                        var estadoBadge = "bg-warning text-dark";
+                        var estadoTexto = incidencia.EstadoVuelo != null ? incidencia.EstadoVuelo.Descripcion : "Desconocido";
+
+                        if (incidencia.EstadoVuelo != null && incidencia.EstadoVuelo.Codigo == "OP")
+                        {
+                            estadoBadge = "bg-success";
+                        }
+                        else if (incidencia.EstadoVuelo != null && incidencia.EstadoVuelo.Codigo == "CA")
+                        {
+                            estadoBadge = "bg-danger";
+                        }
+
+                        var tipoIncidencia = "Sin clasificar";
+                        if (incidencia.EstadoVuelo != null)
+                        {
+                            if (incidencia.EstadoVuelo.Codigo == "RE")
+                            {
+                                tipoIncidencia = "Retraso de salida";
+                            }
+                            else if (incidencia.EstadoVuelo.Codigo == "CC")
+                            {
+                                tipoIncidencia = "Cambio de aeronave";
+                            }
+                            else if (incidencia.EstadoVuelo.Codigo == "CA")
+                            {
+                                tipoIncidencia = "Cancelación";
+                            }
+                        }
+
+                        <tr>
+                            <td class="py-3 px-4">
+                                @Html.DisplayFor(modelItem => incidencia.VueloId)
+                            </td>
+                            <td class="py-3 px-4">@tipoIncidencia</td>
+                            <td class="py-3 px-4">
+                                <span class="badge @estadoBadge bg-opacity-75 rounded-pill">@estadoTexto</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                @Html.DisplayFor(modelItem => incidencia.FechaOperacion, "{0:dd MMM yyyy}")
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="py-3 px-4 text-center text-muted small">No hay incidencias registradas</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
