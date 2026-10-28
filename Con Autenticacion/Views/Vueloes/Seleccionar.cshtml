@@ -1,489 +1,1105 @@
 
 @using System
+@using System.Linq
 @using System.Collections.Generic
 @using Con_Autenticacion.Models
 
+@model Vuelo
+
 @{
-    ViewBag.Title = "Panel del Administrador";
+    ViewBag.Title = "Seleccion de Vuelo y Asiento";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // Datos enviados desde CrudController.
-    var vuelosProgramados =
-        (int)(ViewBag.VuelosProgramados ?? 0);
+    int capacidad = (int)(ViewBag.Capacidad ?? 0);
 
-    var aeronavesActivas =
-        (int)(ViewBag.AeronavesActivas ?? 0);
+    string aeropuertoOrigen =
+        (string)(ViewBag.AeropuertoOrigen ?? "N/A");
 
-    // Se conserva el nombre original del ViewBag.
-    // Ahora representa aeronaves NO DISPONIBLES.
-    var aeronavesEnMantenimiento =
-        (int)(ViewBag.AeronavesEnMantenimiento ?? 0);
+    string aeropuertoDestino =
+        (string)(ViewBag.AeropuertoDestino ?? "N/A");
 
-    var reservasDelDia =
-        (int)(ViewBag.ReservasDelDia ?? 0);
+    string horaPartida =
+        (string)(ViewBag.HoraPartida ?? "--:--");
 
-    // Se conserva el nombre original del ViewBag.
-    // Ahora representa vuelos CANCELADOS.
-    var incidenciasAbiertas =
-        (int)(ViewBag.IncidenciasAbiertas ?? 0);
+    string horaLlegada =
+        (string)(ViewBag.HoraLlegada ?? "--:--");
 
-    var incidenciasRecientes =
-        ViewBag.IncidenciasRecientes as List<Vuelo>
-        ?? new List<Vuelo>();
+    string matricula =
+        (string)(ViewBag.Matricula ?? "N/A");
+
+    DateTime? fechaOperacion =
+        (DateTime?)(ViewBag.FechaOperacion ?? null);
+
+    var asientos = ViewBag.Asientos as List<Asiento>
+        ?? new List<Asiento>();
+
+    var asientosOcupados =
+        ViewBag.AsientosOcupados as List<string>
+        ?? new List<string>();
+
+    var estadosRecibidos =
+        ViewBag.EstadosAsientos as IDictionary<string, string>;
+
+    var estadosAsientos =
+        new Dictionary<string, string>(
+            StringComparer.OrdinalIgnoreCase);
+
+    if (estadosRecibidos != null)
+    {
+        foreach (var item in estadosRecibidos)
+        {
+            if (!string.IsNullOrWhiteSpace(item.Key))
+            {
+                estadosAsientos[item.Key.Trim()] =
+                    (item.Value ?? "").Trim().ToUpperInvariant();
+            }
+        }
+    }
+
+    // Consultar el estado de cada asiento.
+    Func<Asiento, string> obtenerEstado = asiento =>
+    {
+        string codigo = (asiento.Codigo ?? "").Trim();
+        string estado;
+
+        if (estadosAsientos.TryGetValue(codigo, out estado))
+        {
+            if (estado == "RESERVADO" || estado == "PENDIENTE")
+            {
+                return "RESERVADO";
+            }
+
+            if (estado == "OCUPADO" || estado == "CONFIRMADA")
+            {
+                return "OCUPADO";
+            }
+
+            return "DISPONIBLE";
+        }
+
+        // Compatibilidad con el controlador original.
+        if (asientosOcupados.Any(c =>
+            string.Equals(
+                (c ?? "").Trim(),
+                codigo,
+                StringComparison.OrdinalIgnoreCase)))
+        {
+            return "OCUPADO";
+        }
+
+        return "DISPONIBLE";
+    };
+
+    if (capacidad <= 0)
+    {
+        capacidad = asientos.Count;
+    }
+
+    int reservados = asientos.Count(
+        a => obtenerEstado(a) == "RESERVADO");
+
+    int ocupados = asientos.Count(
+        a => obtenerEstado(a) == "OCUPADO");
+
+    int disponibles = asientos.Count(
+        a => obtenerEstado(a) == "DISPONIBLE");
+
+    string fechaTexto = fechaOperacion.HasValue
+        ? fechaOperacion.Value.ToString("dd/MM/yyyy")
+        : Model.FechaOperacion.ToString("dd/MM/yyyy");
+
+    bool autenticado = Request.IsAuthenticated;
+
+    bool permiteSeleccion =
+        Model.EstadoVueloCodigo == "PROGRAMADO" ||
+        Model.EstadoVueloCodigo == "CONFIRMADO";
 }
 
-<div class="container py-5" style="max-width:1200px;">
+<style>
+    .vip-seleccion {
+        max-width: 1150px;
+        margin: auto;
+    }
+
+    .vip-card {
+        background: #ffffff;
+        border: 1px solid #e5eaf0;
+        border-radius: 18px;
+        box-shadow: 0 6px 24px rgba(20, 42, 60, .06);
+    }
+
+    .vip-vuelo-header {
+        background: linear-gradient(115deg, #172a3b, #29465d);
+        border-radius: 18px;
+        color: white;
+        padding: 28px;
+    }
+
+    .vip-ruta {
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .vip-subdato {
+        color: #d7e3ec;
+        font-size: 13px;
+    }
+
+    .vip-titulo {
+        color: #e8c987;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .vip-indicador {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        height: 100%;
+    }
+
+        .vip-indicador .numero {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .vip-indicador .nombre {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+    .vip-mapa {
+        max-width: 350px;
+        margin: auto;
+        background: #f8fafc;
+        border: 1px solid #e5eaf0;
+        border-radius: 28px 28px 15px 15px;
+        padding: 30px 15px;
+    }
+
+    .vip-frente {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 25px;
+    }
+
+    .vip-fila {
+        display: grid;
+        grid-template-columns: 24px 60px 48px 60px;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .vip-numero {
+        color: #64748b;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .vip-pasillo {
+        font-size: 10px;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .vip-asiento {
+        width: 60px;
+        height: 54px;
+        font-size: 15px;
+        font-weight: 800;
+        border-radius: 10px;
+        transition: transform .15s ease;
+    }
+
+    .vip-libre {
+        background: #dcfce7;
+        border: 2px solid #22c55e;
+        color: #166534;
+        cursor: pointer;
+    }
+
+        .vip-libre:hover {
+            background: #bbf7d0;
+            transform: translateY(-2px);
+        }
+
+    .vip-reservado {
+        background: #7c3aed;
+        border: 2px solid #6d28d9;
+        color: white;
+        opacity: 1 !important;
+        cursor: not-allowed;
+    }
+
+    .vip-ocupado {
+        background: #dc2626;
+        border: 2px solid #b91c1c;
+        color: white;
+        opacity: 1 !important;
+        cursor: not-allowed;
+    }
+
+    .vip-elegido {
+        background: #15803d !important;
+        border: 2px solid #166534 !important;
+        color: white !important;
+    }
+
+    .vip-vacio {
+        display: block;
+        width: 60px;
+        height: 54px;
+    }
+
+    .vip-leyenda {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
+    .vip-pasajero-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px;
+        background: #fbfcfe;
+        margin-bottom: 15px;
+    }
+
+    .vip-boton-principal {
+        background-color: #172a3b;
+        border-color: #172a3b;
+        color: white;
+        border-radius: 9px;
+        font-weight: 700;
+    }
+
+        .vip-boton-principal:hover {
+            background-color: #29465d;
+            color: white;
+        }
+
+        .vip-boton-principal:disabled {
+            background-color: #94a3b8;
+            border-color: #94a3b8;
+            color: white;
+        }
+
+    @@media (max-width: 767px) {
+        .vip-ruta {
+            font-size: 18px;
+        }
+
+        .vip-indicador .numero {
+            font-size: 21px;
+        }
+    }
+</style>
+
+<div class="container py-4 vip-seleccion">
 
     <!-- ENCABEZADO -->
     <div class="mb-4">
-
         <h2 class="h4 fw-bold text-dark mb-1">
-            Panel del Administrador
+            Seleccion de Vuelo y Asiento
         </h2>
 
         <p class="small text-muted mb-0">
-            Vista general de la operación administrativa
-            de Aerolínea VIP.
+            Confirma tu vuelo, selecciona tus asientos
+            e ingresa los datos de cada pasajero.
         </p>
-
     </div>
 
-    <!-- FILTROS DE LA TABLA -->
-    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4"
-         style="border:1px solid #e0e0e0 !important;">
+    <!-- MENSAJES -->
+    @if (TempData["ReservaCreada"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["ReservaCreada"]
+        </div>
+    }
 
-        <div class="row g-2 align-items-end">
+    @if (TempData["ErrorReserva"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorReserva"]
+        </div>
+    }
 
-            <div class="col-md-4">
-                <label for="filtroFecha"
-                       class="form-label small text-muted fw-bold">
-                    Fecha de operación
-                </label>
+    <!-- INFORMACION DEL VUELO -->
+    <div class="vip-vuelo-header mb-4">
 
-                <input type="date"
-                       id="filtroFecha"
-                       class="form-control form-control-sm" />
+        <div class="row align-items-center g-3">
+
+            <div class="col-md-8">
+
+                <div class="vip-titulo mb-2">
+                    AEROLINEA VIP
+                </div>
+
+                <div class="vip-ruta">
+                    @aeropuertoOrigen
+                    <span class="mx-2">&rarr;</span>
+                    @aeropuertoDestino
+                </div>
+
+                <div class="vip-subdato mt-2">
+
+                    Vuelo @("VIP" + Model.VueloId.ToString("D5"))
+
+                    <span class="mx-2">&bull;</span>
+
+                    @fechaTexto
+
+                    <span class="mx-2">&bull;</span>
+
+                    Aeronave @matricula
+
+                </div>
+
             </div>
 
-            <div class="col-md-4">
-                <label for="filtroEstado"
-                       class="form-label small text-muted fw-bold">
-                    Estado
-                </label>
+            <div class="col-md-4 text-md-end">
 
-                <select id="filtroEstado"
-                        class="form-select form-select-sm">
+                <div class="vip-subdato mb-2">
+                    Horario del vuelo
+                </div>
 
-                    <option value="">Todos los registros</option>
-                    <option value="CANCELADO">Cancelado</option>
+                <div class="fs-5 fw-bold">
+                    @horaPartida
+                    <span class="mx-1">&rarr;</span>
+                    @horaLlegada
+                </div>
 
-                </select>
-            </div>
-
-            <div class="col-md-4 d-flex gap-2">
-
-                <button type="button"
-                        id="btnAplicarFiltros"
-                        class="btn btn-sm px-3 text-white fw-semibold"
-                        style="background-color:#37474f;
-                               border-color:#37474f;">
-
-                    Aplicar filtros
-
-                </button>
-
-                <button type="button"
-                        id="btnLimpiarFiltros"
-                        class="btn btn-sm btn-outline-secondary">
-
-                    Limpiar
-
-                </button>
+                <span class="badge bg-light text-dark mt-2">
+                    @Model.EstadoVueloCodigo
+                </span>
 
             </div>
 
         </div>
-
-        <p class="small text-muted mt-3 mb-0">
-            Los filtros se aplican únicamente a la tabla
-            de vuelos cancelados recientes.
-            Los indicadores superiores muestran los
-            valores generales del sistema.
-        </p>
-
     </div>
 
     <!-- INDICADORES -->
-    <div class="row g-3 mb-4">
-
-        <!-- VUELOS PROGRAMADOS -->
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
-                 style="border:1px solid #e0e0e0 !important;">
-
-                <div class="small text-muted fw-bold">
-                    Vuelos programados
-                </div>
-
-                <div class="fs-3 fw-bold text-dark">
-                    @vuelosProgramados
-                </div>
-
-                <span class="small text-success">
-                    Programados y confirmados desde hoy
-                </span>
-
-            </div>
-        </div>
-
-        <!-- AERONAVES -->
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
-                 style="border:1px solid #e0e0e0 !important;">
-
-                <div class="small text-muted fw-bold">
-                    Aeronaves disponibles
-                </div>
-
-                <div class="fs-3 fw-bold text-dark">
-                    @aeronavesActivas
-                </div>
-
-                <span class="small text-muted">
-                    @aeronavesEnMantenimiento no disponibles
-                </span>
-
-            </div>
-        </div>
-
-        <!-- RESERVAS DEL DÍA -->
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
-                 style="border:1px solid #e0e0e0 !important;">
-
-                <div class="small text-muted fw-bold">
-                    Reservas del día
-                </div>
-
-                <div class="fs-3 fw-bold text-dark">
-                    @reservasDelDia
-                </div>
-
-                <span class="small text-success">
-                    Creadas hoy
-                </span>
-
-            </div>
-        </div>
-
-        <!-- VUELOS CANCELADOS -->
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100"
-                 style="border:1px solid #e0e0e0 !important;">
-
-                <div class="small text-muted fw-bold">
-                    Vuelos cancelados
-                </div>
-
-                <div class="fs-3 fw-bold text-danger">
-                    @incidenciasAbiertas
-                </div>
-
-                <span class="small text-muted">
-                    Cancelaciones registradas
-                </span>
-
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ACCESOS RÁPIDOS -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4"
-         style="border:1px solid #e0e0e0 !important;">
-
-        <h6 class="fw-bold text-dark mb-3">
-            Accesos rápidos
-        </h6>
+    <div class="vip-card p-3 p-md-4 mb-4">
 
         <div class="row g-3">
 
-            <!-- ADMINISTRAR VUELOS -->
-            <div class="col-md-3">
-
-                <a href="@Url.Action("Administrar", "Vueloes")"
-                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
-                   style="background-color:#37474f;
-                          border-color:#37474f;">
-
-                    Administrar Vuelos
-
-                </a>
-
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="nombre">Capacidad</div>
+                    <div class="numero text-dark">
+                        @capacidad
+                    </div>
+                </div>
             </div>
 
-            <!-- GESTIONAR AERONAVES -->
-            <div class="col-md-3">
-
-                <a href="@Url.Action("Index", "Aeronaves")"
-                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
-                   style="background-color:#37474f;
-                          border-color:#37474f;">
-
-                    Gestionar Aeronaves
-
-                </a>
-
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="nombre">Reservados</div>
+                    <div class="numero"
+                         style="color:#7c3aed;">
+                        @reservados
+                    </div>
+                </div>
             </div>
 
-            <!-- CONSULTAR RESERVAS -->
-            <div class="col-md-3">
-
-                <a href="@Url.Action("Index", "Reservas")"
-                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
-                   style="background-color:#37474f;
-                          border-color:#37474f;">
-
-                    Consultar Reservas
-
-                </a>
-
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="nombre">Ocupados</div>
+                    <div class="numero text-danger">
+                        @ocupados
+                    </div>
+                </div>
             </div>
 
-            <!-- REPORTES -->
-            <div class="col-md-3">
-
-                <a href="@Url.Action("Index", "Reportes")"
-                   class="btn w-100 text-white fw-semibold rounded-3 py-2"
-                   style="background-color:#37474f;
-                          border-color:#37474f;">
-
-                    Abrir Reportes
-
-                </a>
-
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="nombre">Disponibles</div>
+                    <div class="numero text-success">
+                        @disponibles
+                    </div>
+                </div>
             </div>
 
         </div>
-
     </div>
 
-    <!-- TABLA DE CANCELACIONES -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden"
-         style="border:1px solid #e0e0e0 !important;">
-
-        <div class="card-header bg-light border-bottom py-3 px-4">
-
-            <span class="small fw-bold text-dark">
-                Vuelos cancelados recientes
-            </span>
-
+    @if (!permiteSeleccion)
+    {
+        <div class="alert alert-warning">
+            Este vuelo no admite nuevas reservas.
         </div>
+    }
 
-        <div class="table-responsive">
+    <!-- FORMULARIO -->
+    @using (Html.BeginForm(
+        "Guardar",
+        "ReservaAsientos",
+        FormMethod.Post,
+        new { id = "formReserva" }))
+    {
+        @Html.AntiForgeryToken()
 
-            <table class="table table-hover table-striped align-middle mb-0">
+        <input type="hidden"
+               name="VueloId"
+               value="@Model.VueloId" />
 
-                <thead class="table-light text-dark">
+        <!-- MAPA DE ASIENTOS -->
+        <div class="vip-card p-4 mb-4">
 
-                    <tr>
-                        <th class="py-3 px-4 fw-bold">
-                            Vuelo
-                        </th>
+            <div class="d-flex flex-wrap justify-content-between
+                        align-items-center gap-3 mb-4">
 
-                        <th class="py-3 px-4 fw-bold">
-                            Tipo
-                        </th>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">
+                        Mapa de asientos
+                    </h5>
 
-                        <th class="py-3 px-4 fw-bold">
-                            Estado
-                        </th>
+                    <p class="small text-muted mb-0">
+                        Selecciona los asientos disponibles.
+                    </p>
+                </div>
 
-                        <th class="py-3 px-4 fw-bold">
-                            Fecha
-                        </th>
-                    </tr>
+                <div class="d-flex flex-wrap gap-3 small">
 
-                </thead>
+                    <span>
+                        <i class="vip-leyenda"
+                           style="background:#dcfce7;
+                                  border:1px solid #22c55e;"></i>
+                        Disponible
+                    </span>
 
-                <tbody id="tablaIncidencias">
+                    <span>
+                        <i class="vip-leyenda"
+                           style="background:#7c3aed;"></i>
+                        Reservado
+                    </span>
 
-                    @if (incidenciasRecientes.Count > 0)
-                    {
-                        foreach (var incidencia in incidenciasRecientes)
+                    <span>
+                        <i class="vip-leyenda"
+                           style="background:#dc2626;"></i>
+                        Ocupado
+                    </span>
+
+                    <span>
+                        <i class="vip-leyenda"
+                           style="background:#15803d;"></i>
+                        Seleccionado
+                    </span>
+
+                </div>
+            </div>
+
+            <div class="vip-mapa">
+
+                <div class="vip-frente">
+                    PARTE DELANTERA
+                </div>
+
+                @for (int fila = 1; fila <= 4; fila++)
+                {
+                    var izquierda = asientos.FirstOrDefault(
+                        a => a.Fila == fila &&
+                             a.Lado != null &&
+                             a.Lado.Trim().ToUpperInvariant() == "I");
+
+                    var derecha = asientos.FirstOrDefault(
+                        a => a.Fila == fila &&
+                             a.Lado != null &&
+                             a.Lado.Trim().ToUpperInvariant() == "D");
+
+                    <div class="vip-fila">
+
+                        <span class="vip-numero">
+                            @fila
+                        </span>
+
+                        <!-- ASIENTO IZQUIERDO -->
+                        @if (izquierda != null)
                         {
-                            // El controlador actualizado solamente
-                            // envía vuelos con estado CANCELADO.
+                            string codigo =
+                                (izquierda.Codigo ?? "").Trim();
 
-                            var estadoTexto =
-                                incidencia.EstadoVuelo != null &&
-                                !string.IsNullOrWhiteSpace(
-                                    incidencia.EstadoVuelo.Descripcion)
-                                ? incidencia.EstadoVuelo.Descripcion
-                                : "Cancelado";
+                            string estado = obtenerEstado(izquierda);
 
-                            var tipoIncidencia = "Cancelación";
+                            bool bloqueado =
+                                !permiteSeleccion ||
+                                estado != "DISPONIBLE";
 
-                            <tr class="fila-incidencia"
-                                data-fecha="@incidencia.FechaOperacion.ToString("yyyy-MM-dd")"
-                                data-estado="@incidencia.EstadoVueloCodigo">
+                            string clase =
+                                estado == "RESERVADO"
+                                ? "vip-reservado"
+                                : estado == "OCUPADO"
+                                  ? "vip-ocupado"
+                                  : "vip-libre";
 
-                                <!-- CÓDIGO DEL VUELO -->
-                                <td class="py-3 px-4 fw-semibold">
-
-                                    @("VIP" + incidencia.VueloId.ToString("D5"))
-
-                                </td>
-
-                                <!-- TIPO -->
-                                <td class="py-3 px-4">
-
-                                    @tipoIncidencia
-
-                                </td>
-
-                                <!-- ESTADO -->
-                                <td class="py-3 px-4">
-
-                                    <span class="badge bg-danger
-                                                 bg-opacity-75 rounded-pill">
-
-                                        @estadoTexto
-
-                                    </span>
-
-                                </td>
-
-                                <!-- FECHA -->
-                                <td class="py-3 px-4">
-
-                                    @incidencia.FechaOperacion.ToString("dd/MM/yyyy")
-
-                                </td>
-
-                            </tr>
+                            <button type="button"
+                                    class="vip-asiento @clase js-asiento"
+                                    data-codigo="@codigo"
+                                    aria-pressed="false"
+                                    title="@estado"
+                                    disabled="@(bloqueado ? "disabled" : null)">
+                                @codigo
+                            </button>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="4"
-                                class="py-4 px-4 text-center text-muted small">
+                        else
+                        {
+                            <span class="vip-vacio"></span>
+                        }
 
-                                No hay vuelos cancelados registrados.
+                        <span class="vip-pasillo">
+                            PASILLO
+                        </span>
 
-                            </td>
-                        </tr>
-                    }
+                        <!-- ASIENTO DERECHO -->
+                        @if (derecha != null)
+                        {
+                            string codigo =
+                                (derecha.Codigo ?? "").Trim();
 
-                    @if (incidenciasRecientes.Count > 0)
-                    {
-                        <tr id="filaSinResultados"
-                            style="display:none;">
+                            string estado = obtenerEstado(derecha);
 
-                            <td colspan="4"
-                                class="py-4 px-4 text-center text-muted">
+                            bool bloqueado =
+                                !permiteSeleccion ||
+                                estado != "DISPONIBLE";
 
-                                No se encontraron vuelos con los filtros
-                                seleccionados.
+                            string clase =
+                                estado == "RESERVADO"
+                                ? "vip-reservado"
+                                : estado == "OCUPADO"
+                                  ? "vip-ocupado"
+                                  : "vip-libre";
 
-                            </td>
+                            <button type="button"
+                                    class="vip-asiento @clase js-asiento"
+                                    data-codigo="@codigo"
+                                    aria-pressed="false"
+                                    title="@estado"
+                                    disabled="@(bloqueado ? "disabled" : null)">
+                                @codigo
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="vip-vacio"></span>
+                        }
 
-                        </tr>
-                    }
+                    </div>
+                }
 
-                </tbody>
+                <div class="text-center small text-muted mt-4">
+                    PARTE POSTERIOR
+                </div>
 
-            </table>
+            </div>
+
+            @if (asientos.Count == 0)
+            {
+                <div class="alert alert-warning mt-4">
+                    No hay asientos configurados para este vuelo.
+                </div>
+            }
+
+            <p class="small text-muted text-center mt-4 mb-0">
+                Pulsa un asiento verde para seleccionarlo.
+                Los asientos reservados y ocupados estan bloqueados.
+            </p>
 
         </div>
-    </div>
 
+        <!-- DATOS DE PASAJEROS -->
+        <div class="vip-card p-4 mb-4">
+
+            <div class="d-flex justify-content-between
+                        align-items-center mb-3">
+
+                <h5 class="fw-bold text-dark mb-0">
+                    Datos de los pasajeros
+                </h5>
+
+                <span id="cantidadElegidos"
+                      class="badge bg-secondary px-3 py-2">
+                    0 asientos
+                </span>
+
+            </div>
+
+            <div id="contenedorPasajeros"
+                 aria-live="polite">
+
+                <p class="text-muted mb-0">
+                    Selecciona un asiento para ingresar
+                    los datos del pasajero.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- RESUMEN -->
+        <div class="vip-card p-4">
+
+            <div class="row align-items-center g-3">
+
+                <div class="col-md-6">
+
+                    <div class="fw-bold text-dark mb-1">
+                        Resumen de tu reserva
+                    </div>
+
+                    <div class="small text-muted">
+                        Asientos seleccionados
+                    </div>
+
+                    <div id="resumenAsientos"
+                         class="mt-2"
+                         aria-live="polite">
+                        <span class="text-muted">
+                            Ninguno
+                        </span>
+                    </div>
+
+                    <p class="small text-muted mt-3 mb-0">
+                        La reserva se registrara
+                        como pendiente de compra.
+                    </p>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <div class="d-flex flex-wrap
+                                justify-content-md-end gap-2">
+
+                        <a href="@Url.Action(
+                            "DisponibilidadAsientos",
+                            "Vueloes",
+                            new { vueloId = Model.VueloId })"
+                           class="btn btn-outline-secondary px-4">
+                            Regresar
+                        </a>
+
+                        <button type="submit"
+                                id="btnGuardar"
+                                class="btn vip-boton-principal px-4"
+                                disabled>
+                            Registrar reserva pendiente
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        if (!autenticado)
+        {
+            <div class="alert alert-info mt-3">
+                Debes iniciar sesion para registrar una reserva.
+
+                <a href="@Url.Action(
+                    "Login",
+                    "Account",
+                    new {
+                        returnUrl = Url.Action(
+                            "Seleccionar",
+                            "Vueloes",
+                            new { vueloId = Model.VueloId })
+                    })"
+                   class="alert-link">
+                    Iniciar sesion
+                </a>
+            </div>
+        }
+    }
 </div>
 
 @section scripts {
-
     <script>
-                document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-                    var filtroFecha =
-                        document.getElementById("filtroFecha");
+    var seleccionados = [];
+    var datosPasajeros = {};
 
-                    var filtroEstado =
-                        document.getElementById("filtroEstado");
+    var botones =
+        document.querySelectorAll(".js-asiento");
 
-                    var btnAplicar =
-                        document.getElementById("btnAplicarFiltros");
+    var contenedor =
+        document.getElementById("contenedorPasajeros");
 
-                    var btnLimpiar =
-                        document.getElementById("btnLimpiarFiltros");
+    var contador =
+        document.getElementById("cantidadElegidos");
 
-                    var filas =
-                        document.querySelectorAll(".fila-incidencia");
+    var resumen =
+        document.getElementById("resumenAsientos");
 
-                    var filaSinResultados =
-                        document.getElementById("filaSinResultados");
+    var guardar =
+        document.getElementById("btnGuardar");
 
-                    function aplicarFiltros() {
+    var formulario =
+        document.getElementById("formReserva");
 
-                        var fechaSeleccionada = filtroFecha.value;
-                        var estadoSeleccionado = filtroEstado.value;
+    var autenticado =
+        @Html.Raw(autenticado ? "true" : "false");
 
-                        var encontrados = 0;
+    var permiteSeleccion =
+        @Html.Raw(permiteSeleccion ? "true" : "false");
 
-                        filas.forEach(function (fila) {
+    // Guardar los datos antes de actualizar formularios.
+    function conservarDatos() {
 
-                            var fechaVuelo =
-                                fila.getAttribute("data-fecha");
+        var secciones =
+            contenedor.querySelectorAll("[data-seccion-asiento]");
 
-                            var estadoVuelo =
-                                fila.getAttribute("data-estado");
+        secciones.forEach(function (seccion) {
 
-                            var coincideFecha =
-                                fechaSeleccionada === "" ||
-                                fechaVuelo === fechaSeleccionada;
+            var codigo =
+                seccion.getAttribute("data-seccion-asiento");
 
-                            var coincideEstado =
-                                estadoSeleccionado === "" ||
-                                estadoVuelo === estadoSeleccionado;
+            var datos = {};
 
-                            if (coincideFecha && coincideEstado) {
+            seccion.querySelectorAll(
+                "input[data-campo],select[data-campo]"
+            ).forEach(function (campo) {
 
-                                fila.style.display = "";
-                                encontrados++;
+                datos[campo.getAttribute("data-campo")] =
+                    campo.value;
+            });
 
-                            }
-                            else {
+            datosPasajeros[codigo] = datos;
+        });
+    }
 
-                                fila.style.display = "none";
+    // Crear un campo de texto para cada pasajero.
+    function crearCampo(nombre, etiqueta, indice, valor) {
 
-                            }
+        var caja = document.createElement("div");
+        caja.className = "col-md-6";
 
-                        });
+        var label = document.createElement("label");
+        label.className = "form-label small fw-semibold";
+        label.textContent = etiqueta;
 
-                        if (filaSinResultados) {
+        var input = document.createElement("input");
+        input.type = "text";
 
-                            filaSinResultados.style.display =
-                                encontrados === 0 ? "" : "none";
+        input.name =
+            "Pasajeros[" + indice + "]." + nombre;
 
-                        }
-                    }
+        input.setAttribute("data-campo", nombre);
 
-                    // Aplicar filtros.
-                    btnAplicar.addEventListener("click", function () {
-                        aplicarFiltros();
-                    });
+        input.className =
+            "form-control form-control-sm";
 
-                    // Limpiar filtros.
-                    btnLimpiar.addEventListener("click", function () {
+        input.value = valor || "";
+        input.required = true;
 
-                        filtroFecha.value = "";
-                        filtroEstado.value = "";
+        if (nombre === "NumeroDocumento") {
+            input.minLength = 5;
+            input.maxLength = 20;
+        } else {
+            input.maxLength = 100;
+        }
 
-                        aplicarFiltros();
-                    });
+        caja.appendChild(label);
+        caja.appendChild(input);
 
-                });
+        return caja;
+    }
+
+    // Crear el selector del tipo de documento.
+    function crearTipoDocumento(indice, valor) {
+
+        var caja = document.createElement("div");
+        caja.className = "col-md-6";
+
+        var label = document.createElement("label");
+        label.className = "form-label small fw-semibold";
+        label.textContent = "Tipo de documento";
+
+        var select = document.createElement("select");
+
+        select.name =
+            "Pasajeros[" + indice + "].TipoDocumentoCodigo";
+
+        select.setAttribute(
+            "data-campo", "TipoDocumentoCodigo");
+
+        select.className =
+            "form-select form-select-sm";
+
+        select.required = true;
+
+        var tipos = [
+            ["CEDULA", "Cedula"],
+            ["PASAPORTE", "Pasaporte"]
+        ];
+
+        tipos.forEach(function (tipo) {
+
+            var opcion = document.createElement("option");
+            opcion.value = tipo[0];
+            opcion.textContent = tipo[1];
+
+            select.appendChild(opcion);
+        });
+
+        select.value = valor || "CEDULA";
+
+        caja.appendChild(label);
+        caja.appendChild(select);
+
+        return caja;
+    }
+
+    // Actualizar los datos de pasajeros y resumen.
+    function actualizarPantalla() {
+
+        contenedor.innerHTML = "";
+        resumen.innerHTML = "";
+
+        contador.textContent =
+            seleccionados.length + " asientos";
+
+        guardar.disabled =
+            !autenticado ||
+            !permiteSeleccion ||
+            seleccionados.length === 0;
+
+        if (seleccionados.length === 0) {
+
+            var mensaje = document.createElement("p");
+
+            mensaje.className = "text-muted mb-0";
+
+            mensaje.textContent =
+                "Selecciona un asiento para ingresar " +
+                "los datos del pasajero.";
+
+            contenedor.appendChild(mensaje);
+
+            var texto = document.createElement("span");
+
+            texto.className = "text-muted";
+            texto.textContent = "Ninguno";
+
+            resumen.appendChild(texto);
+
+            return;
+        }
+
+        seleccionados.forEach(function (codigo, indice) {
+
+            var info = datosPasajeros[codigo] || {};
+
+            // Etiqueta del asiento.
+            var etiqueta = document.createElement("span");
+
+            etiqueta.className =
+                "badge bg-success me-2 mb-1 px-3 py-2";
+
+            etiqueta.textContent = "Asiento " + codigo;
+
+            resumen.appendChild(etiqueta);
+
+            // Contenedor de cada pasajero.
+            var seccion = document.createElement("section");
+
+            seccion.className = "vip-pasajero-card";
+
+            seccion.setAttribute(
+                "data-seccion-asiento", codigo);
+
+            var encabezado = document.createElement("div");
+
+            encabezado.className =
+                "d-flex justify-content-between " +
+                "align-items-center gap-2 mb-3";
+
+            var titulo = document.createElement("strong");
+
+            titulo.textContent =
+                "Pasajero " + (indice + 1) +
+                " - Asiento " + codigo;
+
+            var quitar = document.createElement("button");
+
+            quitar.type = "button";
+            quitar.className = "btn btn-sm btn-outline-danger";
+            quitar.textContent = "Quitar";
+
+            quitar.addEventListener("click", function () {
+                alternarAsiento(codigo);
+            });
+
+            encabezado.appendChild(titulo);
+            encabezado.appendChild(quitar);
+            seccion.appendChild(encabezado);
+
+            // Campo oculto para el servidor.
+            var campoAsiento = document.createElement("input");
+
+            campoAsiento.type = "hidden";
+
+            campoAsiento.name =
+                "Pasajeros[" + indice + "].CodigoAsiento";
+
+            campoAsiento.value = codigo;
+
+            seccion.appendChild(campoAsiento);
+
+            // Campos de identificacion.
+            var fila = document.createElement("div");
+            fila.className = "row g-3";
+
+            fila.appendChild(
+                crearTipoDocumento(
+                    indice,
+                    info.TipoDocumentoCodigo));
+
+            fila.appendChild(
+                crearCampo(
+                    "NumeroDocumento",
+                    "Numero de documento",
+                    indice,
+                    info.NumeroDocumento));
+
+            fila.appendChild(
+                crearCampo(
+                    "Nombres",
+                    "Nombres",
+                    indice,
+                    info.Nombres));
+
+            fila.appendChild(
+                crearCampo(
+                    "Apellidos",
+                    "Apellidos",
+                    indice,
+                    info.Apellidos));
+
+            seccion.appendChild(fila);
+            contenedor.appendChild(seccion);
+        });
+    }
+
+    // Seleccionar o quitar asientos.
+    function alternarAsiento(codigo) {
+
+        var boton = null;
+
+        botones.forEach(function (elemento) {
+
+            if (elemento.getAttribute("data-codigo") === codigo) {
+                boton = elemento;
+            }
+        });
+
+        if (!boton || boton.disabled) {
+            return;
+        }
+
+        conservarDatos();
+
+        var indice = seleccionados.indexOf(codigo);
+
+        if (indice >= 0) {
+
+            seleccionados.splice(indice, 1);
+
+            boton.classList.remove("vip-elegido");
+            boton.classList.add("vip-libre");
+            boton.setAttribute("aria-pressed", "false");
+
+        } else {
+
+            seleccionados.push(codigo);
+
+            boton.classList.remove("vip-libre");
+            boton.classList.add("vip-elegido");
+            boton.setAttribute("aria-pressed", "true");
+        }
+
+        actualizarPantalla();
+    }
+
+    // Eventos para los asientos disponibles.
+    botones.forEach(function (boton) {
+
+        if (!boton.disabled) {
+
+            boton.addEventListener("click", function () {
+
+                alternarAsiento(
+                    boton.getAttribute("data-codigo"));
+            });
+        }
+    });
+
+    // Recibir los asientos elegidos en la pantalla 07.
+    var parametros =
+        new URLSearchParams(window.location.search);
+
+    var recibidos = parametros.get("asientos");
+
+    if (recibidos) {
+
+        recibidos.split(",").forEach(function (codigo) {
+
+            codigo = codigo.trim().toUpperCase();
+
+            botones.forEach(function (boton) {
+
+                var nombre =
+                    boton.getAttribute("data-codigo");
+
+                if (nombre === codigo &&
+                    !boton.disabled &&
+                    seleccionados.indexOf(codigo) < 0) {
+
+                    seleccionados.push(codigo);
+
+                    boton.classList.remove("vip-libre");
+                    boton.classList.add("vip-elegido");
+
+                    boton.setAttribute("aria-pressed", "true");
+                }
+            });
+        });
+    }
+
+    // Prevenir envios repetidos.
+    formulario.addEventListener("submit", function (evento) {
+
+        if (!autenticado ||
+            !permiteSeleccion ||
+            seleccionados.length === 0) {
+
+            evento.preventDefault();
+            return;
+        }
+
+        if (!formulario.checkValidity()) {
+            return;
+        }
+
+        guardar.disabled = true;
+        guardar.textContent = "Registrando reserva...";
+    });
+
+    actualizarPantalla();
+
+});
     </script>
-
 }
