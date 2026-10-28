@@ -1,59 +1,74 @@
-﻿@model Con_Autenticacion.Models.Comprobante
+﻿@using Con_Autenticacion.Models;
+@model Comprobante
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Comprobante - Detalles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Details</h2>
+<style>
+    .byron-vip .card-header {
+        background-color: #34414C;
+        color: white;
+    }
 
-<div>
-    <h4>Comprobante</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.NumeroComprobante)
-        </dt>
+    .byron-vip .btn-vip {
+        background-color: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.NumeroComprobante)
-        </dd>
+        .byron-vip .btn-vip:hover {
+            background-color: #26323B;
+            color: white;
+        }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaEmision)
-        </dt>
+    .byron-vip .table thead th {
+        background-color: #E7EBEF;
+        color: #34414C;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.FechaEmision)
-        </dd>
+    .byron-vip .card {
+        border: 1px solid #E7EBEF;
+    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Compra.MonedaCodigo)
-        </dt>
+    .byron-vip .table td {
+        vertical-align: middle;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.Compra.MonedaCodigo)
-        </dd>
+    .byron-vip .card-body {
+        background-color: #FFFFFF;
+    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.EstadoComprobante.Descripcion)
-        </dt>
+    .byron-vip .text-muted {
+        color: #607281 !important;
+    }
+</style>
 
-        <dd>
-            @Html.DisplayFor(model => model.EstadoComprobante.Descripcion)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.TipoComprobante.Descripcion)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.TipoComprobante.Descripcion)
-        </dd>
-
-    </dl>
+<div class="container py-4 byron-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Comprobante - Detalles</p>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted">COMPROBANTE ACADÉMICO — SIN VALIDEZ TRIBUTARIA</p>
+            <dl class="row">
+                <dt class="col-sm-4">Número</dt>
+                <dd class="col-sm-8">@Model.NumeroComprobante</dd>
+                <dt class="col-sm-4">Reserva</dt>
+                <dd class="col-sm-8">@(Model.Compra != null && Model.Compra.Reserva != null ? Model.Compra.Reserva.CodigoReserva : "Sin código")</dd>
+                <dt class="col-sm-4">Fecha de emisión</dt>
+                <dd class="col-sm-8">@Model.FechaEmision.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4">Total</dt>
+                <dd class="col-sm-8">@(Model.Compra != null ? Model.Compra.Importe.ToString("N2") : "Sin datos")</dd>
+                <dt class="col-sm-4">Tipo</dt>
+                <dd class="col-sm-8">@(Model.TipoComprobante != null ? Model.TipoComprobante.Descripcion : Model.TipoComprobanteCodigo)</dd>
+                <dt class="col-sm-4">Estado</dt>
+                <dd class="col-sm-8">@(Model.EstadoComprobante != null ? Model.EstadoComprobante.Descripcion : Model.EstadoComprobanteCodigo)</dd>
+            </dl>
+            @Html.ActionLink("Editar", "Edit", new { id = Model.ComprobanteId }, new { @class = "btn btn-vip" })
+            @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ComprobanteId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

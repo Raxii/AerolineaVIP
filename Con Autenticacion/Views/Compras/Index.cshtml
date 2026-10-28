@@ -1,64 +1,107 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Compra>
+﻿@using Con_Autenticacion.Models;
+@model IEnumerable<Compra>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Compras";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Index</h2>
+<style>
+    .byron-vip .card-header {
+        background-color: #34414C;
+        color: white;
+    }
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.FechaCompra)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Importe)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ClaveIdempotencia)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EstadoCompra.Descripcion)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Moneda.Descripcion)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Reserva.CodigoReserva)
-        </th>
-        <th></th>
-    </tr>
+    .byron-vip .btn-vip {
+        background-color: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.FechaCompra)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Importe)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ClaveIdempotencia)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EstadoCompra.Descripcion)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Moneda.Descripcion)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Reserva.CodigoReserva)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.CompraId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.CompraId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.CompraId })
-        </td>
-    </tr>
-}
+        .byron-vip .btn-vip:hover {
+            background-color: #26323B;
+            color: white;
+        }
 
-</table>
+    .byron-vip .table thead th {
+        background-color: #E7EBEF;
+        color: #34414C;
+    }
+
+    .byron-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .byron-vip .table td {
+        vertical-align: middle;
+    }
+
+    .byron-vip .card-body {
+        background-color: #FFFFFF;
+    }
+
+    .byron-vip .text-muted {
+        color: #607281 !important;
+    }
+</style>
+
+<div class="container py-4 byron-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Compras</p>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Operaciones de compra de pasajes</p>
+            <div class="mb-3">
+                @Html.ActionLink("Nuevo registro", "Create", null, new { @class = "btn btn-vip" })
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Reserva</th>
+                            <th>Pasajero(s)</th>
+                            <th>Fecha de compra</th>
+                            <th>Importe</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@(item.Reserva != null ? item.Reserva.CodigoReserva : "Sin código")</td>
+                                <td>
+                                    @if (item.Reserva != null && item.Reserva.ReservaPasajeroVuelo != null && item.Reserva.ReservaPasajeroVuelo.Count > 0)
+                                    {
+                                        foreach (var asignacion in item.Reserva.ReservaPasajeroVuelo)
+                                        {
+                                            if (asignacion.Pasajero != null)
+                                            {
+                                                <div>@asignacion.Pasajero.Nombres @asignacion.Pasajero.Apellidos</div>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin datos</span>
+                                    }
+                            </td>
+                            <td>@item.FechaCompra.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.Importe.ToString("N2") @(item.Moneda != null ? item.Moneda.Codigo : item.MonedaCodigo)</td>
+                            <td>@(item.EstadoCompra != null ? item.EstadoCompra.Descripcion : item.EstadoCompraCodigo)</td>
+                            <td class="text-nowrap">
+                                @Html.ActionLink("Ver", "Details", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                @Html.ActionLink("Editar", "Edit", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                @Html.ActionLink("Eliminar", "Delete", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-danger" })
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

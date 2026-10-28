@@ -1,63 +1,82 @@
-﻿@model Con_Autenticacion.Models.Reserva
+﻿@using Con_Autenticacion.Models;
+@model Reserva
 
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "Nuevo registro";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
+<style>
+    .clase-vip .card-header {
+        background: #34414C;
+        color: white;
+    }
+
+    .clase-vip .btn-vip {
+        background: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
+
+        .clase-vip .btn-vip:hover {
+            background: #26323B;
+            color: white;
+        }
+
+    .clase-vip .table thead {
+        background: #E7EBEF;
+    }
+
+    .clase-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .clase-vip .form-control, .clase-vip .form-select {
+        background: #FFFFFF;
+    }
+</style>
 
 
-@using (Html.BeginForm()) 
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Reserva</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.UsuarioId, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.UsuarioId, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.UsuarioId, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4 clase-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Nuevo registro</p>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.FechaCreacion, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FechaCreacion, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FechaCreacion, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.FechaExpiracion, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FechaExpiracion, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FechaExpiracion, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.EstadoReservaCodigo, "EstadoReservaCodigo", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("EstadoReservaCodigo", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.EstadoReservaCodigo, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Administración de reservas</p>
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.UsuarioId, "Identificador del titular (Identity)", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.UsuarioId, new { htmlAttributes = new { @class = "form-control" } })
+                        <small class="text-muted">El selector por nombre requiere que el controlador envíe los usuarios autorizados. No escribas un nombre en este campo: debe contener el identificador real.</small>
+                        @Html.ValidationMessageFor(model => model.UsuarioId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.FechaCreacion, "Fecha de creación", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.FechaCreacion, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FechaCreacion, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.FechaExpiracion, "Fecha de expiración", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.FechaExpiracion, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FechaExpiracion, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.EstadoReservaCodigo, "Estado de reserva", new { @class = "form-label" })
+                        @Html.DropDownList("EstadoReservaCodigo", null, new { @class = "form-select" })
+                        @Html.ValidationMessageFor(model => model.EstadoReservaCodigo, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-vip">Guardar</button>
+                @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
 
 @section Scripts {

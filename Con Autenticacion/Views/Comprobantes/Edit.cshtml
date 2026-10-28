@@ -1,73 +1,87 @@
-﻿@model Con_Autenticacion.Models.Comprobante
+﻿@using Con_Autenticacion.Models;
+@model Comprobante
 
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Editar registro";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Edit</h2>
+<style>
+    .clase-vip .card-header {
+        background: #34414C;
+        color: white;
+    }
+
+    .clase-vip .btn-vip {
+        background: #34414C;
+        border-color: #34414C;
+        color: white;
+    }
+
+        .clase-vip .btn-vip:hover {
+            background: #26323B;
+            color: white;
+        }
+
+    .clase-vip .table thead {
+        background: #E7EBEF;
+    }
+
+    .clase-vip .card {
+        border: 1px solid #E7EBEF;
+    }
+
+    .clase-vip .form-control, .clase-vip .form-select {
+        background: #FFFFFF;
+    }
+</style>
 
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Comprobante</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.ComprobanteId)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CompraId, "CompraId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("CompraId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.CompraId, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4 clase-vip">
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
+            <p class="mb-0">Editar registro</p>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.TipoComprobanteCodigo, "TipoComprobanteCodigo", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("TipoComprobanteCodigo", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.TipoComprobanteCodigo, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.NumeroComprobante, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.NumeroComprobante, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.NumeroComprobante, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.FechaEmision, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FechaEmision, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FechaEmision, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.EstadoComprobanteCodigo, "EstadoComprobanteCodigo", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("EstadoComprobanteCodigo", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.EstadoComprobanteCodigo, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
+        <div class="card-body p-4">
+            <p class="text-muted">Gestión de comprobantes académicos</p>
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                @Html.HiddenFor(model => model.ComprobanteId)
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.CompraId, "Compra", new { @class = "form-label" })
+                        @Html.DropDownList("CompraId", null, new { @class = "form-select" })
+                        @Html.ValidationMessageFor(model => model.CompraId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.TipoComprobanteCodigo, "Tipo de comprobante", new { @class = "form-label" })
+                        @Html.DropDownList("TipoComprobanteCodigo", null, new { @class = "form-select" })
+                        @Html.ValidationMessageFor(model => model.TipoComprobanteCodigo, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.NumeroComprobante, "Número de comprobante", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.NumeroComprobante, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.NumeroComprobante, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.FechaEmision, "Fecha de emisión", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.FechaEmision, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FechaEmision, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(model => model.EstadoComprobanteCodigo, "Estado del comprobante", new { @class = "form-label" })
+                        @Html.DropDownList("EstadoComprobanteCodigo", null, new { @class = "form-select" })
+                        @Html.ValidationMessageFor(model => model.EstadoComprobanteCodigo, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-vip">Guardar</button>
+                @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
 
 @section Scripts {
