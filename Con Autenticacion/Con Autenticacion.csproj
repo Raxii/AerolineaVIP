@@ -280,6 +280,7 @@
     <Compile Include="Models\Pasajero.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\ReporteRuta.cs" />
     <Compile Include="Models\Reserva.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
