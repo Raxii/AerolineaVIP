@@ -1,167 +1,808 @@
+@using System
+@using System.Linq
+@using System.Collections.Generic
+@using System.Globalization
 @using Con_Autenticacion.Models
+
 @model Vuelo
 
 @{
     ViewBag.Title = "Disponibilidad de Asientos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var capacidad = (int)(ViewBag.Capacidad ?? 0);
-    var ocupados = (int)(ViewBag.Ocupados ?? 0);
-    var restantes = (int)(ViewBag.Restantes ?? 0);
-    var aeropuertoOrigen = (string)(ViewBag.AeropuertoOrigen ?? "N/A");
-    var aeropuertoDestino = (string)(ViewBag.AeropuertoDestino ?? "N/A");
-    var fechaOperacion = (DateTime?)(ViewBag.FechaOperacion ?? null);
-    var matricula = (string)(ViewBag.Matricula ?? "N/A");
-    var asientosOcupados = (List<string>)(ViewBag.AsientosOcupados ?? new List<string>());
-    var asientos = (List<Asiento>)(ViewBag.Asientos ?? new List<Asiento>());
+    // DATOS DEL CONTROLADOR DE ISRAEL
+    int capacidad = (int)(ViewBag.Capacidad ?? 0);
+
+    string aeropuertoOrigen =
+        (string)(ViewBag.AeropuertoOrigen ?? "N/A");
+
+    string aeropuertoDestino =
+        (string)(ViewBag.AeropuertoDestino ?? "N/A");
+
+    DateTime? fechaOperacion =
+        (DateTime?)(ViewBag.FechaOperacion ?? null);
+
+    string matricula =
+        (string)(ViewBag.Matricula ?? "N/A");
+
+    var asientos = ViewBag.Asientos as List<Asiento>
+        ?? new List<Asiento>();
+
+    var asientosOcupados =
+        ViewBag.AsientosOcupados as List<string>
+        ?? new List<string>();
+
+    // ESTADOS NUEVOS:
+    // DISPONIBLE, RESERVADO Y OCUPADO
+    var estadosRecibidos =
+        ViewBag.EstadosAsientos as IDictionary<string, string>;
+
+    var estadosAsientos =
+        new Dictionary<string, string>(
+            StringComparer.OrdinalIgnoreCase);
+
+    if (estadosRecibidos != null)
+    {
+        foreach (var item in estadosRecibidos)
+        {
+            if (!string.IsNullOrWhiteSpace(item.Key))
+            {
+                estadosAsientos[item.Key.Trim()] =
+                    (item.Value ?? "").Trim().ToUpperInvariant();
+            }
+        }
+    }
+
+    // DETERMINAR ESTADO REAL DE CADA ASIENTO
+    Func<Asiento, string> obtenerEstado = asiento =>
+    {
+        string codigo = (asiento.Codigo ?? "").Trim();
+
+        string estado;
+
+        if (estadosAsientos.TryGetValue(codigo, out estado))
+        {
+            if (estado == "RESERVADO" ||
+                estado == "PENDIENTE")
+            {
+                return "RESERVADO";
+            }
+
+            if (estado == "OCUPADO" ||
+                estado == "CONFIRMADA")
+            {
+                return "OCUPADO";
+            }
+
+            return "DISPONIBLE";
+        }
+
+        // COMPATIBILIDAD CON EL CONTROLADOR ORIGINAL
+        if (asientosOcupados.Any(c =>
+            string.Equals(
+                (c ?? "").Trim(),
+                codigo,
+                StringComparison.OrdinalIgnoreCase)))
+        {
+            return "OCUPADO";
+        }
+
+        return "DISPONIBLE";
+    };
+
+    // CONTADORES SEGUN LOS ASIENTOS REALES
+    if (capacidad <= 0)
+    {
+        capacidad = asientos.Count;
+    }
+
+    int reservados = asientos.Count(
+        a => obtenerEstado(a) == "RESERVADO");
+
+    int ocupados = asientos.Count(
+        a => obtenerEstado(a) == "OCUPADO");
+
+    int disponibles = Math.Max(
+        0, capacidad - reservados - ocupados);
+
+    string estadoVuelo =
+        Model.EstadoVueloCodigo ?? "DESCONOCIDO";
+
+    string claseEstadoVuelo =
+        estadoVuelo == "CONFIRMADO" ? "bg-success" :
+        estadoVuelo == "PROGRAMADO" ? "bg-primary" :
+        estadoVuelo == "CANCELADO" ? "bg-danger" :
+        "bg-secondary";
+
+    string textoFecha =
+        fechaOperacion.HasValue
+        ? fechaOperacion.Value.ToString(
+            "dd MMM yyyy",
+            new CultureInfo("es-EC"))
+        : Model.FechaOperacion.ToString(
+            "dd MMM yyyy",
+            new CultureInfo("es-EC"));
 }
 
-<div class="container py-5" style="max-width: 1100px;">
+<style>
+    .vip-disponibilidad {
+        max-width: 1150px;
+        margin: 0 auto;
+    }
+
+    .vip-panel {
+        background: #ffffff;
+        border: 1px solid #e5eaf0;
+        border-radius: 18px;
+        box-shadow: 0 6px 24px rgba(20, 42, 60, .06);
+    }
+
+    .vip-cabecera-vuelo {
+        background: linear-gradient( 115deg, #172a3b, #29465d );
+        border-radius: 18px;
+        color: #ffffff;
+    }
+
+        .vip-cabecera-vuelo .vip-dato {
+            color: #d7e3ec;
+            font-size: 12px;
+        }
+
+        .vip-cabecera-vuelo .vip-ruta {
+            font-weight: 800;
+            font-size: 23px;
+            letter-spacing: .5px;
+        }
+
+        .vip-cabecera-vuelo .vip-etiqueta {
+            color: #e8c987;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+    .vip-indicador {
+        text-align: center;
+        padding: 19px 10px;
+        border-radius: 13px;
+        background: #f8fafc;
+        height: 100%;
+    }
+
+        .vip-indicador .numero {
+            font-size: 29px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .vip-indicador .etiqueta {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+    .vip-mapa {
+        padding: 30px 16px;
+        background: #f8fafc;
+        border: 1px solid #e5eaf0;
+        border-radius: 25px 25px 15px 15px;
+        max-width: 350px;
+        margin: auto;
+    }
+
+    .vip-frente {
+        font-size: 11px;
+        text-align: center;
+        color: #64748b;
+        letter-spacing: 1px;
+        font-weight: 700;
+        margin-bottom: 23px;
+    }
+
+    .vip-fila {
+        display: grid;
+        grid-template-columns: 24px 60px 48px 60px;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .vip-numero-fila {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .vip-pasillo {
+        text-align: center;
+        font-size: 10px;
+        color: #94a3b8;
+    }
+
+    .vip-asiento {
+        height: 54px;
+        width: 60px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 800;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .vip-libre {
+        background: #dcfce7;
+        color: #166534;
+        border: 2px solid #22c55e;
+        cursor: pointer;
+    }
+
+        .vip-libre:hover {
+            background: #bbf7d0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, .18);
+        }
+
+    .vip-reservado {
+        background: #7c3aed;
+        color: white;
+        border: 2px solid #6d28d9;
+        cursor: not-allowed;
+        opacity: 1 !important;
+    }
+
+    .vip-ocupado {
+        background: #dc2626;
+        color: white;
+        border: 2px solid #b91c1c;
+        cursor: not-allowed;
+        opacity: 1 !important;
+    }
+
+    .vip-seleccionado {
+        background: #15803d !important;
+        color: white !important;
+        border: 2px solid #166534 !important;
+        box-shadow: 0 4px 13px rgba(21, 128, 61, .25);
+    }
+
+    .vip-espacio-vacio {
+        width: 60px;
+        height: 54px;
+        display: block;
+    }
+
+    .vip-leyenda {
+        width: 14px;
+        height: 14px;
+        display: inline-block;
+        border-radius: 4px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+
+    .vip-boton-principal {
+        background: #172a3b;
+        border-color: #172a3b;
+        color: white;
+        font-weight: 600;
+        border-radius: 9px;
+    }
+
+        .vip-boton-principal:hover {
+            background: #29465d;
+            color: white;
+        }
+
+        .vip-boton-principal:disabled {
+            background: #94a3b8;
+            border-color: #94a3b8;
+            color: white;
+        }
+
+    @@media (max-width: 767px) {
+        .vip-cabecera-vuelo .vip-ruta {
+            font-size: 18px;
+        }
+
+        .vip-indicador .numero {
+            font-size: 23px;
+        }
+
+        .vip-mapa {
+            max-width: 100%;
+        }
+    }
+</style>
+
+<div class="container py-4 vip-disponibilidad">
+
+    <!-- TITULO -->
     <div class="mb-4">
-        <h2 class="h4 fw-bold text-dark mb-1">Disponibilidad de Asientos</h2>
-        <p class="small text-muted mb-4">
-            Vuelo @Html.DisplayFor(modelItem => modelItem.VueloId) · <strong>@aeropuertoOrigen</strong> → <strong>@aeropuertoDestino</strong> · <strong>@(fechaOperacion.HasValue ? fechaOperacion.Value.ToString("dd MMM yyyy") : "N/A")</strong> · Aeronave: <strong>@matricula</strong>.
+
+        <h2 class="h4 fw-bold text-dark mb-1">
+            Disponibilidad de Asientos
+        </h2>
+
+        <p class="small text-muted mb-0">
+            Consulta la disponibilidad y selecciona
+            tus asientos para continuar con la reserva.
         </p>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="row g-3 text-center">
-            <div class="col-md-3">
-                <div class="small text-muted fw-bold">Capacidad</div>
-                <div class="fs-4 fw-bold text-dark">@capacidad</div>
+    <!-- INFORMACION DEL VUELO -->
+    <div class="vip-cabecera-vuelo p-4 mb-4">
+
+        <div class="row align-items-center g-3">
+
+            <div class="col-md-8">
+
+                <div class="vip-etiqueta mb-2">
+                    AEROLINEA VIP
+                </div>
+
+                <div class="vip-ruta">
+                    @aeropuertoOrigen
+                    <span class="mx-2">&rarr;</span>
+                    @aeropuertoDestino
+                </div>
+
+                <div class="vip-dato mt-2">
+
+                    Vuelo
+                    @("VIP" + Model.VueloId.ToString("D5"))
+
+                    <span class="mx-2">&bull;</span>
+
+                    @textoFecha
+
+                    <span class="mx-2">&bull;</span>
+
+                    Aeronave @matricula
+
+                </div>
+
             </div>
 
-            <div class="col-md-3">
-                <div class="small text-muted fw-bold">Ocupados</div>
-                <div class="fs-4 fw-bold text-danger">@ocupados</div>
+            <div class="col-md-4 text-md-end">
+
+                <div class="vip-dato mb-2">
+                    Estado del vuelo
+                </div>
+
+                <span class="badge @claseEstadoVuelo px-3 py-2">
+                    @estadoVuelo
+                </span>
+
             </div>
 
-            <div class="col-md-3">
-                <div class="small text-muted fw-bold">Disponibles</div>
-                <div class="fs-4 fw-bold text-success">@restantes</div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="small text-muted fw-bold">Estado del vuelo</div>
-                @if (Model != null && Model.EstadoVuelo != null)
-                {
-                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">@Html.DisplayFor(modelItem => modelItem.EstadoVuelo.Descripcion)</span>
-                }
-                else
-                {
-                    <span class="badge bg-secondary bg-opacity-75 rounded-pill px-3 py-2">Desconocido</span>
-                }
-            </div>
         </div>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="fw-bold text-dark mb-0">Selecciona tu asiento</h5>
+    <!-- INDICADORES -->
+    <div class="vip-panel p-3 p-md-4 mb-4">
+
+        <div class="row g-3">
+
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="etiqueta">Capacidad</div>
+                    <div class="numero text-dark">
+                        @capacidad
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="etiqueta">Reservados</div>
+                    <div class="numero"
+                         style="color:#7c3aed;">
+                        @reservados
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="etiqueta">Ocupados</div>
+                    <div class="numero text-danger">
+                        @ocupados
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="vip-indicador">
+                    <div class="etiqueta">Disponibles</div>
+                    <div class="numero text-success">
+                        @disponibles
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MAPA DE ASIENTOS -->
+    <div class="vip-panel p-4 mb-4">
+
+        <div class="d-flex flex-wrap
+                    justify-content-between
+                    align-items-center gap-3 mb-4">
+
             <div>
-                <span class="badge bg-light text-dark border me-2">Libre</span>
-                <span class="badge bg-secondary text-white me-2">Ocupado</span>
-                <span class="badge bg-success text-white me-2">Seleccionado</span>
+                <h5 class="fw-bold text-dark mb-1">
+                    Mapa de asientos
+                </h5>
+
+                <p class="small text-muted mb-0">
+                    Configuracion de la aeronave
+                    de @capacidad plazas.
+                </p>
             </div>
+
+            <!-- LEYENDA -->
+            <div class="d-flex flex-wrap gap-3 small">
+
+                <span>
+                    <i class="vip-leyenda"
+                       style="background:#dcfce7;
+                              border:1px solid #22c55e;"></i>
+                    Disponible
+                </span>
+
+                <span>
+                    <i class="vip-leyenda"
+                       style="background:#7c3aed;"></i>
+                    Reservado
+                </span>
+
+                <span>
+                    <i class="vip-leyenda"
+                       style="background:#dc2626;"></i>
+                    Ocupado
+                </span>
+
+                <span>
+                    <i class="vip-leyenda"
+                       style="background:#15803d;"></i>
+                    Seleccionado
+                </span>
+
+            </div>
+
         </div>
 
-        <div class="d-flex flex-column align-items-center gap-2">
-            @{
-                var asientosPorFila = new System.Collections.Hashtable();
+        @if (asientos.Count == 0)
+        {
+            <div class="alert alert-warning mb-0">
+                No existen asientos configurados
+                para la aeronave de este vuelo.
+            </div>
+        }
+        else
+        {
+            <div class="vip-mapa">
 
-                foreach (var asiento in asientos)
-                {
-                    var filaKey = asiento.Fila.ToString();
-                    if (!asientosPorFila.ContainsKey(filaKey))
-                    {
-                        asientosPorFila[filaKey] = new List<Asiento>();
-                    }
-                    ((List<Asiento>)asientosPorFila[filaKey]).Add(asiento);
-                }
+                <div class="vip-frente">
+                    PARTE DELANTERA
+                </div>
 
-                var filasKeys = new List<string>();
-                foreach (var key in asientosPorFila.Keys)
+                @for (int fila = 1; fila <= 4; fila++)
                 {
-                    filasKeys.Add(key.ToString());
-                }
+                    var izquierda = asientos.FirstOrDefault(
+                        a => a.Fila == fila &&
+                             a.Lado != null &&
+                             a.Lado.Trim().ToUpperInvariant() == "I");
 
-                for (int i = 0; i < filasKeys.Count - 1; i++)
-                {
-                    for (int j = 0; j < filasKeys.Count - 1 - i; j++)
-                    {
-                        if (int.Parse(filasKeys[j]) > int.Parse(filasKeys[j + 1]))
+                    var derecha = asientos.FirstOrDefault(
+                        a => a.Fila == fila &&
+                             a.Lado != null &&
+                             a.Lado.Trim().ToUpperInvariant() == "D");
+
+                    <div class="vip-fila">
+
+                        <!-- NUMERO DE FILA -->
+                        <span class="vip-numero-fila">
+                            @fila
+                        </span>
+
+                        <!-- ASIENTO IZQUIERDO -->
+                        @if (izquierda != null)
                         {
-                            var temp = filasKeys[j];
-                            filasKeys[j] = filasKeys[j + 1];
-                            filasKeys[j + 1] = temp;
+                            string codigo =
+                                (izquierda.Codigo ?? "").Trim();
+
+                            string estado = obtenerEstado(izquierda);
+
+                            bool bloqueado =
+                                estado != "DISPONIBLE";
+
+                            string clase =
+                                estado == "RESERVADO"
+                                ? "vip-reservado"
+                                : estado == "OCUPADO"
+                                  ? "vip-ocupado"
+                                  : "vip-libre";
+
+                            <button type="button"
+                                    class="vip-asiento @clase js-asiento"
+                                    data-asiento="@codigo"
+                                    aria-label="Asiento @codigo: @estado"
+                                    aria-pressed="false"
+                                    title="@estado"
+                                    disabled="@(bloqueado ? "disabled" : null)">
+                                @codigo
+                            </button>
                         }
-                    }
-                }
-
-                foreach (var filaKey in filasKeys)
-                {
-                    var asientosEnFila = (List<Asiento>)asientosPorFila[filaKey];
-                    <div class="d-flex gap-3 justify-content-center">
-                        @{
-                            for (int i = 0; i < asientosEnFila.Count - 1; i++)
-                            {
-                                for (int j = 0; j < asientosEnFila.Count - 1 - i; j++)
-                                {
-                                    if (asientosEnFila[j].Lado.CompareTo(asientosEnFila[j + 1].Lado) > 0)
-                                    {
-                                        var temp = asientosEnFila[j];
-                                        asientosEnFila[j] = asientosEnFila[j + 1];
-                                        asientosEnFila[j + 1] = temp;
-                                    }
-                                }
-                            }
-
-                            int contador = 0;
-                            foreach (var asiento in asientosEnFila)
-                            {
-                                var estaOcupado = false;
-                                foreach (var codigoOcupado in asientosOcupados)
-                                {
-                                    if (codigoOcupado == asiento.Codigo)
-                                    {
-                                        estaOcupado = true;
-                                        break;
-                                    }
-                                }
-
-                                if (contador == 3)
-                                {
-                                    <div style="width: 30px;"></div>
-                                }
-
-                                if (estaOcupado)
-                                {
-                                    <button class="btn btn-sm btn-secondary fw-bold" style="width: 45px; height: 45px;" disabled>@asiento.Codigo</button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-light border fw-bold" style="width: 45px; height: 45px;">@asiento.Codigo</button>
-                                }
-
-                                contador++;
-                            }
+                        else
+                        {
+                            <span class="vip-espacio-vacio"></span>
                         }
+
+                        <!-- PASILLO -->
+                        <span class="vip-pasillo">
+                            PASILLO
+                        </span>
+
+                        <!-- ASIENTO DERECHO -->
+                        @if (derecha != null)
+                        {
+                            string codigo =
+                                (derecha.Codigo ?? "").Trim();
+
+                            string estado = obtenerEstado(derecha);
+
+                            bool bloqueado =
+                                estado != "DISPONIBLE";
+
+                            string clase =
+                                estado == "RESERVADO"
+                                ? "vip-reservado"
+                                : estado == "OCUPADO"
+                                  ? "vip-ocupado"
+                                  : "vip-libre";
+
+                            <button type="button"
+                                    class="vip-asiento @clase js-asiento"
+                                    data-asiento="@codigo"
+                                    aria-label="Asiento @codigo: @estado"
+                                    aria-pressed="false"
+                                    title="@estado"
+                                    disabled="@(bloqueado ? "disabled" : null)">
+                                @codigo
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="vip-espacio-vacio"></span>
+                        }
+
                     </div>
                 }
-            }
+
+                <div class="text-center small text-muted mt-4">
+                    PARTE POSTERIOR
+                </div>
+
+            </div>
+        }
+
+        <div class="text-center small text-muted mt-4">
+
+            Selecciona uno o varios asientos verdes.
+            Puedes pulsarlos nuevamente para quitar la seleccion.
+
         </div>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="small text-muted">
-                <span class="fw-bold text-dark">Asientos seleccionados:</span> <span id="asientosSeleccionados">Ninguno</span>
+    <!-- RESUMEN Y BOTONES -->
+    <div class="vip-panel p-4">
+
+        <div class="row align-items-center g-3">
+
+            <div class="col-md-6">
+
+                <div class="fw-bold text-dark mb-1">
+                    Tu seleccion
+                </div>
+
+                <div class="small text-muted">
+                    Asientos seleccionados:
+                </div>
+
+                <div id="asientosSeleccionados"
+                     class="mt-2"
+                     aria-live="polite">
+
+                    <span class="text-muted">
+                        Ninguno
+                    </span>
+
+                </div>
+
+                <div id="contadorSeleccion"
+                     class="small text-success mt-2">
+                    0 asientos seleccionados
+                </div>
+
             </div>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary px-4">Actualizar disponibilidad</button>
-                <a href="@Url.Action("Seleccionar", "Vueloes", new { vueloId = Model.VueloId })" class="btn px-4 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">Continuar</a>
+            <div class="col-md-6">
+
+                <div class="d-flex flex-wrap
+                            justify-content-md-end gap-2">
+
+                    <a href="@Url.Action("Index", "Vueloes")"
+                       class="btn btn-outline-secondary px-3">
+                        Volver
+                    </a>
+
+                    <a href="@Url.Action(
+                        "DisponibilidadAsientos",
+                        "Vueloes",
+                        new { vueloId = Model.VueloId })"
+                       class="btn btn-outline-primary px-3">
+                        Actualizar
+                    </a>
+
+                    <button type="button"
+                            id="btnContinuar"
+                            class="btn vip-boton-principal px-4"
+                            disabled>
+                        Continuar
+                    </button>
+
+                </div>
+
             </div>
+
         </div>
+
     </div>
+
+    <p class="text-center small text-muted mt-3">
+        La seleccion es provisional.
+        Los asientos se validaran nuevamente
+        al registrar la reserva.
+    </p>
+
 </div>
+
+@section scripts {
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ASIENTOS DISPONIBLES
+        var botones =
+            document.querySelectorAll(".js-asiento");
+
+        // LISTA DE SELECCION
+        var seleccionados = [];
+
+        // ELEMENTOS DE PANTALLA
+        var resumen =
+            document.getElementById("asientosSeleccionados");
+
+        var contador =
+            document.getElementById("contadorSeleccion");
+
+        var continuar =
+            document.getElementById("btnContinuar");
+
+        // DIRECCION DE LA PANTALLA 08
+        var urlSeleccionar =
+            '@Url.Action("Seleccionar", "Vueloes", new { vueloId = Model.VueloId })';
+
+        // ACTUALIZAR RESUMEN
+        function actualizarResumen() {
+
+            resumen.innerHTML = "";
+
+            contador.textContent =
+                seleccionados.length +
+                " asientos seleccionados";
+
+            continuar.disabled =
+                seleccionados.length === 0;
+
+            if (seleccionados.length === 0) {
+
+                var texto =
+                    document.createElement("span");
+
+                texto.className = "text-muted";
+                texto.textContent = "Ninguno";
+
+                resumen.appendChild(texto);
+                return;
+            }
+
+            seleccionados.forEach(function (codigo) {
+
+                var etiqueta =
+                    document.createElement("span");
+
+                etiqueta.className =
+                    "badge bg-success me-2 mb-1 px-3 py-2";
+
+                etiqueta.textContent =
+                    "Asiento " + codigo;
+
+                resumen.appendChild(etiqueta);
+
+            });
+        }
+
+        // SELECCIONAR / DESELECCIONAR
+        botones.forEach(function (boton) {
+
+            if (boton.disabled) {
+                return;
+            }
+
+            boton.addEventListener("click", function () {
+
+                var codigo =
+                    boton.getAttribute("data-asiento");
+
+                var indice =
+                    seleccionados.indexOf(codigo);
+
+                if (indice === -1) {
+
+                    seleccionados.push(codigo);
+
+                    boton.classList.remove("vip-libre");
+                    boton.classList.add("vip-seleccionado");
+
+                    boton.setAttribute(
+                        "aria-pressed", "true");
+
+                }
+                else {
+
+                    seleccionados.splice(indice, 1);
+
+                    boton.classList.remove("vip-seleccionado");
+                    boton.classList.add("vip-libre");
+
+                    boton.setAttribute(
+                        "aria-pressed", "false");
+                }
+
+                actualizarResumen();
+            });
+        });
+
+        // CONTINUAR A PANTALLA 08
+        continuar.addEventListener("click", function () {
+
+            if (seleccionados.length === 0) {
+                return;
+            }
+
+            // Enviar los codigos seleccionados por URL.
+            // La pantalla 08 debe leerlos para precargarlos.
+            var separador =
+                urlSeleccionar.indexOf("?") >= 0 ? "&" : "?";
+
+            window.location.href =
+                urlSeleccionar +
+                separador +
+                "asientos=" +
+                encodeURIComponent(
+                    seleccionados.join(","));
+        });
+
+        actualizarResumen();
+
+    });
+    </script>
+
+}
