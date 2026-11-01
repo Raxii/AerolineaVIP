@@ -290,6 +290,7 @@
     <Compile Include="Models\Ruta.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\TarifaCalculos.cs" />
     <Compile Include="Models\TipoComprobante.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>

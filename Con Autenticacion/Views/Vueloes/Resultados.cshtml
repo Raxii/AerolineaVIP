@@ -8,10 +8,19 @@
     var totalResultados = ViewBag.TotalResultados != null ? (int)ViewBag.TotalResultados : 0;
     var aeropuertoOrigen = ViewBag.AeropuertoOrigen ?? "Origen";
     var aeropuertoDestino = ViewBag.AeropuertoDestino ?? "Destino";
+    var origenId = ViewBag.AeropuertoOrigenId;
+    var destinoId = ViewBag.AeropuertoDestinoId;
     var fechaBusqueda = ViewBag.Fecha as DateTime?;
     var pasajeros = ViewBag.CantidadPasajeros != null ? (int)ViewBag.CantidadPasajeros : 1;
     var vuelos = ViewBag.Vuelos ?? new List<Con_Autenticacion.Models.Vuelo>();
     var ocupadosPorVuelo = ViewBag.OcupadosPorVuelo as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var capacidadPorVuelo = ViewBag.CapacidadPorVuelo as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var disponiblesPorVuelo = ViewBag.DisponiblesPorVuelo as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var tarifaPorVuelo = ViewBag.TarifaPorVuelo as Dictionary<int, decimal?> ?? new Dictionary<int, decimal?>();
+    var totalPorVuelo = ViewBag.TotalPorVuelo as Dictionary<int, decimal?> ?? new Dictionary<int, decimal?>();
+    var descuentoPorVuelo = ViewBag.DescuentoPorVuelo as Dictionary<int, bool> ?? new Dictionary<int, bool>();
+    var errores = ViewBag.Errores as List<string> ?? new List<string>();
+    var moneda = ViewBag.Moneda as string ?? "USD";
 }
 
 <div class="container py-5" style="max-width: 1200px;">
@@ -19,7 +28,7 @@
         <h2 class="h4 fw-bold text-dark mb-1">Resultados de Búsqueda</h2>
         @if (hayResultados)
         {
-            <p class="small text-muted mb-4">
+            <p class="small text-muted mb-1">
                 Vuelos encontrados para <strong>@aeropuertoOrigen</strong> → <strong>@aeropuertoDestino</strong>
                 @if (fechaBusqueda.HasValue)
                 {
@@ -27,6 +36,7 @@
                 }
                 · <strong>@pasajeros pasajeros</strong>.
             </p>
+            <p class="small text-muted mb-4">@totalResultados resultado(s) encontrado(s).</p>
         }
         else
         {
@@ -34,73 +44,74 @@
         }
     </div>
 
-    @*AUN NO SE APLICAN FILTROS*@
+    @if (errores.Count > 0)
+    {
+        <div class="alert alert-danger rounded-4">
+            <ul class="mb-0">
+                @foreach (var error in errores)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @* Filtro de horario: funcional y basado en datos reales de Frecuencia.HoraSalida.
+       Se retiraron los filtros de "Escalas" y "Aerolínea": el sistema solo opera
+       vuelos directos (no hay lógica de itinerarios de varios tramos conectada a
+       esta pantalla) y solo existe una aerolínea (Aerolínea VIP), por lo que no
+       hay datos reales contra los cuales filtrar. *@
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
         <div class="row g-2 align-items-center">
-            <div class="col-md-3">
-                <select class="form-select form-select-sm">
-                    <option>Todos los horarios</option>
-                    <option>Mañana (00:00 - 12:00)</option>
-                    <option>Tarde (12:00 - 18:00)</option>
-                    <option>Noche (18:00 - 23:59)</option>
+            <div class="col-md-4">
+                <label class="form-label small text-muted fw-bold mb-1" for="filtroHorario">Horario de salida</label>
+                <select id="filtroHorario" class="form-select form-select-sm">
+                    <option value="todos">Todos los horarios</option>
+                    <option value="manana">Mañana (00:00 - 12:00)</option>
+                    <option value="tarde">Tarde (12:00 - 18:00)</option>
+                    <option value="noche">Noche (18:00 - 23:59)</option>
                 </select>
             </div>
 
-            <div class="col-md-3">
-                <select class="form-select form-select-sm">
-                    <option>Todas</option>
-                    <option>Vuelo directo</option>
-                    <option>1 escala</option>
-                    <option>2 escalas</option>
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <select class="form-select form-select-sm">
-                    <option>Todas</option>
-                    <option>Aerolínea VIP</option>
-                    <option>Otras aerolíneas</option>
-                </select>
-            </div>
-
-            <div class="col-md-3 text-end">
-                <button class="btn btn-sm btn-outline-secondary">Limpiar filtros</button>
+            <div class="col-md-8 text-end">
+                <span class="small text-muted d-none d-md-inline me-2">
+                    Todos los vuelos mostrados son directos y pertenecen a Aerolínea VIP.
+                </span>
+                <button type="button" id="limpiarFiltroHorario" class="btn btn-sm btn-outline-secondary">Limpiar filtro</button>
             </div>
         </div>
     </div>
 
-    <div class="d-flex flex-column gap-3">
+    <div class="d-flex flex-column gap-3" id="listaVuelos">
         @if (!hayResultados)
         {
             <div class="alert alert-info" role="alert">
                 No hay vuelos disponibles para los criterios seleccionados.
+            </div>
+            <div>
+                <a href="@Url.Action("Buscar", "Vueloes", new { AeropuertoOrigenId = origenId, AeropuertoDestinoId = destinoId, Fecha = (fechaBusqueda.HasValue ? fechaBusqueda.Value.ToString("yyyy-MM-dd") : null), CantidadPasajeros = pasajeros })" class="btn btn-outline-secondary px-4">Volver a la búsqueda</a>
             </div>
         }
         else
         {
             foreach (var vuelo in vuelos)
             {
-                var capacidad = 0;
-                if (vuelo.Aeronave != null && vuelo.Aeronave.ModeloAeronave != null)
-                {
-                    capacidad = vuelo.Aeronave.ModeloAeronave.CapacidadAsientos;
-                }
+                var capacidad = capacidadPorVuelo.ContainsKey(vuelo.VueloId) ? capacidadPorVuelo[vuelo.VueloId] : 0;
+                var ocupados = ocupadosPorVuelo.ContainsKey(vuelo.VueloId) ? ocupadosPorVuelo[vuelo.VueloId] : 0;
+                var restantes = disponiblesPorVuelo.ContainsKey(vuelo.VueloId) ? disponiblesPorVuelo[vuelo.VueloId] : 0;
 
-                var ocupados = 0;
-                if (ocupadosPorVuelo.ContainsKey(vuelo.VueloId))
-                {
-                    ocupados = ocupadosPorVuelo[vuelo.VueloId];
-                }
-
-                var restantes = capacidad > 0 ? capacidad - ocupados : 0;
                 var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
                 var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
                 var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
-                var precio = restantes > 0 ? 120 + (restantes * 5) : 0;
                 var horaSalida = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraSalida.ToString("hh\\:mm") : "--:--";
                 var horaLlegada = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada.ToString("hh\\:mm") : "--:--";
+                var horaSalidaMinutos = vuelo.Frecuencia != null ? (int)vuelo.Frecuencia.HoraSalida.TotalMinutes : -1;
 
-                <div class="card border-0 shadow-sm rounded-4" style="border: 1px solid #e0e0e0 !important;">
+                decimal? tarifaPasajero = tarifaPorVuelo.ContainsKey(vuelo.VueloId) ? tarifaPorVuelo[vuelo.VueloId] : null;
+                decimal? totalReserva = totalPorVuelo.ContainsKey(vuelo.VueloId) ? totalPorVuelo[vuelo.VueloId] : null;
+                bool conDescuento = descuentoPorVuelo.ContainsKey(vuelo.VueloId) && descuentoPorVuelo[vuelo.VueloId];
+
+                <div class="card border-0 shadow-sm rounded-4 tarjeta-vuelo" data-hora-salida="@horaSalidaMinutos" style="border: 1px solid #e0e0e0 !important;">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
@@ -115,6 +126,7 @@
                                         <span>N/A</span>
                                     }
                                 </span>
+                                <span class="small text-muted ms-2">Vuelo #@vuelo.VueloId</span>
                             </div>
                             <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">@restantes disponibles</span>
                         </div>
@@ -162,14 +174,28 @@
 
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <div>
-                                <span class="small text-muted">Desde</span>
-                                <span class="fw-bold fs-5 text-dark">$@precio.ToString("0.00")</span>
-                                <span class="small text-muted">/ pasajero</span>
+                                @if (tarifaPasajero.HasValue)
+                                {
+                                    <span class="small text-muted">Desde</span>
+                                    <span class="fw-bold fs-5 text-dark">@moneda @tarifaPasajero.Value.ToString("0.00")</span>
+                                    <span class="small text-muted">/ pasajero</span>
+                                    <div class="small text-muted">
+                                        Total @pasajeros pax: @moneda @totalReserva.Value.ToString("0.00")
+                                        @if (conDescuento)
+                                        {
+                                            <span class="text-success">(desc. académico 5%)</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="small text-muted">Tarifa no disponible para este tramo.</span>
+                                }
                             </div>
 
                             <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-secondary px-3">Ver detalles</button>
-                                <a href="@Url.Action("DisponibilidadAsientos", "Vueloes", new { vueloId = vuelo.VueloId })" class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</a>
+                                <a href="@Url.Action("Details", "Vueloes", new { id = vuelo.VueloId })" class="btn btn-sm btn-outline-secondary px-3">Ver detalles</a>
+                                <a href="@Url.Action("DisponibilidadAsientos", "Vueloes", new { vueloId = vuelo.VueloId, CantidadPasajeros = pasajeros })" class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</a>
                             </div>
                         </div>
                     </div>
@@ -178,3 +204,41 @@
         }
     </div>
 </div>
+
+@if (hayResultados)
+{
+    <script>
+        (function () {
+            var select = document.getElementById('filtroHorario');
+            var limpiar = document.getElementById('limpiarFiltroHorario');
+            var tarjetas = document.querySelectorAll('.tarjeta-vuelo');
+
+            function aplicarFiltro() {
+                var valor = select.value;
+                for (var i = 0; i < tarjetas.length; i++) {
+                    var tarjeta = tarjetas[i];
+                    var minutos = parseInt(tarjeta.getAttribute('data-hora-salida'), 10);
+                    var visible = true;
+
+                    if (!isNaN(minutos) && minutos >= 0) {
+                        if (valor === 'manana') visible = minutos < 12 * 60;
+                        else if (valor === 'tarde') visible = minutos >= 12 * 60 && minutos < 18 * 60;
+                        else if (valor === 'noche') visible = minutos >= 18 * 60;
+                    }
+
+                    tarjeta.style.display = visible ? '' : 'none';
+                }
+            }
+
+            if (select) {
+                select.addEventListener('change', aplicarFiltro);
+            }
+            if (limpiar) {
+                limpiar.addEventListener('click', function () {
+                    select.value = 'todos';
+                    aplicarFiltro();
+                });
+            }
+        })();
+    </script>
+}
