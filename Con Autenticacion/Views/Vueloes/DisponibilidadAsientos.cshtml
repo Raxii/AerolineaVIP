@@ -10,8 +10,19 @@
     ViewBag.Title = "Disponibilidad de Asientos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // DATOS DEL CONTROLADOR DE ISRAEL
-    int capacidad = (int)(ViewBag.Capacidad ?? 0);
+    // DATOS REALES PROVISTOS POR EL CONTROLADOR (sin datos ficticios).
+    int capacidadTotal = (int)(ViewBag.CapacidadTotal ?? 0);
+    int capacidadAplicable = (int)(ViewBag.CapacidadAplicable ?? 0);
+    int limitePantalla = (int)(ViewBag.LimitePantalla ?? 7);
+    bool capacidadExcedeLimite = (bool)(ViewBag.CapacidadExcedeLimite ?? false);
+    int limiteSeleccion = (int)(ViewBag.LimiteSeleccion ?? 0);
+    int cantidadPasajeros = (int)(ViewBag.CantidadPasajeros ?? 0);
+    bool estadoOperativoValido = (bool)(ViewBag.EstadoOperativoValido ?? true);
+    string mensajeEstado = (string)(ViewBag.MensajeEstado ?? "");
+    bool excedeLimitePantalla = (bool)(ViewBag.ExcedeLimitePantalla ?? false);
+    bool excedeDisponibilidadVista = (bool)(ViewBag.ExcedeDisponibilidad ?? false);
+    string errorValidacion = (string)(ViewBag.ErrorValidacion ?? "");
+    string modeloAeronaveTexto = (string)(ViewBag.ModeloAeronave ?? "N/A");
 
     string aeropuertoOrigen =
         (string)(ViewBag.AeropuertoOrigen ?? "N/A");
@@ -91,9 +102,9 @@
     };
 
     // CONTADORES SEGUN LOS ASIENTOS REALES
-    if (capacidad <= 0)
+    if (capacidadTotal <= 0)
     {
-        capacidad = asientos.Count;
+        capacidadTotal = asientos.Count;
     }
 
     int reservados = asientos.Count(
@@ -103,7 +114,16 @@
         a => obtenerEstado(a) == "OCUPADO");
 
     int disponibles = Math.Max(
-        0, capacidad - reservados - ocupados);
+        0, capacidadTotal - reservados - ocupados);
+
+    // Filas reales presentes en los asientos de esta aeronave (operación
+    // sobre una lista ya recuperada de SQL Server, no una consulta nueva).
+    // No se asume una distribución fija de filas/columnas.
+    var filas = asientos
+        .Select(a => a.Fila)
+        .Distinct()
+        .OrderBy(f => f)
+        .ToList();
 
     string estadoVuelo =
         Model.EstadoVueloCodigo ?? "DESCONOCIDO";
@@ -122,6 +142,12 @@
         : Model.FechaOperacion.ToString(
             "dd MMM yyyy",
             new CultureInfo("es-EC"));
+
+    // Solo se puede continuar si el vuelo está en un estado operativo válido
+    // y la cantidad solicitada es compatible con el límite de esta pantalla
+    // y con la disponibilidad real.
+    bool puedeContinuar = estadoOperativoValido &&
+        !excedeLimitePantalla && !excedeDisponibilidadVista && cantidadPasajeros > 0;
 }
 
 <style>
@@ -198,12 +224,10 @@
         margin-bottom: 23px;
     }
 
-    .vip-fila {
-        display: grid;
-        grid-template-columns: 24px 60px 48px 60px;
-        justify-content: center;
+    .vip-fila-dinamica {
+        display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         margin-bottom: 12px;
     }
 
@@ -212,12 +236,23 @@
         font-size: 13px;
         font-weight: 600;
         text-align: center;
+        min-width: 20px;
+    }
+
+    .vip-asientos-fila {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
     }
 
     .vip-pasillo {
         text-align: center;
         font-size: 10px;
         color: #94a3b8;
+        padding: 0 6px;
     }
 
     .vip-asiento {
@@ -263,12 +298,6 @@
         color: white !important;
         border: 2px solid #166534 !important;
         box-shadow: 0 4px 13px rgba(21, 128, 61, .25);
-    }
-
-    .vip-espacio-vacio {
-        width: 60px;
-        height: 54px;
-        display: block;
     }
 
     .vip-leyenda {
@@ -330,6 +359,47 @@
 
     </div>
 
+    <!-- ALERTAS DE VALIDACION (todas basadas en datos reales del servidor) -->
+    @if (!string.IsNullOrWhiteSpace(errorValidacion))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorValidacion
+        </div>
+    }
+
+    @if (!estadoOperativoValido)
+    {
+        <div class="alert alert-warning" role="alert">
+            <strong>No es posible continuar:</strong> @mensajeEstado
+        </div>
+    }
+    else if (excedeLimitePantalla)
+    {
+        <div class="alert alert-warning" role="alert">
+            <strong>No es posible continuar:</strong>
+            se solicitaron @cantidadPasajeros pasajero(s), pero esta pantalla solo permite
+            gestionar un máximo de @limitePantalla asientos por operación.
+        </div>
+    }
+    else if (excedeDisponibilidadVista)
+    {
+        <div class="alert alert-warning" role="alert">
+            <strong>No es posible continuar:</strong>
+            no hay suficientes asientos disponibles (@disponibles) para los @cantidadPasajeros
+            pasajero(s) solicitados.
+        </div>
+    }
+
+    @if (capacidadExcedeLimite)
+    {
+        <div class="alert alert-info" role="alert">
+            La aeronave asignada tiene una capacidad real de <strong>@capacidadTotal</strong> asientos
+            (registrada en ModeloAeronave.CapacidadAsientos). Esta pantalla, según su especificación,
+            solo gestiona la selección de hasta <strong>@limitePantalla</strong> asientos por operación;
+            el resto de la capacidad física de la aeronave no se modifica ni se oculta en SQL Server.
+        </div>
+    }
+
     <!-- INFORMACION DEL VUELO -->
     <div class="vip-cabecera-vuelo p-4 mb-4">
 
@@ -359,6 +429,10 @@
                     <span class="mx-2">&bull;</span>
 
                     Aeronave @matricula
+                    @if (modeloAeronaveTexto != "N/A")
+                    {
+                        <text> (@modeloAeronaveTexto)</text>
+                    }
 
                 </div>
 
@@ -389,7 +463,7 @@
                 <div class="vip-indicador">
                     <div class="etiqueta">Capacidad</div>
                     <div class="numero text-dark">
-                        @capacidad
+                        @capacidadTotal
                     </div>
                 </div>
             </div>
@@ -424,6 +498,22 @@
 
         </div>
 
+        <div class="row g-2 mt-1 small text-muted">
+            <div class="col-6 col-md-3">
+                Límite de esta pantalla: <strong class="text-dark">@limitePantalla asientos</strong>
+            </div>
+            <div class="col-6 col-md-3">
+                Capacidad aplicable: <strong class="text-dark">@capacidadAplicable</strong>
+            </div>
+            <div class="col-6 col-md-3">
+                Pasajeros solicitados:
+                <strong class="text-dark">@(cantidadPasajeros > 0 ? cantidadPasajeros.ToString() : "No especificado")</strong>
+            </div>
+            <div class="col-6 col-md-3">
+                Máx. a seleccionar ahora: <strong class="text-dark">@limiteSeleccion</strong>
+            </div>
+        </div>
+
     </div>
 
     <!-- MAPA DE ASIENTOS -->
@@ -439,8 +529,8 @@
                 </h5>
 
                 <p class="small text-muted mb-0">
-                    Configuracion de la aeronave
-                    de @capacidad plazas.
+                    Distribucion real registrada en SQL Server para esta
+                    aeronave (@asientos.Count asiento(s)).
                 </p>
             </div>
 
@@ -491,95 +581,74 @@
                     PARTE DELANTERA
                 </div>
 
-                @for (int fila = 1; fila <= 4; fila++)
+                @foreach (var fila in filas)
                 {
-                    var izquierda = asientos.FirstOrDefault(
-                        a => a.Fila == fila &&
-                             a.Lado != null &&
-                             a.Lado.Trim().ToUpperInvariant() == "I");
+                    // Agrupacion en memoria sobre una lista ya recuperada de
+                    // SQL Server (no es una consulta nueva a la base de
+                    // datos). No se asume cantidad fija de asientos por fila.
+                    var asientosFila = asientos
+                        .Where(a => a.Fila == fila)
+                        .OrderBy(a => (a.Lado ?? "").Trim())
+                        .ThenBy(a => a.NumeroAsiento)
+                        .ToList();
 
-                    var derecha = asientos.FirstOrDefault(
-                        a => a.Fila == fila &&
-                             a.Lado != null &&
-                             a.Lado.Trim().ToUpperInvariant() == "D");
-
-                    <div class="vip-fila">
+                    <div class="vip-fila-dinamica">
 
                         <!-- NUMERO DE FILA -->
                         <span class="vip-numero-fila">
                             @fila
                         </span>
 
-                        <!-- ASIENTO IZQUIERDO -->
-                        @if (izquierda != null)
-                        {
-                            string codigo =
-                                (izquierda.Codigo ?? "").Trim();
+                        <div class="vip-asientos-fila">
 
-                            string estado = obtenerEstado(izquierda);
+                            @{ string ladoAnterior = null; }
 
-                            bool bloqueado =
-                                estado != "DISPONIBLE";
+                            @foreach (var asiento in asientosFila)
+                            {
+                                string ladoActual =
+                                    (asiento.Lado ?? "").Trim().ToUpperInvariant();
 
-                            string clase =
-                                estado == "RESERVADO"
-                                ? "vip-reservado"
-                                : estado == "OCUPADO"
-                                  ? "vip-ocupado"
-                                  : "vip-libre";
+                                // El separador de pasillo se inserta solo
+                                // cuando cambia el lado real del asiento,
+                                // sin asumir una distribucion fija.
+                                if (ladoAnterior != null &&
+                                    ladoActual != ladoAnterior)
+                                {
+                                    <span class="vip-pasillo">
+                                        PASILLO
+                                    </span>
+                                }
 
-                            <button type="button"
-                                    class="vip-asiento @clase js-asiento"
-                                    data-asiento="@codigo"
-                                    aria-label="Asiento @codigo: @estado"
-                                    aria-pressed="false"
-                                    title="@estado"
-                                    disabled="@(bloqueado ? "disabled" : null)">
-                                @codigo
-                            </button>
-                        }
-                        else
-                        {
-                            <span class="vip-espacio-vacio"></span>
-                        }
+                                ladoAnterior = ladoActual;
 
-                        <!-- PASILLO -->
-                        <span class="vip-pasillo">
-                            PASILLO
-                        </span>
+                                string codigo =
+                                    (asiento.Codigo ?? "").Trim();
 
-                        <!-- ASIENTO DERECHO -->
-                        @if (derecha != null)
-                        {
-                            string codigo =
-                                (derecha.Codigo ?? "").Trim();
+                                string estado = obtenerEstado(asiento);
 
-                            string estado = obtenerEstado(derecha);
+                                bool bloqueado =
+                                    estado != "DISPONIBLE" ||
+                                    !estadoOperativoValido;
 
-                            bool bloqueado =
-                                estado != "DISPONIBLE";
+                                string clase =
+                                    estado == "RESERVADO"
+                                    ? "vip-reservado"
+                                    : estado == "OCUPADO"
+                                      ? "vip-ocupado"
+                                      : "vip-libre";
 
-                            string clase =
-                                estado == "RESERVADO"
-                                ? "vip-reservado"
-                                : estado == "OCUPADO"
-                                  ? "vip-ocupado"
-                                  : "vip-libre";
+                                <button type="button"
+                                        class="vip-asiento @clase js-asiento"
+                                        data-asiento="@codigo"
+                                        aria-label="Asiento @codigo: @estado"
+                                        aria-pressed="false"
+                                        title="@estado"
+                                        disabled="@(bloqueado ? "disabled" : null)">
+                                    @codigo
+                                </button>
+                            }
 
-                            <button type="button"
-                                    class="vip-asiento @clase js-asiento"
-                                    data-asiento="@codigo"
-                                    aria-label="Asiento @codigo: @estado"
-                                    aria-pressed="false"
-                                    title="@estado"
-                                    disabled="@(bloqueado ? "disabled" : null)">
-                                @codigo
-                            </button>
-                        }
-                        else
-                        {
-                            <span class="vip-espacio-vacio"></span>
-                        }
+                        </div>
 
                     </div>
                 }
@@ -645,17 +714,39 @@
                     <a href="@Url.Action(
                         "DisponibilidadAsientos",
                         "Vueloes",
-                        new { vueloId = Model.VueloId })"
+                        new { vueloId = Model.VueloId, cantidadPasajeros = cantidadPasajeros })"
                        class="btn btn-outline-primary px-3">
-                        Actualizar
+                        Actualizar disponibilidad
                     </a>
 
-                    <button type="button"
-                            id="btnContinuar"
-                            class="btn vip-boton-principal px-4"
-                            disabled>
-                        Continuar
-                    </button>
+                    <form id="formContinuar"
+                          method="post"
+                          action="@Url.Action("ConfirmarSeleccionAsientos", "Vueloes")"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="vueloId"
+                               value="@Model.VueloId" />
+
+                        <input type="hidden"
+                               name="cantidadPasajeros"
+                               value="@cantidadPasajeros" />
+
+                        <input type="hidden"
+                               id="codigosAsientosInput"
+                               name="codigosAsientos"
+                               value="" />
+
+                        <button type="submit"
+                                id="btnContinuar"
+                                class="btn vip-boton-principal px-4"
+                                disabled>
+                            Continuar
+                        </button>
+
+                    </form>
 
                 </div>
 
@@ -695,9 +786,16 @@
         var continuar =
             document.getElementById("btnContinuar");
 
-        // DIRECCION DE LA PANTALLA 08
-        var urlSeleccionar =
-            '@Url.Action("Seleccionar", "Vueloes", new { vueloId = Model.VueloId })';
+        var inputCodigos =
+            document.getElementById("codigosAsientosInput");
+
+        // DATOS REALES ENVIADOS POR EL SERVIDOR (no son la fuente de
+        // verdad de la disponibilidad: solo se usan para la UX del
+        // cliente; el servidor vuelve a validar todo en
+        // ConfirmarSeleccionAsientos).
+        var limiteSeleccion = @limiteSeleccion;
+        var cantidadPasajeros = @cantidadPasajeros;
+        var puedeContinuar = @puedeContinuar.ToString().ToLowerInvariant();
 
         // ACTUALIZAR RESUMEN
         function actualizarResumen() {
@@ -708,8 +806,18 @@
                 seleccionados.length +
                 " asientos seleccionados";
 
+            inputCodigos.value =
+                seleccionados.join(",");
+
+            var cantidadCorrecta =
+                cantidadPasajeros > 0
+                ? seleccionados.length === cantidadPasajeros
+                : seleccionados.length > 0;
+
             continuar.disabled =
-                seleccionados.length === 0;
+                !puedeContinuar ||
+                seleccionados.length === 0 ||
+                !cantidadCorrecta;
 
             if (seleccionados.length === 0) {
 
@@ -756,6 +864,14 @@
 
                 if (indice === -1) {
 
+                    // No se permite exceder el limite de seleccion de
+                    // esta pantalla (capacidad aplicable / disponibilidad
+                    // real), calculado por el servidor.
+                    if (limiteSeleccion > 0 &&
+                        seleccionados.length >= limiteSeleccion) {
+                        return;
+                    }
+
                     seleccionados.push(codigo);
 
                     boton.classList.remove("vip-libre");
@@ -780,26 +896,10 @@
             });
         });
 
-        // CONTINUAR A PANTALLA 08
-        continuar.addEventListener("click", function () {
-
-            if (seleccionados.length === 0) {
-                return;
-            }
-
-            // Enviar los codigos seleccionados por URL.
-            // La pantalla 08 debe leerlos para precargarlos.
-            var separador =
-                urlSeleccionar.indexOf("?") >= 0 ? "&" : "?";
-
-            window.location.href =
-                urlSeleccionar +
-                separador +
-                "asientos=" +
-                encodeURIComponent(
-                    seleccionados.join(","));
-        });
-
+        // El boton Continuar es un submit real del formulario hacia
+        // ConfirmarSeleccionAsientos (validacion definitiva en el
+        // servidor). Mientras no se cumplan las condiciones minimas,
+        // permanece deshabilitado.
         actualizarResumen();
 
     });

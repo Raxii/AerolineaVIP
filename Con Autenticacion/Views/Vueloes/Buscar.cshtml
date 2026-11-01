@@ -12,6 +12,11 @@
     var aeropuertos = ViewBag.Aeropuertos ?? new List<SelectListItem>();
     var totalResultados = ViewBag.TotalResultados != null ? (int)ViewBag.TotalResultados : 0;
     var ocupadosPorVuelo = ViewBag.OcupadosPorVuelo as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var tarifaPorVuelo = ViewBag.TarifaPorVuelo as Dictionary<int, decimal?> ?? new Dictionary<int, decimal?>();
+    var totalPorVuelo = ViewBag.TotalPorVuelo as Dictionary<int, decimal?> ?? new Dictionary<int, decimal?>();
+    var descuentoPorVuelo = ViewBag.DescuentoPorVuelo as Dictionary<int, bool> ?? new Dictionary<int, bool>();
+    var errores = ViewBag.Errores as List<string> ?? new List<string>();
+    var moneda = ViewBag.Moneda as string ?? "USD";
 }
 
 <div class="container py-5" style="max-width: 1100px;">
@@ -19,6 +24,18 @@
         <h2 class="h4 fw-bold text-dark mb-1">Buscar Vuelos</h2>
         <p class="small text-muted mb-4">Encuentra vuelos disponibles según tu origen, destino, fecha y cantidad de pasajeros.</p>
     </div>
+
+    @if (errores.Count > 0)
+    {
+        <div class="alert alert-danger rounded-4">
+            <ul class="mb-0">
+                @foreach (var error in errores)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
         @using (Html.BeginForm("Buscar", "Vueloes", FormMethod.Get))
@@ -113,7 +130,10 @@
                     var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
                     var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
                     var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
-                    var precio = restantes > 0 ? 120 + (restantes * 5) : 0;
+
+                    decimal? tarifaPasajero = tarifaPorVuelo.ContainsKey(vuelo.VueloId) ? tarifaPorVuelo[vuelo.VueloId] : null;
+                    decimal? totalReserva = totalPorVuelo.ContainsKey(vuelo.VueloId) ? totalPorVuelo[vuelo.VueloId] : null;
+                    bool conDescuento = descuentoPorVuelo.ContainsKey(vuelo.VueloId) && descuentoPorVuelo[vuelo.VueloId];
 
                     <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
                         <div class="d-flex align-items-center gap-4">
@@ -136,8 +156,22 @@
 
                         <div class="text-end d-flex align-items-center gap-3">
                             <div>
-                                <div class="small text-muted">Desde</div>
-                                <div class="fw-bold fs-5 text-dark">$@precio.ToString("0.00")</div>
+                                <div class="small text-muted">Desde (por pasajero)</div>
+                                @if (tarifaPasajero.HasValue)
+                                {
+                                    <div class="fw-bold fs-5 text-dark">@moneda @tarifaPasajero.Value.ToString("0.00")</div>
+                                    <div class="small text-muted">
+                                        Total @pasajeros pax: @moneda @totalReserva.Value.ToString("0.00")
+                                        @if (conDescuento)
+                                        {
+                                            <span class="text-success">(desc. académico 5%)</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="fw-bold fs-6 text-muted">Tarifa no disponible</div>
+                                }
                                 <div class="small text-muted mt-1">
                                     @if (vuelo.Aeronave != null)
                                     {

@@ -1,9 +1,10 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Vuelo>
-
-@{
+﻿@{
     ViewBag.Title = "Home";
     var origenes = ViewBag.Origenes as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
     var destinos = ViewBag.Destinos as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+    var destinosPopulares = ViewBag.DestinosPopulares as List<Con_Autenticacion.Models.Aeropuerto>
+        ?? new List<Con_Autenticacion.Models.Aeropuerto>();
+    var vuelosDisponibles = ViewBag.VuelosDisponibles != null ? (int)ViewBag.VuelosDisponibles : 0;
 }
 
 
@@ -16,32 +17,29 @@
     </div>
 
     <div class="card shadow-sm border-0 rounded-4 p-4 mx-auto" style="max-width: 900px; border: 1px solid #e0e0e0 !important;">
-        @using (Html.BeginForm("Buscar", "Vueloes", FormMethod.Get))
+        @using (Html.BeginForm("Buscar", "Vueloes", FormMethod.Get, new { id = "form-buscar-home" }))
         {
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label small text-muted fw-bold">Origen</label>
-                    <select class="form-select form-control-lg" name="AeropuertoOrigenId" required>
-                        @foreach (var origen in origenes)
-                        {
-                            <option value="@origen.Value">@origen.Text</option>
-                        }
-                    </select>
+                    @Html.DropDownList("AeropuertoOrigenId",
+                        new SelectList(origenes, "Value", "Text"),
+                        "Seleccione aeropuerto...",
+                        new { @class = "form-select form-control-lg", required = "required", id = "home-origen" })
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label small text-muted fw-bold">Destino</label>
-                    <select class="form-select form-control-lg" name="AeropuertoDestinoId" required>
-                        @foreach (var destino in destinos)
-                        {
-                            <option value="@destino.Value">@destino.Text</option>
-                        }
-                    </select>
+                    @Html.DropDownList("AeropuertoDestinoId",
+                        new SelectList(destinos, "Value", "Text"),
+                        "Seleccione aeropuerto...",
+                        new { @class = "form-select form-control-lg", required = "required", id = "home-destino" })
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label small text-muted fw-bold">Fecha</label>
-                    <input type="date" class="form-control form-control-lg" name="Fecha" required>
+                    <input type="date" class="form-control form-control-lg" name="Fecha"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
                 </div>
 
                 <div class="col-md-3">
@@ -60,29 +58,37 @@
     </div>
 
     <div class="mx-auto mt-4" style="max-width: 900px;">
-        <div class="alert alert-warning d-flex align-items-center rounded-3 border-0" role="alert">
-            <span class="small">Alta demanda por el Feriado</span>
-        </div>
+        @if (vuelosDisponibles > 0)
+        {
+            <div class="alert alert-info d-flex align-items-center rounded-3 border-0" role="alert">
+                <span class="small">Hay <strong>@vuelosDisponibles</strong> vuelos programados disponibles para reservar.</span>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning d-flex align-items-center rounded-3 border-0" role="alert">
+                <span class="small">Por el momento no hay vuelos programados. Vuelve pronto.</span>
+            </div>
+        }
     </div>
 
     <div class="mt-5">
         <h3 class="h5 fw-bold text-dark mb-4 mt-5">Destinos Populares</h3>
         <div class="row g-4">
-            @if (Model != null)
+            @if (destinosPopulares.Count == 0)
             {
-                foreach (var item in Model)
+                <p class="text-muted small">Aún no hay destinos programados para mostrar.</p>
+            }
+            else
+            {
+                foreach (var destino in destinosPopulares)
                 {
-                    var nombreDestino = item.Frecuencia != null && item.Frecuencia.Ruta != null && item.Frecuencia.Ruta.Aeropuerto1 != null
-                        ? item.Frecuencia.Ruta.Aeropuerto1.Nombre
-                        : "Destino";
-                    var matricula = item.Aeronave != null ? item.Aeronave.Matricula : "N/A";
-
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
                             <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
                             <div class="card-body text-center">
-                                <h5 class="card-title fw-bold text-dark">@nombreDestino</h5>
-                                <p class="card-text text-muted small mb-0">@matricula</p>
+                                <h5 class="card-title fw-bold text-dark">@destino.Nombre (@destino.CodigoIATA)</h5>
+                                <p class="card-text text-muted small mb-0">@destino.Localidad</p>
                             </div>
                         </div>
                     </div>
@@ -91,3 +97,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Validación en cliente: origen y destino deben ser diferentes.
+    // La validación definitiva (y la disponibilidad real) se realiza en
+    // VueloesController.Buscar(), que no se modifica.
+    (function () {
+        var form = document.getElementById("form-buscar-home");
+        if (!form) return;
+
+        form.addEventListener("submit", function (e) {
+            var origen = document.getElementById("home-origen").value;
+            var destino = document.getElementById("home-destino").value;
+
+            if (origen && destino && origen === destino) {
+                e.preventDefault();
+                alert("El aeropuerto de origen y destino deben ser diferentes.");
+            }
+        });
+    })();
+</script>
