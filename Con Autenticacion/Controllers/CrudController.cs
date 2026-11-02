@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.Mvc;
 using Con_Autenticacion.Models;
 
@@ -36,7 +35,12 @@ namespace Con_Autenticacion.Controllers
             var incidenciasRecientes = new List<Vuelo>();
 
             // Consultar vuelos una sola vez.
-            var todosLosVuelos = db.Vuelo.ToList();
+            var todosLosVuelos = new List<Vuelo>();
+
+            foreach (var vuelo in db.Vuelo)
+            {
+                todosLosVuelos.Add(vuelo);
+            }
 
             foreach (var vuelo in todosLosVuelos)
             {
@@ -133,12 +137,24 @@ namespace Con_Autenticacion.Controllers
 
             // Ordenar por fecha de operación descendente,
             // en lugar de depender del orden de SQL Server.
-            var incidenciasLimitadas =
-                incidenciasRecientes
-                    .OrderByDescending(v => v.FechaOperacion)
-                    .ThenByDescending(v => v.VueloId)
-                    .Take(3)
-                    .ToList();
+            incidenciasRecientes.Sort(delegate (Vuelo a, Vuelo b)
+            {
+                var comparacionFecha = b.FechaOperacion.CompareTo(a.FechaOperacion);
+
+                if (comparacionFecha != 0)
+                {
+                    return comparacionFecha;
+                }
+
+                return b.VueloId.CompareTo(a.VueloId);
+            });
+
+            var incidenciasLimitadas = new List<Vuelo>();
+
+            for (int i = 0; i < incidenciasRecientes.Count && i < 3; i++)
+            {
+                incidenciasLimitadas.Add(incidenciasRecientes[i]);
+            }
 
             // ========================================
             // 7. ENVIAR INFORMACIÓN A LA VISTA

@@ -1,137 +1,124 @@
-﻿@using Con_Autenticacion.Controllers;
-@model IEnumerable<UsuarioRolViewModel>
-
+﻿@model IEnumerable<Con_Autenticacion.Controllers.UsuarioRolViewModel>
+@using Con_Autenticacion.Controllers
 @{
-    ViewBag.Title = "Gestión de Usuarios, Pasajeros y Reservas";
+    ViewBag.Title = "Gestion de usuarios";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var listaUsuarios = Model as List<UsuarioRolViewModel> ?? new List<UsuarioRolViewModel>();
+    int totalUsuarios = ViewBag.TotalUsuarios == null ? 0 : (int)ViewBag.TotalUsuarios;
+    int reservasActivas = ViewBag.ReservasActivas == null ? 0 : (int)ViewBag.ReservasActivas;
+    int reservasHoy = ViewBag.ReservasHoy == null ? 0 : (int)ViewBag.ReservasHoy;
+    int reservasCanceladas = ViewBag.ReservasCanceladas == null ? 0 : (int)ViewBag.ReservasCanceladas;
+    string buscar = ViewBag.Buscar as string ?? "";
+    string rolSeleccionado = ViewBag.RolSeleccionado as string ?? "";
+    var rolesDisponibles = new[] { "Cliente", "Counter", "Administrador" };
 }
 
-<div class="container py-5" style="max-width: 1250px;">
-    <div class="mb-4">
-        <h2 class="h4 fw-bold text-dark mb-1">Gestión de Usuarios, Pasajeros y Reservas</h2>
-        <p class="small text-muted mb-4">Consulta y administración de operaciones de clientes, perfiles y reservas asociadas.</p>
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="row g-2 align-items-center mb-2">
-            <div class="col-md-6">
-                <label class="form-label small text-muted fw-bold">Buscar por identificador</label>
-                <input type="text" class="form-control form-control-sm" placeholder="Código de reserva, documento o correo...">
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Tipo de usuario</label>
-                <select class="form-select form-select-sm">
-                    <option>Todos</option>
-                    <option>Cliente</option>
-                    <option>Counter</option>
-                    <option>Administrador</option>
-                </select>
-            </div>
-
-            <div class="col-md-3 d-flex align-items-end">
-                <button class="btn btn-sm w-100 px-3 text-white fw-semibold" style="background-color: #37474f; border-color: #37474f;">Consultar</button>
-            </div>
-        </div>
-
-        <div class="row g-2 align-items-center">
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Fecha de reserva</label>
-                <input type="date" class="form-control form-control-sm">
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Estado de reserva</label>
-                <select class="form-select form-select-sm">
-                    <option>Todos</option>
-                    <option>Confirmada</option>
-                    <option>Pendiente</option>
-                    <option>Cancelada</option>
-                </select>
-            </div>
-
-            <div class="col-md-3 d-flex align-items-end">
-                <button class="btn btn-sm btn-outline-secondary w-100">Limpiar filtros</button>
-            </div>
+<div class="container py-4" style="max-width: 1320px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="text-uppercase small fw-bold text-secondary">Administracion</span>
+            <h1 class="h3 fw-bold mb-1">Gestion de usuarios y reservas</h1>
+            <p class="text-muted mb-0">Consulta cuentas registradas, actualiza roles y revisa el historial de reservas.</p>
         </div>
     </div>
+
+    @if (TempData["Ok"] != null)
+    {<div class="alert alert-success">@TempData["Ok"]</div>}
+    @if (TempData["Error"] != null)
+    {<div class="alert alert-danger">@TempData["Error"]</div>}
 
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Usuarios registrados</div>
-                <div class="fs-3 fw-bold text-dark">1,250</div>
-            </div>
-        </div>
+        <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="small text-muted">Usuarios registrados</div><div class="display-6 fw-bold">@totalUsuarios</div></div></div></div>
+        <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="small text-muted">Reservas activas</div><div class="display-6 fw-bold text-success">@reservasActivas</div></div></div></div>
+        <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="small text-muted">Reservas creadas hoy</div><div class="display-6 fw-bold">@reservasHoy</div></div></div></div>
+        <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="small text-muted">Reservas canceladas</div><div class="display-6 fw-bold text-danger">@reservasCanceladas</div></div></div></div>
+    </div>
 
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Pasajeros del día</div>
-                <div class="fs-3 fw-bold text-dark">340</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Reservas activas</div>
-                <div class="fs-3 fw-bold text-success">128</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Canceladas hoy</div>
-                <div class="fs-3 fw-bold text-danger">5</div>
-            </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "Usuarios", FormMethod.Get, new { @class = "row g-3 align-items-end" }))
+            {
+                <div class="col-md-7">
+                    <label class="form-label fw-semibold">Buscar usuario</label>
+                    <input type="text" name="buscar" value="@buscar" class="form-control" placeholder="Nombre de usuario o correo" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Rol</label>
+                    <select name="rol" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="Cliente" @(rolSeleccionado == "Cliente" ? "selected" : "")>Cliente</option>
+                        <option value="Counter" @(rolSeleccionado == "Counter" ? "selected" : "")>Counter</option>
+                        <option value="Administrador" @(rolSeleccionado == "Administrador" ? "selected" : "")>Administrador</option>
+                        <option value="SuperUsuario" @(rolSeleccionado == "SuperUsuario" ? "selected" : "")>SuperUsuario</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-dark flex-fill">Consultar</button>
+                    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-outline-secondary" })
+                </div>
+            }
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
-        <div class="card-header bg-light border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-            <span class="small fw-bold text-dark">Resultados de la consulta</span>
-            <span class="badge bg-light text-dark border">12 registros</span>
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="fw-bold">Cuentas encontradas</span>
+            <span class="badge bg-light text-dark border">@listaUsuarios.Count registros</span>
         </div>
-
-        <table class="table table-hover table-striped align-middle mb-0">
-            <thead class="table-light text-dark">
-                <tr>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Usuario</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Correo</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Rol</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Reserva</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Estado</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="py-3 px-4 fw-semibold">María López</td>
-                    <td class="py-3 px-4 text-muted">maria.lopez@email.com</td>
-                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">Cliente</span></td>
-                    <td class="py-3 px-4">VIP-401<br><span class="small text-muted">28 Oct 2026</span></td>
-                    <td class="py-3 px-4"><span class="badge bg-success bg-opacity-75 rounded-pill">Confirmada</span></td>
-                    <td class="py-3 px-4">
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary">Actualizar</button>
-                            <button class="btn btn-sm btn-outline-secondary">Historial</button>
-                        </div>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="py-3 px-4 fw-semibold">Carlos Ruiz</td>
-                    <td class="py-3 px-4 text-muted">carlos.ruiz@email.com</td>
-                    <td class="py-3 px-4"><span class="badge bg-light text-dark border">Counter</span></td>
-                    <td class="py-3 px-4">VIP-705<br><span class="small text-muted">29 Oct 2026</span></td>
-                    <td class="py-3 px-4"><span class="badge bg-warning bg-opacity-75 rounded-pill text-dark">Pendiente</span></td>
-                    <td class="py-3 px-4">
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary">Actualizar</button>
-                            <button class="btn btn-sm btn-outline-secondary">Historial</button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th class="ps-4">Usuario</th><th>Correo</th><th>Rol actual</th><th>Ultima reserva</th><th>Reservas</th><th>Actualizar rol</th><th class="text-end pe-4">Historial</th></tr>
+                </thead>
+                <tbody>
+                    @if (listaUsuarios.Count > 0)
+                    {
+                        foreach (var usuario in listaUsuarios)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-semibold">@usuario.Usuario</td>
+                                <td>@usuario.Correo</td>
+                                <td><span class="badge bg-light text-dark border">@usuario.Roles</span></td>
+                                <td>
+                                    <div class="fw-semibold">@usuario.ReservaCodigo</div>
+                                    @if (usuario.FechaReserva.HasValue)
+                                    {
+                                        <span class="small text-muted">@usuario.FechaReserva.Value.ToString("dd/MM/yyyy") - @usuario.EstadoReserva</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="small text-muted">@usuario.EstadoReserva</span>
+                                    }
+                                </td>
+                                <td><span class="badge bg-light text-dark border">@usuario.CantidadReservas</span></td>
+                                <td>
+                                    @if (usuario.PuedeCambiarRol)
+                                    {
+                                        using (Html.BeginForm("CambiarRol", "Usuarios", FormMethod.Post, new { @class = "d-flex gap-2 align-items-center" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.Hidden("id", usuario.Id)
+                                            @Html.DropDownList("rol", new SelectList(rolesDisponibles, usuario.RolSeleccionado), new { @class = "form-select form-select-sm", style = "min-width:130px;" })
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Actualizar</button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Protegido</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    @Html.ActionLink("Ver historial", "Historial", new { id = usuario.Id }, new { @class = "btn btn-sm btn-outline-success" })
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-5">No se encontraron usuarios con esos filtros.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

@@ -1,0 +1,63 @@
+@using Con_Autenticacion.Models
+@model IEnumerable<Comprobante>
+
+@{
+    ViewBag.Title = "Mis comprobantes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool hayComprobantes = ViewBag.HayComprobantes != null && (bool)ViewBag.HayComprobantes;
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Mis comprobantes</h2>
+            <p class="text-muted mb-0">Comprobantes asociados a tus compras pagadas.</p>
+        </div>
+        <span class="badge bg-primary fs-6">Total: @ViewBag.TotalComprobantes</span>
+    </div>
+
+    @if (!hayComprobantes)
+    {
+        <div class="alert alert-info">
+            No tienes comprobantes emitidos para compras pagadas.
+            Los comprobantes apareceran aqui despues de completar el pago y emitir el documento academico.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Numero</th>
+                                <th>Tipo</th>
+                                <th>Reserva</th>
+                                <th>Fecha de emision</th>
+                                <th>Importe</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var comprobante in Model)
+                            {
+                                <tr>
+                                    <td>@comprobante.NumeroComprobante</td>
+                                    <td>@(comprobante.TipoComprobante != null ? comprobante.TipoComprobante.Descripcion : comprobante.TipoComprobanteCodigo)</td>
+                                    <td>@(comprobante.Compra != null && comprobante.Compra.Reserva != null ? comprobante.Compra.Reserva.CodigoReserva : "-")</td>
+                                    <td>@comprobante.FechaEmision.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@(comprobante.Compra != null ? comprobante.Compra.Importe.ToString("C2") : "-")</td>
+                                    <td>@(comprobante.EstadoComprobante != null ? comprobante.EstadoComprobante.Descripcion : comprobante.EstadoComprobanteCodigo)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mb-0">Los documentos emitidos por este proyecto son comprobantes academicos de demostracion, no facturas tributarias autorizadas.</p>
+            </div>
+        </div>
+    }
+
+    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary mt-3">Volver al inicio</a>
+</div>

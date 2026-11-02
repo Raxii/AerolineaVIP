@@ -1,46 +1,136 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Itinerario>
-
+@using System.Collections.Generic
+@using Con_Autenticacion.Models
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Administracion de itinerarios";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    IEnumerable<Itinerario> registros = ViewBag.ListaItinerarios as IEnumerable<Itinerario>;
+    if (registros == null)
+    {
+        registros = Model;
+    }
+    bool hayRegistros = false;
 }
-
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Referencia)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EstadoItinerario.Descripcion)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Referencia)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Nombre)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EstadoItinerario.Descripcion)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ItinerarioId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ItinerarioId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ItinerarioId })
-        </td>
-    </tr>
-}
-
-</table>
+<div class="container py-4" style="max-width:1250px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Programacion / Itinerarios
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Itinerarios
+            </h1>
+            <p class="text-muted mb-0">
+                Organiza los recorridos y su estado de disponibilidad.
+            </p>
+        </div>
+        @Html.ActionLink("+ Nuevo itinerario", "Create", null, new
+        {
+            @class = "btn text-white",
+            style = "background:#172b3d;"
+        }
+        )
+    </div>
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Ok"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-1" style="color:#172b3d;">
+                Catalogo de itinerarios
+            </h2>
+            <small class="text-muted">
+                Cada itinerario agrupa uno o varios tramos.
+            </small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f3f6f8;color:#172b3d;">
+                    <tr>
+                        <th class="ps-4">
+                            Referencia
+                        </th>
+                        <th>
+                            Nombre
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th class="text-end pe-4">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (registros != null)
+                    {
+                        foreach (var item in registros)
+                        {
+                            hayRegistros = true;
+                            string estado = item.EstadoItinerario != null ? item.EstadoItinerario.Descripcion : item.EstadoItinerarioCodigo;
+                            <tr>
+                                <td class="ps-4 fw-bold">
+                                    @item.Referencia
+                                </td>
+                                <td>
+                                    @item.Nombre
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill text-dark border" style="background:#f5eddf;">
+                                        @estado
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new
+                                    {
+                                        id = item.ItinerarioId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-secondary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Editar", "Edit", new
+                                    {
+                                        id = item.ItinerarioId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-primary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Eliminar", "Delete", new
+                                    {
+                                        id = item.ItinerarioId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-danger"
+                                    }
+                                    )
+                                </td>
+                            </tr>
+                        }
+                    }
+                    @if (!hayRegistros)
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-5">
+                                No hay itinerarios registrados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

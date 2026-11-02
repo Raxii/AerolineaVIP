@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
@@ -307,7 +307,15 @@ namespace Con_Autenticacion.Controllers
                 return View("Error");
             }
             var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(userId);
-            var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
+            var factorOptions = new List<SelectListItem>();
+            foreach (var purpose in userFactors)
+            {
+                factorOptions.Add(new SelectListItem
+                {
+                    Text = purpose,
+                    Value = purpose
+                });
+            }
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 

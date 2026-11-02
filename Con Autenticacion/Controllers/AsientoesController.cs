@@ -23,24 +23,25 @@ namespace Con_Autenticacion.Controllers
         }
 
         // GET: Asientoes/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Details(int? modeloAeronaveId, int? numeroAsiento)
         {
-            if (id == null)
+            if (!modeloAeronaveId.HasValue || !numeroAsiento.HasValue || numeroAsiento.Value < 1 || numeroAsiento.Value > byte.MaxValue)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Asiento asiento = db.Asiento.Find(id);
+            Asiento asiento = db.Asiento.Find(modeloAeronaveId.Value, (byte)numeroAsiento.Value);
             if (asiento == null)
             {
                 return HttpNotFound();
             }
+            asiento.ModeloAeronave = db.ModeloAeronave.Find(asiento.ModeloAeronaveId);
             return View(asiento);
         }
 
         // GET: Asientoes/Create
         public ActionResult Create()
         {
-            ViewBag.ModeloAeronaveId = new SelectList(db.ModeloAeronave, "ModeloAeronaveId", "Fabricante");
+            ViewBag.ModeloAeronaveId = CargarModelos(null);
             return View();
         }
 
@@ -55,26 +56,28 @@ namespace Con_Autenticacion.Controllers
             {
                 db.Asiento.Add(asiento);
                 db.SaveChanges();
+                TempData["Ok"] = "Asiento registrado correctamente.";
                 return RedirectToAction("Index");
             }
 
-            ViewBag.ModeloAeronaveId = new SelectList(db.ModeloAeronave, "ModeloAeronaveId", "Fabricante", asiento.ModeloAeronaveId);
+            ViewBag.ModeloAeronaveId = CargarModelos(asiento.ModeloAeronaveId);
             return View(asiento);
         }
 
         // GET: Asientoes/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int? modeloAeronaveId, int? numeroAsiento)
         {
-            if (id == null)
+            if (!modeloAeronaveId.HasValue || !numeroAsiento.HasValue || numeroAsiento.Value < 1 || numeroAsiento.Value > byte.MaxValue)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Asiento asiento = db.Asiento.Find(id);
+            Asiento asiento = db.Asiento.Find(modeloAeronaveId.Value, (byte)numeroAsiento.Value);
             if (asiento == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.ModeloAeronaveId = new SelectList(db.ModeloAeronave, "ModeloAeronaveId", "Fabricante", asiento.ModeloAeronaveId);
+            asiento.ModeloAeronave = db.ModeloAeronave.Find(asiento.ModeloAeronaveId);
+            ViewBag.ModeloAeronaveId = CargarModelos(asiento.ModeloAeronaveId);
             return View(asiento);
         }
 
@@ -89,36 +92,64 @@ namespace Con_Autenticacion.Controllers
             {
                 db.Entry(asiento).State = EntityState.Modified;
                 db.SaveChanges();
+                TempData["Ok"] = "Cambios del asiento guardados correctamente.";
                 return RedirectToAction("Index");
             }
-            ViewBag.ModeloAeronaveId = new SelectList(db.ModeloAeronave, "ModeloAeronaveId", "Fabricante", asiento.ModeloAeronaveId);
+            ViewBag.ModeloAeronaveId = CargarModelos(asiento.ModeloAeronaveId);
             return View(asiento);
         }
 
         // GET: Asientoes/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int? modeloAeronaveId, int? numeroAsiento)
         {
-            if (id == null)
+            if (!modeloAeronaveId.HasValue || !numeroAsiento.HasValue || numeroAsiento.Value < 1 || numeroAsiento.Value > byte.MaxValue)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Asiento asiento = db.Asiento.Find(id);
+            Asiento asiento = db.Asiento.Find(modeloAeronaveId.Value, (byte)numeroAsiento.Value);
             if (asiento == null)
             {
                 return HttpNotFound();
             }
+            asiento.ModeloAeronave = db.ModeloAeronave.Find(asiento.ModeloAeronaveId);
             return View(asiento);
         }
 
         // POST: Asientoes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public ActionResult DeleteConfirmed(int modeloAeronaveId, int numeroAsiento)
         {
-            Asiento asiento = db.Asiento.Find(id);
+            if (numeroAsiento < 1 || numeroAsiento > byte.MaxValue)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Asiento asiento = db.Asiento.Find(modeloAeronaveId, (byte)numeroAsiento);
+            if (asiento == null)
+            {
+                return HttpNotFound();
+            }
             db.Asiento.Remove(asiento);
             db.SaveChanges();
+            TempData["Ok"] = "El asiento se elimino correctamente.";
             return RedirectToAction("Index");
+        }
+
+        private List<SelectListItem> CargarModelos(int? seleccionado)
+        {
+            var opciones = new List<SelectListItem>();
+            foreach (var modelo in db.ModeloAeronave)
+            {
+                string texto = (modelo.Fabricante ?? "") + " " + (modelo.Nombre ?? "") +
+                               " - " + modelo.CapacidadAsientos + " asientos";
+                opciones.Add(new SelectListItem
+                {
+                    Value = modelo.ModeloAeronaveId.ToString(),
+                    Text = texto,
+                    Selected = seleccionado.HasValue && seleccionado.Value == modelo.ModeloAeronaveId
+                });
+            }
+            return opciones;
         }
 
         protected override void Dispose(bool disposing)

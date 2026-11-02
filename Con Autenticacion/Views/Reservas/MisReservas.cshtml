@@ -1,0 +1,90 @@
+@using Con_Autenticacion.Models
+@model IEnumerable<Reserva>
+
+@{
+    ViewBag.Title = "Mis reservas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool hayReservas = ViewBag.HayReservas != null && (bool)ViewBag.HayReservas;
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Mis reservas</h2>
+            <p class="text-muted mb-0">Consulta las reservas asociadas a tu cuenta.</p>
+        </div>
+        <span class="badge bg-primary fs-6">Total: @ViewBag.TotalReservas</span>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+
+    @if (!hayReservas)
+    {
+        <div class="alert alert-info">
+            Todavia no tienes reservas registradas con esta cuenta.
+            Cuando completes una reserva, aparecera en esta seccion.
+        </div>
+    }
+    else
+    {
+        foreach (var reserva in Model)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                    <strong>Reserva: @reserva.CodigoReserva</strong>
+                    <span class="badge bg-secondary">
+                        @(reserva.EstadoReserva != null ? reserva.EstadoReserva.Descripcion : reserva.EstadoReservaCodigo)
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Fecha de creacion:</strong> @reserva.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
+                    @if (reserva.FechaExpiracion.HasValue)
+                    {
+                        <p class="mb-2"><strong>Fecha limite:</strong> @reserva.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                    }
+
+                    <h6 class="mt-3">Pasajeros y vuelos</h6>
+                    @if (reserva.ReservaPasajeroVuelo != null && reserva.ReservaPasajeroVuelo.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Pasajero</th>
+                                        <th>Vuelo</th>
+                                        <th>Fecha</th>
+                                        <th>Asiento</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var asignacion in reserva.ReservaPasajeroVuelo)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @(asignacion.Pasajero != null ? asignacion.Pasajero.Nombres + " " + asignacion.Pasajero.Apellidos : "No registrado")
+                                            </td>
+                                            <td>VIP@asignacion.VueloId</td>
+                                            <td>@(asignacion.Vuelo != null ? asignacion.Vuelo.FechaOperacion.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                            <td>@asignacion.NumeroAsiento</td>
+                                            <td>@(asignacion.EstadoAsignacion != null ? asignacion.EstadoAsignacion.Descripcion : asignacion.EstadoAsignacionCodigo)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">La reserva todavia no tiene pasajeros o asientos asignados.</p>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">Volver al inicio</a>
+</div>

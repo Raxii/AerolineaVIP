@@ -1,182 +1,160 @@
-﻿@model Con_Autenticacion.Models.Aeronave
-
+﻿@model IEnumerable<Con_Autenticacion.Models.Aeropuerto>
+@using System.Collections.Generic
+@using Con_Autenticacion.Models
 @{
-    ViewBag.Title = "Administración de Aeronaves";
+    ViewBag.Title = "Administracion de aeropuertos";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    // Extraer datos de ViewBag
-    var totalAeronaves = (int)(ViewBag.TotalAeronaves ?? 0);
-    var aeronavesActivas = (int)(ViewBag.AeronavesActivas ?? 0);
-    var aeronavesEnMantenimiento = (int)(ViewBag.AeronavesEnMantenimiento ?? 0);
-    var capacidadPromedio = (int)(ViewBag.CapacidadPromedio ?? 0);
-    var listaAeronaves = (List<Con_Autenticacion.Models.Aeronave>)(ViewBag.ListaAeronaves ?? new List<Con_Autenticacion.Models.Aeronave>());
-    var modelos = (List<Con_Autenticacion.Models.ModeloAeronave>)(ViewBag.Modelos ?? new List<Con_Autenticacion.Models.ModeloAeronave>());
-    var estados = (List<Con_Autenticacion.Models.EstadoAeronave>)(ViewBag.Estados ?? new List<Con_Autenticacion.Models.EstadoAeronave>());
-    var vuelosPorAeronave = (Dictionary<int, int>)(ViewBag.VuelosPorAeronave ?? new Dictionary<int, int>());
+    IEnumerable<Aeropuerto> registros = ViewBag.ListaAeropuertos as IEnumerable<Aeropuerto>;
+    if (registros == null)
+    {
+        registros = Model;
+    }
+    bool hayRegistros = false;
 }
-
-<div class="container py-5" style="max-width: 1200px;">
-    <div class="d-flex justify-content-between align-items-start mb-4">
+<div class="container py-4" style="max-width:1200px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
         <div>
-            <h2 class="h4 fw-bold text-dark mb-1">Administración de Aeronaves</h2>
-            <p class="small text-muted mb-0">Mantenimiento de la información de la flota: registro, modelo, capacidad y estado operativo.</p>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Flota y rutas / Catalogo
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Aeropuertos
+            </h1>
+            <p class="text-muted mb-0">
+                Administra los aeropuertos disponibles para las rutas de Aerolinea VIP.
+            </p>
         </div>
-
-        <span class="badge bg-light text-dark border px-3 py-2">@totalAeronaves aeronaves registradas</span>
+        @Html.ActionLink("+ Nuevo aeropuerto", "Create", null, new
+        {
+           @class = "btn text-white",
+            style = "background:#172b3d;border-color:#172b3d;"
+       }
+       )
     </div>
-
-    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="row g-2 align-items-center">
-            <div class="col-md-4">
-                <label class="form-label small text-muted fw-bold">Buscar aeronave</label>
-                <input type="text" class="form-control form-control-sm" placeholder="Identificador o registro...">
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Modelo</label>
-                <select class="form-select form-select-sm">
-                    <option>Todos</option>
-                    @{
-                        foreach (var modelo in modelos)
-                        {
-                            <option>@(modelo.Nombre ?? "Desconocido")</option>
-                        }
-                    }
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Estado operativo</label>
-                <select class="form-select form-select-sm">
-                    <option>Todos</option>
-                    @{
-                        foreach (var estado in estados)
-                        {
-                            <option>@(estado.Descripcion ?? "Desconocido")</option>
-                        }
-                    }
-                </select>
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-                <button class="btn btn-sm w-100 px-3 text-white fw-semibold" style="background-color: #37474f; border-color: #37474f;">Filtrar</button>
-            </div>
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Ok"]
         </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Total de aeronaves</div>
-                <div class="fs-3 fw-bold text-dark">@totalAeronaves</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center py-3 px-4">
+            <div>
+                <h2 class="h5 mb-1" style="color:#172b3d;">
+                    Catalogo de aeropuertos
+                </h2>
+                <small class="text-muted">
+                    Codigo IATA, nombre oficial y localidad.
+                </small>
             </div>
+            <span class="badge rounded-pill text-dark border" style="background:#f5eddf;border-color:#e5d4b5 !important;">
+                Listado general
+            </span>
         </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Activas</div>
-                <div class="fs-3 fw-bold text-success">@aeronavesActivas</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">En mantenimiento</div>
-                <div class="fs-3 fw-bold text-warning">@aeronavesEnMantenimiento</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3" style="border: 1px solid #e0e0e0 !important;">
-                <div class="small text-muted fw-bold">Capacidad promedio</div>
-                <div class="fs-3 fw-bold text-dark">@capacidadPromedio</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
-        <div class="card-header bg-light border-bottom py-3 px-4">
-            <span class="small fw-bold text-dark">Flota Registrada</span>
-        </div>
-
-        <table class="table table-hover table-striped align-middle mb-0">
-            <thead class="table-light text-dark">
-                <tr>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Identificador</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Registro</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Modelo</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Capacidad</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Estado</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Asignaciones</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (listaAeronaves.Count > 0)
-                {
-                    foreach (var aeronave in listaAeronaves)
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f3f6f8;color:#172b3d;">
+                    <tr>
+                        <th class="ps-4">
+                            Codigo
+                        </th>
+                        <th>
+                            Nombre oficial
+                        </th>
+                        <th>
+                            Localidad
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th class="text-end pe-4">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (registros != null)
                     {
-                        var modeloNombre = "Desconocido";
-                        var estadoBadge = "bg-secondary";
-                        var estadoTexto = "Desconocido";
-                        var capacidad = 0;
-                        var vuelosCount = 0;
-
-                        try
+                        foreach (var item in registros)
                         {
-                            if (aeronave.ModeloAeronave != null)
-                            {
-                                modeloNombre = aeronave.ModeloAeronave.Nombre ?? "Desconocido";
-                                capacidad = aeronave.ModeloAeronave.CapacidadAsientos;
-                            }
+                            hayRegistros = true;
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge rounded-pill text-dark border" style="background:#f5eddf;">
+                                        @item.CodigoIATA
+                                    </span>
+                                </td>
+                                <td class="fw-semibold">
+                                    @item.Nombre
+                                </td>
+                                <td>
+                                    @item.Localidad
+                                </td>
+                                <td>
+                                    @if (item.Activo)
+                                    {
+                                        <span class="badge text-bg-success">
+                                            Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">
+                                            Inactivo
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new
+                                    {
+                                       id = item.AeropuertoId
+                                   }
+                                   , new
+                                        {
+                                       @class = "btn btn-sm btn-outline-secondary"
+                                   }
+                                   )
+                                    @Html.ActionLink("Editar", "Edit", new
+                                    {
+                                        id = item.AeropuertoId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-primary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Eliminar", "Delete", new
+                                    {
+                                        id = item.AeropuertoId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-danger"
+                                    }
+                                    )
+                                </td>
+                            </tr>
                         }
-                        catch { }
-
-                        try
-                        {
-                            if (aeronave.EstadoAeronave != null)
-                            {
-                                estadoTexto = aeronave.EstadoAeronave.Descripcion ?? "Desconocido";
-                                if (estadoTexto == "Activa")
-                                {
-                                    estadoBadge = "bg-success";
-                                }
-                                else if (estadoTexto.Contains("mantenimiento"))
-                                {
-                                    estadoBadge = "bg-warning";
-                                }
-                            }
-                        }
-                        catch { }
-
-                        if (vuelosPorAeronave.ContainsKey(aeronave.AeronaveId))
-                        {
-                            vuelosCount = vuelosPorAeronave[aeronave.AeronaveId];
-                        }
-
+                    }
+                    @if (!hayRegistros)
+                    {
                         <tr>
-                            <td class="py-3 px-4 fw-semibold">@Html.DisplayFor(modelItem => aeronave.AeronaveId)</td>
-                            <td class="py-3 px-4">@Html.DisplayFor(modelItem => aeronave.Matricula)</td>
-                            <td class="py-3 px-4">@modeloNombre</td>
-                            <td class="py-3 px-4">@capacidad asientos</td>
-                            <td class="py-3 px-4"><span class="badge @estadoBadge bg-opacity-75 rounded-pill">@estadoTexto</span></td>
-                            <td class="py-3 px-4"><span class="badge bg-light text-dark border">@vuelosCount @(vuelosCount == 1 ? "vuelo" : "vuelos")</span></td>
-                            <td class="py-3 px-4">
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-secondary">Modificar estado</button>
-                                    <button class="btn btn-sm btn-outline-secondary">Revisar asignaciones</button>
-                                </div>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                No hay aeropuertos registrados.
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">No hay aeronaves registradas</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="small text-muted mt-3">
+        Los codigos IATA se utilizan para identificar el origen y destino de cada ruta.
     </div>
 </div>

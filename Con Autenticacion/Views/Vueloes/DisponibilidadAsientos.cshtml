@@ -116,9 +116,9 @@
     int disponibles = Math.Max(
         0, capacidadTotal - reservados - ocupados);
 
-    // Filas reales presentes en los asientos de esta aeronave (operación
+    // Filas reales presentes en los asientos de esta aeronave (operacion
     // sobre una lista ya recuperada de SQL Server, no una consulta nueva).
-    // No se asume una distribución fija de filas/columnas.
+    // No se asume una distribucion fija de filas/columnas.
     var filas = asientos
         .Select(a => a.Fila)
         .Distinct()
@@ -143,8 +143,8 @@
             "dd MMM yyyy",
             new CultureInfo("es-EC"));
 
-    // Solo se puede continuar si el vuelo está en un estado operativo válido
-    // y la cantidad solicitada es compatible con el límite de esta pantalla
+    // Solo se puede continuar si el vuelo esta en un estado operativo valido
+    // y la cantidad solicitada es compatible con el limite de esta pantalla
     // y con la disponibilidad real.
     bool puedeContinuar = estadoOperativoValido &&
         !excedeLimitePantalla && !excedeDisponibilidadVista && cantidadPasajeros > 0;
@@ -343,7 +343,11 @@
     }
 </style>
 
-<div class="container py-4 vip-disponibilidad">
+<div class="container py-4 vip-disponibilidad"
+     id="configuracionDisponibilidad"
+     data-limite-seleccion="@limiteSeleccion"
+     data-cantidad-pasajeros="@cantidadPasajeros"
+     data-puede-continuar="@puedeContinuar.ToString().ToLowerInvariant()">
 
     <!-- TITULO -->
     <div class="mb-4">
@@ -378,7 +382,7 @@
         <div class="alert alert-warning" role="alert">
             <strong>No es posible continuar:</strong>
             se solicitaron @cantidadPasajeros pasajero(s), pero esta pantalla solo permite
-            gestionar un máximo de @limitePantalla asientos por operación.
+            gestionar un maximo de @limitePantalla asientos por operacion.
         </div>
     }
     else if (excedeDisponibilidadVista)
@@ -394,9 +398,9 @@
     {
         <div class="alert alert-info" role="alert">
             La aeronave asignada tiene una capacidad real de <strong>@capacidadTotal</strong> asientos
-            (registrada en ModeloAeronave.CapacidadAsientos). Esta pantalla, según su especificación,
-            solo gestiona la selección de hasta <strong>@limitePantalla</strong> asientos por operación;
-            el resto de la capacidad física de la aeronave no se modifica ni se oculta en SQL Server.
+            (registrada en ModeloAeronave.CapacidadAsientos). Esta pantalla, segun su especificacion,
+            solo gestiona la seleccion de hasta <strong>@limitePantalla</strong> asientos por operacion;
+            el resto de la capacidad fisica de la aeronave no se modifica ni se oculta en SQL Server.
         </div>
     }
 
@@ -500,7 +504,7 @@
 
         <div class="row g-2 mt-1 small text-muted">
             <div class="col-6 col-md-3">
-                Límite de esta pantalla: <strong class="text-dark">@limitePantalla asientos</strong>
+                Limite de esta pantalla: <strong class="text-dark">@limitePantalla asientos</strong>
             </div>
             <div class="col-6 col-md-3">
                 Capacidad aplicable: <strong class="text-dark">@capacidadAplicable</strong>
@@ -510,7 +514,7 @@
                 <strong class="text-dark">@(cantidadPasajeros > 0 ? cantidadPasajeros.ToString() : "No especificado")</strong>
             </div>
             <div class="col-6 col-md-3">
-                Máx. a seleccionar ahora: <strong class="text-dark">@limiteSeleccion</strong>
+                Max. a seleccionar ahora: <strong class="text-dark">@limiteSeleccion</strong>
             </div>
         </div>
 
@@ -765,144 +769,163 @@
 </div>
 
 @section scripts {
-
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
+                document.addEventListener("DOMContentLoaded", function () {
 
-        // ASIENTOS DISPONIBLES
-        var botones =
-            document.querySelectorAll(".js-asiento");
+                    // Los elementos se obtienen con un respaldo para evitar referencias nulas.
+                    // En la vista normal, todos existen porque forman parte del HTML anterior.
+                    var configuracion =
+                        document.getElementById("configuracionDisponibilidad") ||
+                        document.createElement("div");
 
-        // LISTA DE SELECCION
-        var seleccionados = [];
+                    var resumen =
+                        document.getElementById("asientosSeleccionados") ||
+                        document.createElement("div");
 
-        // ELEMENTOS DE PANTALLA
-        var resumen =
-            document.getElementById("asientosSeleccionados");
+                    var contador =
+                        document.getElementById("contadorSeleccion") ||
+                        document.createElement("div");
 
-        var contador =
-            document.getElementById("contadorSeleccion");
+                    var continuar =
+                        document.getElementById("btnContinuar") ||
+                        document.createElement("button");
 
-        var continuar =
-            document.getElementById("btnContinuar");
+                    var inputCodigos =
+                        document.getElementById("codigosAsientosInput") ||
+                        document.createElement("input");
 
-        var inputCodigos =
-            document.getElementById("codigosAsientosInput");
+                    var limiteSeleccion = parseInt(
+                        configuracion.getAttribute("data-limite-seleccion") || "0",
+                        10
+                    );
 
-        // DATOS REALES ENVIADOS POR EL SERVIDOR (no son la fuente de
-        // verdad de la disponibilidad: solo se usan para la UX del
-        // cliente; el servidor vuelve a validar todo en
-        // ConfirmarSeleccionAsientos).
-        var limiteSeleccion = @limiteSeleccion;
-        var cantidadPasajeros = @cantidadPasajeros;
-        var puedeContinuar = @puedeContinuar.ToString().ToLowerInvariant();
+                    var cantidadPasajeros = parseInt(
+                        configuracion.getAttribute("data-cantidad-pasajeros") || "0",
+                        10
+                    );
 
-        // ACTUALIZAR RESUMEN
-        function actualizarResumen() {
+                    var puedeContinuar =
+                        configuracion.getAttribute("data-puede-continuar") === "true";
 
-            resumen.innerHTML = "";
+                    // Se inicializa con una cadena para que JavaScript infiera string[].
+                    // Luego se vacia; se evita una anotacion de tipo en comentario para no confundir a Razor.
+                    var seleccionados = [""];
+                    seleccionados.length = 0;
 
-            contador.textContent =
-                seleccionados.length +
-                " asientos seleccionados";
+                    function actualizarResumen() {
 
-            inputCodigos.value =
-                seleccionados.join(",");
+                        resumen.textContent = "";
 
-            var cantidadCorrecta =
-                cantidadPasajeros > 0
-                ? seleccionados.length === cantidadPasajeros
-                : seleccionados.length > 0;
+                        contador.textContent =
+                            seleccionados.length + " asientos seleccionados";
 
-            continuar.disabled =
-                !puedeContinuar ||
-                seleccionados.length === 0 ||
-                !cantidadCorrecta;
+                        // Actualiza el atributo value del campo oculto del formulario.
+                        inputCodigos.setAttribute("value", seleccionados.join(","));
 
-            if (seleccionados.length === 0) {
+                        var cantidadCorrecta = cantidadPasajeros > 0
+                            ? seleccionados.length === cantidadPasajeros
+                            : seleccionados.length > 0;
 
-                var texto =
-                    document.createElement("span");
+                        var seleccionValida =
+                            puedeContinuar &&
+                            seleccionados.length > 0 &&
+                            cantidadCorrecta;
 
-                texto.className = "text-muted";
-                texto.textContent = "Ninguno";
+                        if (seleccionValida) {
+                            continuar.removeAttribute("disabled");
+                        } else {
+                            continuar.setAttribute("disabled", "disabled");
+                        }
 
-                resumen.appendChild(texto);
-                return;
-            }
+                        if (seleccionados.length === 0) {
+                            var texto = document.createElement("span");
+                            texto.className = "text-muted";
+                            texto.textContent = "Ninguno";
+                            resumen.appendChild(texto);
+                            return;
+                        }
 
-            seleccionados.forEach(function (codigo) {
+                        seleccionados.forEach(function (codigo) {
+                            var etiqueta = document.createElement("span");
 
-                var etiqueta =
-                    document.createElement("span");
+                            etiqueta.className =
+                                "badge bg-success me-2 mb-1 px-3 py-2";
 
-                etiqueta.className =
-                    "badge bg-success me-2 mb-1 px-3 py-2";
-
-                etiqueta.textContent =
-                    "Asiento " + codigo;
-
-                resumen.appendChild(etiqueta);
-
-            });
-        }
-
-        // SELECCIONAR / DESELECCIONAR
-        botones.forEach(function (boton) {
-
-            if (boton.disabled) {
-                return;
-            }
-
-            boton.addEventListener("click", function () {
-
-                var codigo =
-                    boton.getAttribute("data-asiento");
-
-                var indice =
-                    seleccionados.indexOf(codigo);
-
-                if (indice === -1) {
-
-                    // No se permite exceder el limite de seleccion de
-                    // esta pantalla (capacidad aplicable / disponibilidad
-                    // real), calculado por el servidor.
-                    if (limiteSeleccion > 0 &&
-                        seleccionados.length >= limiteSeleccion) {
-                        return;
+                            etiqueta.textContent = "Asiento " + codigo;
+                            resumen.appendChild(etiqueta);
+                        });
                     }
 
-                    seleccionados.push(codigo);
+                    // Eventos de seleccion para los asientos disponibles.
+                    var botones = document.querySelectorAll(".js-asiento");
 
-                    boton.classList.remove("vip-libre");
-                    boton.classList.add("vip-seleccionado");
+                    botones.forEach(function (boton) {
 
-                    boton.setAttribute(
-                        "aria-pressed", "true");
+                        // Los asientos reservados, ocupados o bloqueados no se pueden seleccionar.
+                        if (boton.hasAttribute("disabled")) {
+                            return;
+                        }
 
-                }
-                else {
+                        boton.addEventListener("click", function () {
 
-                    seleccionados.splice(indice, 1);
+                            var codigo = boton.getAttribute("data-asiento");
 
-                    boton.classList.remove("vip-seleccionado");
-                    boton.classList.add("vip-libre");
+                            if (!codigo) {
+                                return;
+                            }
 
-                    boton.setAttribute(
-                        "aria-pressed", "false");
-                }
+                            var indice = seleccionados.indexOf(codigo);
 
-                actualizarResumen();
-            });
-        });
+                            if (indice === -1) {
 
-        // El boton Continuar es un submit real del formulario hacia
-        // ConfirmarSeleccionAsientos (validacion definitiva en el
-        // servidor). Mientras no se cumplan las condiciones minimas,
-        // permanece deshabilitado.
-        actualizarResumen();
+                                // Respeta el limite establecido por el controlador.
+                                if (limiteSeleccion > 0 &&
+                                    seleccionados.length >= limiteSeleccion) {
+                                    return;
+                                }
 
-    });
+                                seleccionados.push(codigo);
+
+                                boton.classList.remove("vip-libre");
+                                boton.classList.add("vip-seleccionado");
+                                boton.setAttribute("aria-pressed", "true");
+
+                            } else {
+
+                                seleccionados.splice(indice, 1);
+
+                                boton.classList.remove("vip-seleccionado");
+                                boton.classList.add("vip-libre");
+                                boton.setAttribute("aria-pressed", "false");
+                            }
+
+                            actualizarResumen();
+                        });
+                    });
+
+                    // Validacion adicional en el navegador antes de enviar el formulario.
+                    var formulario =
+                        document.getElementById("formContinuar");
+
+                    if (formulario) {
+                        formulario.addEventListener("submit", function (evento) {
+
+                            var cantidadCorrecta = cantidadPasajeros > 0
+                                ? seleccionados.length === cantidadPasajeros
+                                : seleccionados.length > 0;
+
+                            if (!puedeContinuar ||
+                                seleccionados.length === 0 ||
+                                !cantidadCorrecta) {
+
+                                evento.preventDefault();
+                                actualizarResumen();
+                            }
+                        });
+                    }
+
+                    // Estado inicial: boton bloqueado hasta completar la seleccion requerida.
+                    actualizarResumen();
+                });
     </script>
-
 }
