@@ -1,55 +1,126 @@
-﻿@model Con_Autenticacion.Models.ModeloAeronave
+﻿
+@model Con_Autenticacion.Models.ModeloAeronave
 
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "Nuevo modelo de aeronave";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
+<div class="container py-4" style="max-width:950px;">
 
-
-@using (Html.BeginForm()) 
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>ModeloAeronave</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.Fabricante, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Fabricante, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Fabricante, "", new { @class = "text-danger" })
-            </div>
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2"
+             style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Configuracion
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Nombre, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
-            </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Registrar modelo de aeronave
+        </h1>
+
+        <p class="text-muted mb-0">
+            Registra un nuevo fabricante y modelo para la flota.
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+        <div class="card-header bg-white p-4">
+            <h2 class="h5 fw-bold mb-1" style="color:#172b3d;">
+                Datos del modelo
+            </h2>
+            <small class="text-muted">
+                Completa la informacion tecnica de la aeronave.
+            </small>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.CapacidadAsientos, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.CapacidadAsientos, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.CapacidadAsientos, "", new { @class = "text-danger" })
-            </div>
-        </div>
+        <div class="card-body p-4">
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
+            @using (Html.BeginForm("Create", "ModeloAeronaves", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                @Html.ValidationSummary(true, "",
+                    new { @class = "alert alert-danger" })
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.Fabricante, "Fabricante",
+                            new { @class = "form-label fw-semibold" })
+
+                        @Html.TextBoxFor(m => m.Fabricante, new
+                        {
+                            @class = "form-control",
+                            maxlength = "60",
+                            required = "required",
+                            placeholder = "Ej. Embraer"
+                        })
+
+                        @Html.ValidationMessageFor(m => m.Fabricante, "",
+                            new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.Nombre, "Nombre del modelo",
+                            new { @class = "form-label fw-semibold" })
+
+                        @Html.TextBoxFor(m => m.Nombre, new
+                        {
+                            @class = "form-control",
+                            maxlength = "60",
+                            required = "required",
+                            placeholder = "Ej. Phenom 300E"
+                        })
+
+                        @Html.ValidationMessageFor(m => m.Nombre, "",
+                            new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.CapacidadAsientos,
+                            "Capacidad de asientos",
+                            new { @class = "form-label fw-semibold" })
+
+                        @Html.TextBoxFor(m => m.CapacidadAsientos, new
+                        {
+                            @class = "form-control",
+                            type = "number",
+                            min = "1",
+                            max = "255",
+                            step = "1",
+                            required = "required",
+                            placeholder = "Ej. 7"
+                        })
+
+                        @Html.ValidationMessageFor(m => m.CapacidadAsientos, "",
+                            new { @class = "text-danger small" })
+
+                        <small class="text-muted">
+                            Capacidad total de pasajeros.
+                        </small>
+                    </div>
+
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-2 flex-wrap">
+
+                    <button type="submit"
+                            class="btn text-white px-4"
+                            style="background:#172b3d;">
+                        Registrar modelo
+                    </button>
+
+                    @Html.ActionLink("Cancelar", "Index", null,
+                        new { @class = "btn btn-outline-secondary px-4" })
+
+                </div>
+            }
+
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
 
 @section Scripts {

@@ -1,88 +1,105 @@
-﻿@model Con_Autenticacion.Models.Asiento
+﻿
+@model Con_Autenticacion.Models.Asiento
+
 @{
     ViewBag.Title = "Eliminar asiento";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    string modelo = Model.ModeloAeronave != null ? Model.ModeloAeronave.Fabricante + " " + Model.ModeloAeronave.Nombre : "N/A";
-    string lado = Model.Lado == "D" ? "Derecho" : Model.Lado == "I" ? "Izquierdo" : Model.Lado;
+
+    string controlador = ViewContext.RouteData.Values["controller"].ToString();
+
+    string fabricante = Model.ModeloAeronave != null
+        ? Model.ModeloAeronave.Fabricante + " " + Model.ModeloAeronave.Nombre
+        : "N/A";
+
+    string lado = Model.Lado == "D" ? "Derecho" :
+                  Model.Lado == "I" ? "Izquierdo" : Model.Lado;
 }
-<div class="container py-4" style="max-width:900px;">
+
+<div class="container py-4" style="max-width:950px;">
     <div class="mb-4">
         <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
             Flota y rutas / Confirmacion
         </div>
-        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
-            Eliminar asiento
-        </h1>
-        <p class="text-muted mb-0">
-            Confirma la eliminacion de esta ubicacion.
-        </p>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">Eliminar asiento</h1>
+        <p class="text-muted mb-0">Confirma la eliminacion de la ubicacion seleccionada.</p>
     </div>
-    <div class="card border-0 shadow-sm rounded-4">
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white p-4">
+            <h2 class="h5 fw-bold mb-1">Confirmar eliminacion</h2>
+            <p class="text-muted mb-0">Asiento @Model.Codigo</p>
+        </div>
+
         <div class="card-body p-4">
-            <div class="alert alert-warning border-0">
-                <strong>
-                    Atencion:
-                </strong>
-                revisa que el asiento no este siendo utilizado por una reserva.
+            <div class="alert alert-danger">
+                <strong>Atencion:</strong> Estas seguro de eliminar este asiento?
+                Esta accion no se puede deshacer.
             </div>
-            <h2 class="h5" style="color:#172b3d;">
-                Asiento @Model.Codigo
-            </h2>
-            <div class="row g-3 my-3">
+
+            <div class="row g-3">
                 <div class="col-md-6">
-                    <small class="text-muted d-block">
-                        Modelo
-                    </small>
-                    <strong>
-                        @modelo
-                    </strong>
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Modelo de aeronave</small>
+                        <strong>@fabricante</strong>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <small class="text-muted d-block">
-                        Fila
-                    </small>
-                    <strong>
-                        @Model.Fila
-                    </strong>
+
+                <div class="col-md-6">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Codigo</small>
+                        <strong>@Model.Codigo</strong>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <small class="text-muted d-block">
-                        Lado
-                    </small>
-                    <strong>
-                        @lado
-                    </strong>
+
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Numero interno</small>
+                        <strong>@Model.NumeroAsiento</strong>
+                    </div>
                 </div>
+
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Fila</small>
+                        <strong>@Model.Fila</strong>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Lado</small>
+                        <strong>@lado</strong>
+                    </div>
+                </div>
+
                 <div class="col-12">
-                    <small class="text-muted d-block">
-                        Ubicacion
-                    </small>
-                    <strong>
-                        @Model.Ubicacion
-                    </strong>
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Ubicacion</small>
+                        <strong>@Model.Ubicacion</strong>
+                    </div>
                 </div>
             </div>
-            @using (Html.BeginForm("Delete", "Asientoes", new
-            {
-                id = Model.NumeroAsiento,
-                modeloAeronaveId = Model.ModeloAeronaveId,
-                numeroAsiento = Model.NumeroAsiento
-            }
-           , FormMethod.Post, new
-           {
-               @class = "d-flex flex-wrap gap-2"
-           }
-           ))
+
+            <hr class="my-4" />
+
+            @using (Html.BeginForm("Delete", controlador,
+                new
+                {
+                    modeloAeronaveId = Model.ModeloAeronaveId,
+                    numeroAsiento = Model.NumeroAsiento
+                },
+                FormMethod.Post, new { }))
             {
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-danger">
-                    Confirmar eliminacion
-                </button>
-                @Html.ActionLink("Cancelar", "Index", null, new
-                {
-                    @class = "btn btn-outline-secondary"
-                }
-                )
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-danger px-4">
+                        Confirmar eliminacion
+                    </button>
+
+                    @Html.ActionLink("Cancelar", "Index", null,
+                        new { @class = "btn btn-outline-secondary px-4" })
+                </div>
             }
         </div>
     </div>

@@ -1,34 +1,20 @@
-﻿@* Layout compartido Aerolinea VIP.
-    ASP.NET MVC 5 / Bootstrap 5.
-    Los permisos reales se validan en los controladores.
-*@
-
+﻿
 @{
     bool autenticado = Request.IsAuthenticated;
 
-    bool esSuper = autenticado &&
-        User.IsInRole("SuperUsuario");
-
-    bool esAdmin = autenticado &&
-        User.IsInRole("Administrador");
-
-    bool esCounter = autenticado &&
-        User.IsInRole("Counter");
-
-    bool esCliente = autenticado &&
-        User.IsInRole("Cliente");
+    bool esSuper = autenticado && User.IsInRole("SuperUsuario");
+    bool esAdmin = autenticado && User.IsInRole("Administrador");
+    bool esCounter = autenticado && User.IsInRole("Counter");
+    bool esCliente = autenticado && User.IsInRole("Cliente");
 
     bool esPersonalAdmin = esSuper || esAdmin;
 }
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="utf-8" />
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>@ViewBag.Title - Aerolinea VIP</title>
 
@@ -36,188 +22,380 @@
     @Scripts.Render("~/bundles/modernizr")
 
     <style>
-        body {
-            background-color: #F6F8FA;
-            color: #34414C;
+        /* =========================================
+           CONFIGURACION GENERAL
+        ========================================= */
+
+        html {
+            min-height: 100%;
+            width: 100%;
         }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+            background: #F4F7FA;
+            color: #34414C;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* =========================================
+           BARRA DE NAVEGACION
+        ========================================= */
 
         .vip-navbar {
-            background-color: #172A3B;
+            flex: 0 0 auto;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0;
+            background: #172A3B;
+            border: none;
             border-bottom: 3px solid #CBA968;
-            box-shadow: 0 3px 16px rgba(16, 35, 51, 0.12);
+            border-radius: 0;
+            box-shadow: 0 3px 15px rgba(0,0,0,.10);
+            z-index: 1030;
         }
 
+            .vip-navbar > .container-fluid {
+                min-height: 75px;
+                display: flex;
+                align-items: center;
+            }
+
+            /* LOGOTIPO */
+
             .vip-navbar .navbar-brand {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
                 color: #FFFFFF;
-                font-size: 1.2rem;
-                font-weight: 700;
+                font-size: 1.22rem;
+                font-weight: 750;
                 letter-spacing: .7px;
                 line-height: 1.2;
+                padding: 10px 12px 10px 0;
+                margin-right: 20px;
+                white-space: nowrap;
             }
 
                 .vip-navbar .navbar-brand:hover {
-                    color: #FFFFFF;
+                    color: #E8C987;
                 }
-
-        .vip-logo {
-            color: #E8C987;
-            margin-right: 5px;
-            font-size: 1.4rem;
-        }
 
         .vip-subtitulo {
             display: block;
             color: #B8C6D0;
-            letter-spacing: 2px;
             font-size: .58rem;
             font-weight: 400;
-            margin-left: 33px;
-            margin-top: 3px;
+            letter-spacing: 2.2px;
+            margin-top: 5px;
+        }
+
+        /* ENLACES */
+
+        .vip-navbar .navbar-nav {
+            align-items: center;
+            gap: 3px;
         }
 
         .vip-navbar .nav-link {
             color: #F4F6F8 !important;
-            border-radius: 6px;
-            padding: .65rem .75rem !important;
             font-size: .9rem;
+            font-weight: 500;
+            padding: 11px 13px !important;
+            border-radius: 7px;
+            transition: background .2s, color .2s;
         }
 
             .vip-navbar .nav-link:hover,
             .vip-navbar .nav-link:focus,
             .vip-navbar .nav-link.show {
                 color: #172A3B !important;
-                background-color: #E7EBEF;
+                background: #E8C987;
             }
 
+        /* BOTON MOVIL */
+
+        .vip-navbar .navbar-toggler {
+            border: 1px solid #718292;
+            border-radius: 7px;
+            padding: 7px 10px;
+        }
+
+            .vip-navbar .navbar-toggler:focus {
+                box-shadow: 0 0 0 3px rgba(203,169,104,.25);
+            }
+
+        /* =========================================
+           MENUS DESPLEGABLES
+        ========================================= */
+
         .vip-navbar .dropdown-menu {
+            min-width: 250px;
+            padding: 9px;
+            margin-top: 8px;
             border: 1px solid #E2E8EE;
             border-top: 3px solid #CBA968;
-            border-radius: 8px;
-            padding: 8px;
-            min-width: 250px;
-            box-shadow: 0 12px 28px rgba(24, 42, 58, .14);
+            border-radius: 9px;
+            background: #FFFFFF;
+            box-shadow: 0 12px 30px rgba(24,42,58,.16);
         }
 
         .vip-navbar .dropdown-header {
-            color: #6A7B88;
-            font-size: .74rem;
-            font-weight: 700;
-            text-transform: uppercase;
+            color: #9A793E;
+            font-size: .73rem;
+            font-weight: 750;
             letter-spacing: .8px;
+            text-transform: uppercase;
+            padding: 9px 12px 7px;
         }
 
         .vip-navbar .dropdown-item {
             color: #34414C;
-            padding: 10px 13px;
+            font-size: .88rem;
+            padding: 10px 12px;
             border-radius: 6px;
             white-space: normal;
-            font-size: .88rem;
+            transition: background .2s;
         }
 
             .vip-navbar .dropdown-item:hover,
             .vip-navbar .dropdown-item:focus {
-                background-color: #F2F5F8;
+                background: #F1F4F7;
                 color: #172A3B;
             }
 
-        .vip-navbar .vip-pendiente {
+        .vip-navbar .dropdown-divider {
+            border-top-color: #E6EAF0;
+            margin: 7px 0;
+        }
+
+        .vip-pendiente {
             display: block;
-            padding: 10px 13px;
-            color: #7F8B95;
+            padding: 10px 12px;
+            color: #89949E;
             font-size: .88rem;
             cursor: not-allowed;
         }
 
-            .vip-navbar .vip-pendiente small {
+            .vip-pendiente small {
                 display: block;
+                color: #AAB3BB;
                 font-size: .72rem;
-                color: #9AA4AC;
+                margin-top: 3px;
             }
 
-        .vip-cuenta .navbar-nav {
+        /* =========================================
+           CUENTA DE USUARIO
+        ========================================= */
+
+        .vip-cuenta {
+            margin-left: auto;
+            display: flex;
             align-items: center;
         }
 
-        .vip-cuenta .nav-link {
-            font-size: .85rem;
-        }
+            .vip-cuenta .navbar-nav {
+                align-items: center;
+            }
+
+            .vip-cuenta .nav-link {
+                font-size: .86rem;
+            }
+
+        /* =========================================
+           CONTENIDO PRINCIPAL
+        ========================================= */
 
         .vip-contenido {
-            min-height: 73vh;
-            padding-top: 32px;
-            padding-bottom: 52px;
+            flex: 1 0 auto;
+            width: 100%;
+            padding: 32px 24px 48px;
+            margin: 0;
         }
 
+        .vip-main-inner {
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+
+            /* Evita que las tablas y formularios desborden */
+
+            .vip-main-inner img {
+                max-width: 100%;
+            }
+
+            .vip-main-inner .table-responsive {
+                width: 100%;
+            }
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+
         .vip-pie {
-            background-color: #172A3B;
+            flex-shrink: 0;
+            width: 100%;
+            margin-top: auto;
+            padding: 23px 24px;
+            background: #172A3B;
             color: #CCD6DE;
-            padding: 23px 0;
             border-top: 3px solid #CBA968;
             font-size: .84rem;
         }
 
             .vip-pie strong {
                 color: #FFFFFF;
+                font-weight: 750;
             }
 
             .vip-pie a {
                 color: #E8C987;
             }
 
+        .vip-footer-inner {
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
         @@media (max-width: 991px) {
-            .vip-navbar .dropdown-menu {
-                box-shadow: none;
-                margin-bottom: 8px;
+
+            .vip-navbar > .container-fluid {
+                min-height: 68px;
+                flex-wrap: wrap;
             }
 
-            .vip-cuenta .navbar-nav {
+            .vip-navbar .navbar-collapse {
+                width: 100%;
+                padding: 10px 0 15px;
+                border-top: 1px solid rgba(255,255,255,.12);
+            }
+
+            .vip-navbar .navbar-nav {
+                align-items: stretch;
+                gap: 2px;
+            }
+
+            .vip-navbar .nav-link {
+                padding: 10px 12px !important;
+            }
+
+            .vip-navbar .dropdown-menu {
+                margin-top: 3px;
+                margin-bottom: 8px;
+                box-shadow: none;
+            }
+
+            .vip-cuenta {
+                margin: 12px 0 0;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255,255,255,.15);
+            }
+
+                .vip-cuenta .navbar-nav {
+                    align-items: stretch;
+                }
+
+            .vip-contenido {
+                padding: 25px 16px 35px;
+            }
+
+            .vip-footer-inner {
+                flex-direction: column;
                 align-items: flex-start;
+            }
+        }
+
+        @@media (max-width: 576px) {
+
+            .vip-navbar .navbar-brand {
+                font-size: 1.05rem;
             }
 
             .vip-subtitulo {
-                margin-left: 30px;
+                font-size: .53rem;
+            }
+
+            .vip-contenido {
+                padding: 20px 12px 30px;
+            }
+
+            .vip-pie {
+                padding: 19px 15px;
+                font-size: .78rem;
             }
         }
     </style>
+
+    @RenderSection("Styles", required: false)
+
 </head>
 
 <body>
 
-    <!-- BARRA PRINCIPAL -->
+    <!-- =========================================
+         NAVEGACION PRINCIPAL
+    ========================================== -->
+
     <nav class="navbar navbar-expand-lg navbar-dark vip-navbar">
 
         <div class="container-fluid px-3 px-lg-4">
 
             <!-- LOGOTIPO -->
+
             <a class="navbar-brand"
                href="@Url.Action("Index", "Home")">
 
-                <span class="vip-logo"></span>AEROLINEA VIP
+                AEROLINEA VIP
 
                 <span class="vip-subtitulo">
                     VUELOS EJECUTIVOS
                 </span>
+
             </a>
 
-            <!-- BOTON MOVIL -->
+            <!-- BOTON RESPONSIVE -->
+
             <button class="navbar-toggler"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#menuVip"
                     aria-controls="menuVip"
                     aria-expanded="false"
-                    aria-label="Mostrar u ocultar menu">
+                    aria-label="Mostrar menu">
 
                 <span class="navbar-toggler-icon"></span>
+
             </button>
 
-            <!-- CONTENEDOR DE NAVEGACION -->
+            <!-- MENU -->
+
             <div class="collapse navbar-collapse" id="menuVip">
 
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                     <!-- INICIO -->
+
                     <li class="nav-item">
+
                         @Html.ActionLink(
                             "Inicio",
                             "Index",
@@ -225,9 +403,11 @@
                             null,
                             new { @class = "nav-link" }
                         )
+
                     </li>
 
                     <!-- VUELOS -->
+
                     <li class="nav-item dropdown">
 
                         <a class="nav-link dropdown-toggle"
@@ -235,7 +415,9 @@
                            role="button"
                            data-bs-toggle="dropdown"
                            aria-expanded="false">
+
                             Vuelos
+
                         </a>
 
                         <ul class="dropdown-menu">
@@ -278,9 +460,7 @@
 
                             @if (esPersonalAdmin)
                             {
-                                <li>
-                                    <hr class="dropdown-divider" />
-                                </li>
+                                <li><hr class="dropdown-divider" /></li>
 
                                 <li>
                                     <span class="dropdown-header">
@@ -312,8 +492,9 @@
                         </ul>
 
                     </li>
-                    <!-- FIN VUELOS -->
+
                     <!-- MIS VIAJES -->
+
                     @if (esCliente)
                     {
                         <li class="nav-item dropdown">
@@ -323,7 +504,9 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Mis viajes
+
                             </a>
 
                             <ul class="dropdown-menu">
@@ -379,32 +562,23 @@
                                 else
                                 {
                                     <li>
-                                        <span class="vip-pendiente"
-                                              aria-disabled="true">
+                                        <span class="vip-pendiente">
                                             Mis reservas
-                                            <small>
-                                                Pendiente de consulta segura por usuario
-                                            </small>
+                                            <small>Consulta pendiente de implementacion</small>
                                         </span>
                                     </li>
 
                                     <li>
-                                        <span class="vip-pendiente"
-                                              aria-disabled="true">
+                                        <span class="vip-pendiente">
                                             Mis comprobantes
-                                            <small>
-                                                Pendiente de consulta segura por usuario
-                                            </small>
+                                            <small>Consulta pendiente de implementacion</small>
                                         </span>
                                     </li>
 
                                     <li>
-                                        <span class="vip-pendiente"
-                                              aria-disabled="true">
+                                        <span class="vip-pendiente">
                                             Check-in
-                                            <small>
-                                                Pendiente de validaciones del servidor
-                                            </small>
+                                            <small>Validaciones pendientes</small>
                                         </span>
                                     </li>
                                 }
@@ -414,10 +588,13 @@
                         </li>
                     }
 
-                    <!-- MENUS DE ADMINISTRACION -->
+                    <!-- MENUS ADMINISTRATIVOS -->
+
                     @if (esPersonalAdmin)
                     {
+
                         <!-- OPERACIONES -->
+
                         <li class="nav-item dropdown">
 
                             <a class="nav-link dropdown-toggle"
@@ -425,7 +602,9 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Operaciones
+
                             </a>
 
                             <ul class="dropdown-menu">
@@ -491,6 +670,7 @@
                         </li>
 
                         <!-- FLOTA Y RUTAS -->
+
                         <li class="nav-item dropdown">
 
                             <a class="nav-link dropdown-toggle"
@@ -498,7 +678,9 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Flota y rutas
+
                             </a>
 
                             <ul class="dropdown-menu">
@@ -549,9 +731,7 @@
                                     )
                                 </li>
 
-                                <li>
-                                    <hr class="dropdown-divider" />
-                                </li>
+                                <li><hr class="dropdown-divider" /></li>
 
                                 <li>
                                     <span class="dropdown-header">
@@ -614,6 +794,7 @@
                         </li>
 
                         <!-- ADMINISTRACION -->
+
                         <li class="nav-item dropdown">
 
                             <a class="nav-link dropdown-toggle"
@@ -621,7 +802,9 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Administracion
+
                             </a>
 
                             <ul class="dropdown-menu">
@@ -668,9 +851,11 @@
                             </ul>
 
                         </li>
+
                     }
 
-                    <!-- ATENCION / COUNTER -->
+                    <!-- ATENCION COUNTER -->
+
                     @if (esCounter)
                     {
                         <li class="nav-item dropdown">
@@ -680,7 +865,9 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Atencion
+
                             </a>
 
                             <ul class="dropdown-menu">
@@ -717,9 +904,11 @@
                     }
 
                     <!-- MI CUENTA -->
+
                     @if (autenticado)
                     {
                         <li class="nav-item">
+
                             @Html.ActionLink(
                                 "Mi cuenta",
                                 "Index",
@@ -727,12 +916,14 @@
                                 null,
                                 new { @class = "nav-link" }
                             )
+
                         </li>
                     }
 
                 </ul>
-                <!-- FIN MENU PRINCIPAL -->
-                <!-- LOGIN / REGISTRO -->
+
+                <!-- LOGIN Y CERRAR SESION -->
+
                 <div class="vip-cuenta">
 
                     @Html.Partial("_LoginPartial")
@@ -745,33 +936,46 @@
 
     </nav>
 
-    <!-- CONTENIDO DE LA PAGINA -->
-    <main class="container vip-contenido">
+    <!-- =========================================
+         CONTENIDO PRINCIPAL
+    ========================================== -->
 
-        @RenderBody()
+    <main class="vip-contenido">
+
+        <div class="vip-main-inner">
+
+            @RenderBody()
+
+        </div>
 
     </main>
 
-    <!-- PIE DE PAGINA -->
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
     <footer class="vip-pie">
 
-        <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <div class="vip-footer-inner">
 
-            <span>
+            <div>
                 <strong>AEROLINEA VIP</strong>
                 &copy; @DateTime.Now.Year
                 - Proyecto academico
-            </span>
+            </div>
 
-            <span>
+            <div>
                 Grupo 3 - Sistema de reservas y administracion de vuelos
-            </span>
+            </div>
 
         </div>
 
     </footer>
 
-    <!-- SCRIPTS -->
+    <!-- =========================================
+         SCRIPTS
+    ========================================== -->
+
     @Scripts.Render("~/bundles/jquery")
 
     <script src="@Url.Content("~/Scripts/bootstrap.bundle.min.js")"></script>

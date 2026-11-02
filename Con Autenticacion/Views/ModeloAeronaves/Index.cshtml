@@ -1,46 +1,338 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.ModeloAeronave>
+﻿
+@model IEnumerable<Con_Autenticacion.Models.ModeloAeronave>
+@using System.Linq
+@using System.Collections.Generic
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Modelos de aeronaves";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var modelos = Model ?? Enumerable.Empty<Con_Autenticacion.Models.ModeloAeronave>();
 }
 
-<h2>Index</h2>
+<style>
+    .avi-page {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding: 35px 20px 55px;
+    }
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Fabricante)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.CapacidadAsientos)
-        </th>
-        <th></th>
-    </tr>
+    .avi-eyebrow {
+        color: #b18b4b;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Fabricante)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Nombre)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CapacidadAsientos)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ModeloAeronaveId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ModeloAeronaveId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ModeloAeronaveId })
-        </td>
-    </tr>
-}
+    .avi-title {
+        color: #172b3d;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 8px 0;
+    }
 
-</table>
+    .avi-subtitle {
+        color: #718096;
+        margin-bottom: 25px;
+    }
+
+    .avi-card {
+        background: #fff;
+        border: 1px solid #edf0f3;
+        border-radius: 16px;
+        box-shadow: 0 3px 8px rgba(0,0,0,.07);
+        overflow: hidden;
+    }
+
+    .avi-card-header {
+        padding: 22px 25px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+        .avi-card-header h3 {
+            color: #172b3d;
+            font-size: 19px;
+            font-weight: 700;
+            margin: 0 0 5px;
+        }
+
+        .avi-card-header p {
+            color: #718096;
+            margin: 0;
+            font-size: 14px;
+        }
+
+    .avi-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .avi-table th {
+            background: #f5f7fa;
+            color: #172b3d;
+            font-weight: 700;
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .avi-table td {
+            padding: 17px 20px;
+            border-bottom: 1px solid #edf0f3;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .avi-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .avi-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+    .avi-badge {
+        display: inline-block;
+        background: #f7f0e5;
+        color: #987139;
+        border: 1px solid #ead8b9;
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .avi-btn {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 7px;
+        text-decoration: none !important;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid;
+        transition: .2s;
+    }
+
+    .avi-btn-primary {
+        background: #172b3d;
+        color: #fff !important;
+        border-color: #172b3d;
+        padding: 11px 18px;
+    }
+
+        .avi-btn-primary:hover {
+            background: #29445e;
+        }
+
+    .avi-btn-view {
+        color: #64748b !important;
+        border-color: #cbd5e1;
+    }
+
+    .avi-btn-edit {
+        color: #2563eb !important;
+        border-color: #93c5fd;
+    }
+
+    .avi-btn-delete {
+        color: #dc2626 !important;
+        border-color: #fca5a5;
+    }
+
+    .avi-btn-view:hover {
+        background: #f1f5f9;
+    }
+
+    .avi-btn-edit:hover {
+        background: #eff6ff;
+    }
+
+    .avi-btn-delete:hover {
+        background: #fef2f2;
+    }
+
+    .avi-actions {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+    }
+
+    .avi-empty {
+        text-align: center;
+        padding: 55px 20px;
+        color: #718096;
+    }
+
+        .avi-empty strong {
+            display: block;
+            color: #172b3d;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+    .avi-footer-note {
+        color: #718096;
+        font-size: 13px;
+        margin-top: 18px;
+    }
+
+    @@media(max-width: 768px) {
+        .avi-table {
+            min-width: 650px;
+        }
+
+        .avi-title {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<div class="avi-page">
+
+    <div class="mb-4">
+
+        <div class="avi-eyebrow">
+            Flota y rutas / Configuracion
+        </div>
+
+        <h1 class="avi-title">
+            Modelos de aeronaves
+        </h1>
+
+        <p class="avi-subtitle">
+            Administra los fabricantes, modelos y capacidades
+            de las aeronaves de Aerolinea VIP.
+        </p>
+
+        <div class="d-flex justify-content-end">
+            @Html.ActionLink(
+                "+ Nuevo modelo",
+                "Create",
+                null,
+                new { @class = "avi-btn avi-btn-primary" }
+            )
+        </div>
+
+    </div>
+
+    <div class="avi-card">
+
+        <div class="avi-card-header">
+
+            <div>
+                <h3>Catalogo de modelos</h3>
+                <p>Informacion tecnica de la flota disponible.</p>
+            </div>
+
+            <span class="avi-badge">
+                @modelos.Count() modelos registrados
+            </span>
+
+        </div>
+
+        @if (modelos.Any())
+        {
+            <div class="table-responsive">
+
+                <table class="avi-table">
+
+                    <thead>
+                        <tr>
+                            <th>Fabricante</th>
+                            <th>Modelo</th>
+                            <th>Capacidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in modelos)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>@item.Fabricante</strong>
+                                </td>
+
+                                <td>
+                                    @item.Nombre
+                                </td>
+
+                                <td>
+                                    <span class="avi-badge">
+                                        @item.CapacidadAsientos asientos
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="avi-actions">
+
+                                        @Html.ActionLink(
+                                            "Ver",
+                                            "Details",
+                                            new { id = item.ModeloAeronaveId },
+                                            new { @class = "avi-btn avi-btn-view" }
+                                        )
+
+                                        @Html.ActionLink(
+                                            "Editar",
+                                            "Edit",
+                                            new { id = item.ModeloAeronaveId },
+                                            new { @class = "avi-btn avi-btn-edit" }
+                                        )
+
+                                        @Html.ActionLink(
+                                            "Eliminar",
+                                            "Delete",
+                                            new { id = item.ModeloAeronaveId },
+                                            new { @class = "avi-btn avi-btn-delete" }
+                                        )
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="avi-empty">
+
+                <strong>No hay modelos registrados</strong>
+
+                <p>
+                    Todavia no existen modelos de aeronaves en el catalogo.
+                </p>
+
+                @Html.ActionLink(
+                    "Registrar primer modelo",
+                    "Create",
+                    null,
+                    new { @class = "avi-btn avi-btn-primary" }
+                )
+
+            </div>
+        }
+
+    </div>
+
+    <div class="avi-footer-note">
+        La capacidad de cada modelo determina la configuracion
+        de asientos disponible para la aeronave.
+    </div>
+
+</div>

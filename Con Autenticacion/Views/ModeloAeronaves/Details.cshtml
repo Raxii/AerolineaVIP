@@ -1,43 +1,70 @@
-﻿@model Con_Autenticacion.Models.ModeloAeronave
+﻿
+@model Con_Autenticacion.Models.ModeloAeronave
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Detalle del modelo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Details</h2>
+<div class="container py-4" style="max-width:1000px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Consulta
+        </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">Detalle del modelo</h1>
+        <p class="text-muted mb-0">Informacion tecnica de la aeronave.</p>
+    </div>
 
-<div>
-    <h4>ModeloAeronave</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Fabricante)
-        </dt>
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="p-4 text-white" style="background:#172b3d;border-bottom:4px solid #c9a96e;">
+            <div class="small text-uppercase opacity-75">Fabricante</div>
+            <h2 class="h3 fw-bold mb-1">@Model.Fabricante</h2>
+            <div class="fs-5">@Model.Nombre</div>
+        </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Fabricante)
-        </dd>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <small class="text-muted d-block mb-2">Codigo interno</small>
+                        <strong>#@Model.ModeloAeronaveId</strong>
+                    </div>
+                </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <small class="text-muted d-block mb-2">Fabricante</small>
+                        <strong>@Model.Fabricante</strong>
+                    </div>
+                </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <small class="text-muted d-block mb-2">Capacidad</small>
+                        <strong>@Model.CapacidadAsientos asientos</strong>
+                    </div>
+                </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.CapacidadAsientos)
-        </dt>
+                <div class="col-12">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Modelo</small>
+                        <strong>@Model.Nombre</strong>
+                    </div>
+                </div>
+            </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.CapacidadAsientos)
-        </dd>
+            <div class="d-flex gap-2 flex-wrap mt-4">
+                @Html.ActionLink("Editar modelo", "Edit",
+                    new { id = Model.ModeloAeronaveId },
+                    new { @class = "btn text-white px-4", style = "background:#172b3d;" })
 
-    </dl>
+                @Html.ActionLink("Eliminar modelo", "Delete",
+                    new { id = Model.ModeloAeronaveId },
+                    new { @class = "btn btn-outline-danger px-4" })
+
+                @Html.ActionLink("Volver al listado", "Index", null,
+                    new { @class = "btn btn-outline-secondary px-4" })
+            </div>
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ModeloAeronaveId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
