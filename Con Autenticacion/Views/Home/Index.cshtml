@@ -85,7 +85,9 @@
                 {
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e0e0e0 !important;">
-                            <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;"></div>
+                            <div class="card-img-top rounded-top-4 bg-light" style="height: 150px;">
+                                @Html.Partial("~/Views/Aeropuerto/ImgAeropuerto.cshtml", destino)
+                            </div>  
                             <div class="card-body text-center">
                                 <h5 class="card-title fw-bold text-dark">@destino.Nombre (@destino.CodigoIATA)</h5>
                                 <p class="card-text text-muted small mb-0">@destino.Localidad</p>
