@@ -1,0 +1,7 @@
+﻿@using Con_Autenticacion.Models
+@model Aeropuerto
+
+<img src="@Url.Content("~/Imagenes/Aeropuertos/" + Model.CodigoIATA + ".jpg")"
+     class="w-100 h-100"
+     style="object-fit: cover;"
+     alt="Aeropuerto @Model.Nombre" />
