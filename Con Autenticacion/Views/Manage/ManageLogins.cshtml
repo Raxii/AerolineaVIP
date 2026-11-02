@@ -1,72 +1,131 @@
 ﻿@model Con_Autenticacion.Models.ManageLoginsViewModel
 @using Microsoft.Owin.Security
 @{
-    ViewBag.Title = "Administre sus inicios de sesión externos";
+    ViewBag.Title = "Administrar accesos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool mostrarQuitar = ViewBag.ShowRemoveButton != null && (bool)ViewBag.ShowRemoveButton;
 }
-
-<main aria-labelledby="title">
-<h2 id="title">@ViewBag.Title.</h2>
-
-    <p class="text-success">@ViewBag.StatusMessage</p>
-    @{
-        var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes();
-        if (loginProviders.Count() == 0) {
-            <div>
-                <p>
-                    No existen servicios de autenticación externos configurados. Consulte <a href="https://go.microsoft.com/fwlink/?LinkId=313242">este artículo</a>
-                    para obtener información sobre cómo configurar esta aplicación ASP.NET para admitir el inicio de sesión a través de servicios externos.
-                </p>
+<div class="container py-4" style="max-width:1000px;">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Mi cuenta / Seguridad
             </div>
-        }
-        else
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Administrar accesos
+            </h1>
+            <p class="text-muted mb-0">
+                Consulta los proveedores externos asociados a tu cuenta.
+            </p>
+        </div>
+        @Html.ActionLink("Volver a mi cuenta", "Index", null, new
         {
-            if (Model.CurrentLogins.Count > 0)
+            @class = "btn btn-outline-secondary"
+        }
+        )
+    </div>
+    @if (!String.IsNullOrWhiteSpace(ViewBag.StatusMessage as string))
+    {
+        <div class="alert alert-success">
+            @ViewBag.StatusMessage
+        </div>
+    }
+    <div class="card border-0 shadow-sm rounded-4 mb-3">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-0" style="color:#172b3d;">
+                Accesos vinculados
+            </h2>
+        </div>
+        <div class="card-body p-4">
+            @if (Model.CurrentLogins != null && Model.CurrentLogins.Count > 0)
             {
-                <h4>Inicios de sesión registrados</h4>
-                <table class="table">
-                    <tbody>
-                        @foreach (var account in Model.CurrentLogins)
-                        {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
                             <tr>
-                                <td>@account.LoginProvider</td>
-                                <td>
-                                    @if (ViewBag.ShowRemoveButton)
-                                    {
-                                        using (Html.BeginForm("RemoveLogin", "Manage"))
+                                <th>
+                                    Proveedor
+                                </th>
+                                <th class="text-end">
+                                    Accion
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var account in Model.CurrentLogins)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">
+                                        @account.LoginProvider
+                                    </td>
+                                    <td class="text-end">
+                                        @if (mostrarQuitar)
                                         {
-                                            @Html.AntiForgeryToken()
-                                            <div>
+                                            using (Html.BeginForm("RemoveLogin", "Manage", FormMethod.Post, new
+                                            {
+                                                @class = "d-inline"
+                                            }
+                                            ))
+                                            {
+                                                @Html.AntiForgeryToken()
                                                 @Html.Hidden("loginProvider", account.LoginProvider)
                                                 @Html.Hidden("providerKey", account.ProviderKey)
-                                                <input type="submit" class="btn btn-outline-dark" value="Quitar" title="Quitar este inicio de sesión @account.LoginProvider de su cuenta" />
-                                            </div>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    Quitar
+                                                </button>
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        @: &nbsp;
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                        else
+                                        {
+                                            <span class="text-muted small">
+                                                Acceso principal
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
-            if (Model.OtherLogins.Count > 0)
+            else
             {
-                using (Html.BeginForm("LinkLogin", "Manage"))
+                <p class="text-muted mb-0">
+                    No hay accesos externos vinculados.
+                </p>
+            }
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-0" style="color:#172b3d;">
+                Vincular otro proveedor
+            </h2>
+        </div>
+        <div class="card-body p-4">
+            @if (Model.OtherLogins != null && Model.OtherLogins.Count > 0)
+            {
+                using (Html.BeginForm("LinkLogin", "Manage", FormMethod.Post, new
+                {
+                    @class = "d-flex flex-wrap gap-2"
+                }
+                ))
                 {
                     @Html.AntiForgeryToken()
-                    <div id="socialLoginList">
-                    <p>
-                        @foreach (AuthenticationDescription p in Model.OtherLogins)
-                        {
-                            <button type="submit" class="btn btn-default" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Inicie sesión con su cuenta @p.Caption">@p.AuthenticationType</button>
-                        }
-                    </p>
-                    </div>
+                    foreach (AuthenticationDescription proveedor in Model.OtherLogins)
+                    {
+                        <button type="submit" class="btn btn-outline-primary" name="provider" value="@proveedor.AuthenticationType">
+                            @proveedor.Caption
+                        </button>
+                    }
                 }
             }
-        }
-    }
-</main>
+            else
+            {
+                <p class="text-muted mb-0">
+                    No hay proveedores externos configurados en esta aplicacion.
+                </p>
+            }
+        </div>
+    </div>
+</div>

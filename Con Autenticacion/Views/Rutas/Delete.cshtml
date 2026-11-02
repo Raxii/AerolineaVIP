@@ -1,49 +1,70 @@
 ﻿@model Con_Autenticacion.Models.Ruta
-
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Eliminar ruta";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string origen = Model.Aeropuerto != null ? Model.Aeropuerto.CodigoIATA : Model.AeropuertoOrigenId.ToString();
+    string destino = Model.Aeropuerto1 != null ? Model.Aeropuerto1.CodigoIATA : Model.AeropuertoDestinoId.ToString();
+    int frecuencias = ViewBag.FrecuenciasAsociadas == null ? -1 : (int)ViewBag.FrecuenciasAsociadas;
 }
-
-<h2>Delete</h2>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Ruta</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Activa)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Activa)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Aeropuerto.CodigoIATA)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Aeropuerto.CodigoIATA)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Aeropuerto1.CodigoIATA)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Aeropuerto1.CodigoIATA)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+<div class="container py-4" style="max-width:900px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Confirmacion
         </div>
-    }
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Eliminar ruta
+        </h1>
+        <p class="text-muted mb-0">
+            Confirma la eliminacion del trayecto.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <div class="alert alert-warning border-0">
+                <strong>
+                    Atencion:
+                </strong>
+                si la ruta tiene frecuencias asociadas, la eliminacion debe rechazarse.
+            </div>
+            <h2 class="h5" style="color:#172b3d;">
+                @origen - @destino
+            </h2>
+            <div class="my-3">
+                <small class="text-muted d-block">
+                    Estado
+                </small>
+                <strong>
+                    @(Model.Activa ? "Activa" : "Inactiva")
+                </strong>
+            </div>
+            @if (frecuencias > 0)
+            {
+                <div class="alert alert-danger">
+                    No se puede eliminar: existen @frecuencias frecuencia(s) asociada(s).
+                </div>
+            }
+            @using (Html.BeginForm("Delete", "Rutas", new
+            {
+                id = Model.RutaId
+            }
+            , FormMethod.Post, new
+            {
+                @class = "d-flex flex-wrap gap-2"
+            }
+            ))
+            {
+                @Html.AntiForgeryToken() @if (frecuencias == 0 || frecuencias == -1)
+                {
+                    <button type="submit" class="btn btn-danger">
+                        Confirmar eliminacion
+                    </button>
+                }
+                @Html.ActionLink("Cancelar", "Index", null, new
+                {
+                    @class = "btn btn-outline-secondary"
+                }
+                )
+            }
+        </div>
+    </div>
 </div>

@@ -32,9 +32,9 @@ namespace Con_Autenticacion.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -55,23 +55,78 @@ namespace Con_Autenticacion.Controllers
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess ? "Su contraseña se ha cambiado."
-                : message == ManageMessageId.SetPasswordSuccess ? "Su contraseña se ha establecido."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Su proveedor de autenticación de dos factores se ha establecido."
+                message == ManageMessageId.ChangePasswordSuccess ? "Su contrasena se ha cambiado."
+                : message == ManageMessageId.SetPasswordSuccess ? "Su contrasena se ha establecido."
+                : message == ManageMessageId.SetTwoFactorSuccess ? "El proveedor de autenticacion de dos factores se ha establecido."
                 : message == ManageMessageId.Error ? "Se ha producido un error."
-                : message == ManageMessageId.AddPhoneSuccess ? "Se ha agregado su número de teléfono."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Se ha quitado su número de teléfono."
+                : message == ManageMessageId.AddPhoneSuccess ? "Se ha agregado su numero de telefono."
+                : message == ManageMessageId.RemovePhoneSuccess ? "Se ha quitado su numero de telefono."
+                : message == ManageMessageId.UpdateProfileSuccess ? "Los datos de tu cuenta se actualizaron correctamente."
                 : "";
 
             var userId = User.Identity.GetUserId();
+            var currentUser = await UserManager.FindByIdAsync(userId);
             var model = new IndexViewModel
             {
+                UserName = currentUser == null ? User.Identity.Name : currentUser.UserName,
+                Email = currentUser == null ? "" : currentUser.Email,
                 HasPassword = HasPassword(),
                 PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
                 TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await UserManager.GetLoginsAsync(userId),
                 BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
             };
+            return View(model);
+        }
+
+        //
+        // GET: /Manage/EditProfile
+        public async Task<ActionResult> EditProfile()
+        {
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+            return View(new EditProfileViewModel
+            {
+                UserName = user.UserName,
+                Email = user.Email
+            });
+        }
+
+        //
+        // POST: /Manage/EditProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditProfile(EditProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+
+            string nuevoCorreo = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+            if (!string.Equals(user.Email, nuevoCorreo, StringComparison.OrdinalIgnoreCase))
+            {
+                user.EmailConfirmed = false;
+            }
+            user.Email = nuevoCorreo;
+            var result = await UserManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                return RedirectToAction("Index", new { Message = ManageMessageId.UpdateProfileSuccess });
+            }
+
+            AddErrors(result);
+            model.UserName = user.UserName;
             return View(model);
         }
 
@@ -333,7 +388,7 @@ namespace Con_Autenticacion.Controllers
             base.Dispose(disposing);
         }
 
-#region Aplicaciones auxiliares
+        #region Aplicaciones auxiliares
         // Se usa para la protección XSRF al agregar inicios de sesión externos
         private const string XsrfKey = "XsrfId";
 
@@ -381,9 +436,10 @@ namespace Con_Autenticacion.Controllers
             SetPasswordSuccess,
             RemoveLoginSuccess,
             RemovePhoneSuccess,
+            UpdateProfileSuccess,
             Error
         }
 
-#endregion
+        #endregion
     }
 }

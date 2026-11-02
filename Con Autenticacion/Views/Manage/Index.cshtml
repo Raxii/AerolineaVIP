@@ -1,89 +1,206 @@
 ﻿@model Con_Autenticacion.Models.IndexViewModel
 @{
-    ViewBag.Title = "Administrar";
+    ViewBag.Title = "Mi cuenta";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string nombre = User.Identity.Name ?? "Usuario";
+    string inicial = String.IsNullOrWhiteSpace(nombre) ? "U" : nombre.Substring(0, 1).ToUpperInvariant();
+    string rol = User.IsInRole("SuperUsuario") ? "SuperUsuario" : User.IsInRole("Administrador") ? "Administrador" : User.IsInRole("Counter") ? "Counter" : User.IsInRole("Cliente") ? "Cliente" : "Usuario";
+    int accesos = Model.Logins == null ? 0 : Model.Logins.Count;
 }
-
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-
-    <p class="text-success">@ViewBag.StatusMessage</p>
-    <div>
-        <h4>Cambiar la configuración de la cuenta</h4>
-        <hr />
-        <dl class="dl-horizontal">
-            <dt>Contraseña:</dt>
-            <dd>
-                [
-                @if (Model.HasPassword)
-                {
-                    @Html.ActionLink("Cambiar la contraseña", "ChangePassword")
-                }
-                else
-                {
-                    @Html.ActionLink("Crear", "SetPassword")
-                }
-                ]
-            </dd>
-            <dt>Inicios de sesión externos:</dt>
-            <dd>
-                @Model.Logins.Count [
-                @Html.ActionLink("Manage", "ManageLogins") ]
-            </dd>
-            @*
-                Los números de teléfono se pueden usar como una segunda fase de comprobación en un sistema de autenticación en dos fases.
-                
-                Consulte <a href="https://go.microsoft.com/fwlink/?LinkId=403804">este artículo</a>
-                    para obtener detalles sobre cómo configurar esta aplicación ASP.NET para que sea compatible con la autenticación en dos fases mediante SMS.
-                
-                Quite la marca de comentario del bloque siguiente después de configurar la autenticación en dos fases
-            *@
-            @*  
-                <dt>Número de teléfono:</dt>
-                <dd>
-                    @(Model.PhoneNumber ?? "None")
-                    @if (Model.PhoneNumber != null)
-                    {
-                        <br />
-                        <text>[&nbsp;&nbsp;@Html.ActionLink("Change", "AddPhoneNumber")&nbsp;&nbsp;]</text>
-                        using (Html.BeginForm("RemovePhoneNumber", "Manage", FormMethod.Post, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            <text>[<input type="submit" value="Quitar" class="btn-link" />]</text>
-                        }
-                    }
-                    else
-                    {
-                        <text>[&nbsp;&nbsp;@Html.ActionLink("Add", "AddPhoneNumber")
-                    }
-                </dd>
-            *@
-            <dt>Autenticación de dos factores:</dt>
-            <dd>
-                <p>
-                    No hay ningún proveedor de autenticación en dos fases configurado. Consulte <a href="https://go.microsoft.com/fwlink/?LinkId=403804">este artículo</a>
-                    para obtener detalles sobre cómo configurar esta aplicación ASP.NET para que sea compatible con la autenticación en dos fases.
+<div class="container py-4" style="max-width:1150px;">
+    <div class="rounded-4 p-4 p-md-5 mb-4 text-white shadow-sm" style="background:linear-gradient(115deg,#172b3d,#24445d);border-bottom:4px solid #c9a96e;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-2" style="width:76px;height:76px;background:#c9a96e;color:#172b3d;">
+                @inicial
+            </div>
+            <div>
+                <div class="small text-uppercase fw-bold mb-1" style="color:#e5c98d;letter-spacing:.12em;">
+                    Area personal
+                </div>
+                <h1 class="h2 fw-bold mb-1">
+                    Mi cuenta
+                </h1>
+                <p class="mb-0 opacity-75">
+                    Administra tus opciones de acceso y seguridad en Aerolinea VIP.
                 </p>
-                @*@if (Model.TwoFactor)
+            </div>
+        </div>
+    </div>
+    @if (!String.IsNullOrWhiteSpace(ViewBag.StatusMessage as string))
+    {
+        <div class="alert alert-success">
+            @ViewBag.StatusMessage
+        </div>
+    }
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="small text-uppercase fw-bold mb-2" style="color:#b18b4b;">
+                        Perfil
+                    </div>
+                    <h2 class="h5" style="color:#172b3d;">
+                        Datos de acceso
+                    </h2>
+                    <div class="border rounded-3 p-3 mt-3">
+                        <small class="text-muted d-block">
+                            Usuario
+                        </small>
+                        <strong>
+                            @nombre
+                        </strong>
+                    </div>
+                    <div class="border rounded-3 p-3 mt-2">
+                        <small class="text-muted d-block">
+                            Rol
+                        </small>
+                        <strong>
+                            @rol
+                        </strong>
+                    </div>
+                    <div class="border rounded-3 p-3 mt-2">
+                        <small class="text-muted d-block">
+                            Telefono
+                        </small>
+                        <strong>
+                            @(String.IsNullOrWhiteSpace(Model.PhoneNumber) ? "No registrado" : Model.PhoneNumber)
+                        </strong>
+                    </div>
+                    @if (String.IsNullOrWhiteSpace(Model.PhoneNumber))
                     {
-                        using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            <text>Habilitado
-                            <input type="submit" value="Deshabilitar" class="btn btn-link" />
-                            </text>
-                        }
+                        <div class="mt-3">
+                            @Html.ActionLink("Agregar telefono", "AddPhoneNumber", null, new
+                            {
+                                @class = "btn btn-outline-primary w-100"
+                            }
+                            )
+                        </div>
                     }
                     else
                     {
-                        using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { role = "form" }))
+                        <div class="mt-3">
+                            @Html.ActionLink("Cambiar telefono", "AddPhoneNumber", null, new
+                            {
+                                @class = "btn btn-outline-primary w-100"
+                            }
+                            )
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="small text-uppercase fw-bold mb-2" style="color:#b18b4b;">
+                        Seguridad
+                    </div>
+                    <h2 class="h5" style="color:#172b3d;">
+                        Contrasena
+                    </h2>
+                    <div class="border rounded-3 p-3 mt-3">
+                        <small class="text-muted d-block">
+                            Estado
+                        </small>
+                        <strong>
+                            @(Model.HasPassword ? "Contrasena configurada" : "Sin contrasena local")
+                        </strong>
+                    </div>
+                    <div class="border rounded-3 p-3 mt-2">
+                        <small class="text-muted d-block">
+                            Verificacion en dos pasos
+                        </small>
+                        <strong>
+                            @(Model.TwoFactor ? "Activa" : "No configurada")
+                        </strong>
+                    </div>
+                    <div class="mt-3">
+                        @if (Model.HasPassword)
                         {
-                            @Html.AntiForgeryToken()
-                            <text>Deshabilitada
-                            <input type="submit" value="Habilitar" class="btn btn-link" />
-                            </text>
+                            @Html.ActionLink("Cambiar contrasena", "ChangePassword", null, new
+                            {
+                                @class = "btn text-white w-100",
+                                style = "background:#172b3d;"
+                            }
+                            )
                         }
-                    }*@
-            </dd>
-        </dl>
+                        else
+                        {
+                            @Html.ActionLink("Crear contrasena", "SetPassword", null, new
+                            {
+                                @class = "btn text-white w-100",
+                                style = "background:#172b3d;"
+                            }
+                            )
+                        }
+                    </div>
+                    <small class="text-muted d-block mt-3">
+                        La autenticacion en dos pasos requiere un proveedor configurado.
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="small text-uppercase fw-bold mb-2" style="color:#b18b4b;">
+                        Sesiones
+                    </div>
+                    <h2 class="h5" style="color:#172b3d;">
+                        Inicios externos
+                    </h2>
+                    <div class="border rounded-3 p-3 mt-3">
+                        <small class="text-muted d-block">
+                            Proveedores vinculados
+                        </small>
+                        <strong class="fs-4">
+                            @accesos
+                        </strong>
+                    </div>
+                    <div class="mt-3">
+                        @Html.ActionLink("Administrar accesos", "ManageLogins", null, new
+                        {
+                            @class = "btn btn-outline-primary w-100"
+                        }
+                        )
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Consulta las cuentas externas asociadas a tu usuario.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</main>
+    @if (!String.IsNullOrWhiteSpace(Model.PhoneNumber))
+    {
+        <div class="card border-0 shadow-sm rounded-4 mt-3">
+            <div class="card-body p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <strong style="color:#172b3d;">
+                        Telefono registrado
+                    </strong>
+                    <div class="small text-muted">
+                        @Model.PhoneNumber
+                    </div>
+                </div>
+                @using (Html.BeginForm("RemovePhoneNumber", "Manage", FormMethod.Post, new
+                {
+                    @class = "d-inline"
+                }
+                ))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        Quitar telefono
+                    </button>
+                }
+            </div>
+        </div>
+    }
+    <div class="alert alert-light border mt-4 mb-0">
+        <strong style="color:#172b3d;">
+            Recomendacion de seguridad:
+        </strong>
+        no compartas tu contrasena y cierra sesion cuando utilices un equipo compartido.
+    </div>
+</div>

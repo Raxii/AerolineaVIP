@@ -1,61 +1,99 @@
 ﻿@model Con_Autenticacion.Models.Ruta
-
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Editar ruta";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<h2>Edit</h2>
-
-
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Ruta</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.RutaId)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.AeropuertoOrigenId, "AeropuertoOrigenId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("AeropuertoOrigenId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.AeropuertoOrigenId, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4" style="max-width:980px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Operacion
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.AeropuertoDestinoId, "AeropuertoDestinoId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("AeropuertoDestinoId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.AeropuertoDestinoId, "", new { @class = "text-danger" })
-            </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Editar ruta
+        </h1>
+        <p class="text-muted mb-0">
+            Modifica el origen, destino o estado de la ruta.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-0" style="color:#172b3d;">
+                Ruta #@Model.RutaId
+            </h2>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Activa, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.Activa)
-                    @Html.ValidationMessageFor(model => model.Activa, "", new { @class = "text-danger" })
+        <div class="card-body p-4">
+            @using (Html.BeginForm("Edit", "Rutas", FormMethod.Post, new
+            {
+                @class = "row g-3"
+            }
+           ))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.RutaId)
+                @Html.ValidationSummary(true, "", new
+                {
+                    @class = "alert alert-danger"
+                }
+                )
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="AeropuertoOrigenId">
+                        Aeropuerto de origen
+                    </label>
+                    @Html.DropDownList("AeropuertoOrigenId", null, "Selecciona el origen", new
+                    {
+                        @class = "form-select"
+                    }
+                    )@Html.ValidationMessageFor(m => m.AeropuertoOrigenId, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
                 </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="AeropuertoDestinoId">
+                        Aeropuerto de destino
+                    </label>
+                    @Html.DropDownList("AeropuertoDestinoId", null, "Selecciona el destino", new
+                    {
+                        @class = "form-select"
+                    }
+                    )@Html.ValidationMessageFor(m => m.AeropuertoDestinoId, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch border rounded-3 p-3 ps-5">
+                        <strong class="d-block">
+                            Ruta activa
+                        </strong>
+                        <small class="text-muted d-block mb-2">
+                            Si se desactiva, no deberia utilizarse en nuevas frecuencias.
+                        </small>
+                        @Html.CheckBoxFor(m => m.Activa, new
+                        {
+                            @class = "form-check-input",
+                            role = "switch"
+                        }
+                        )
+                    </div>
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="btn text-white" style="background:#172b3d;">
+                        Guardar cambios
+                    </button>
+                    @Html.ActionLink("Cancelar", "Index", null, new
+                    {
+                        @class = "btn btn-outline-secondary"
+                    }
+                    )
+                </div>
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
-
-@section Scripts {
+@section Scripts
+{
     @Scripts.Render("~/bundles/jqueryval")
 }

@@ -1,58 +1,160 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Asiento>
-
+@using System.Collections.Generic
+@using Con_Autenticacion.Models
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Administracion de asientos";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    IEnumerable<Asiento> registros = ViewBag.ListaAsientos as IEnumerable<Asiento>;
+    if (registros == null)
+    {
+        registros = Model;
+    }
+    bool hayRegistros = false;
 }
-
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Codigo)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Fila)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Lado)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Ubicacion)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ModeloAeronave.Fabricante)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Codigo)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Fila)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Lado)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Ubicacion)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ModeloAeronave.Fabricante)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-        </td>
-    </tr>
-}
-
-</table>
+<div class="container py-4" style="max-width:1250px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Flota y rutas / Configuracion de cabina
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Asientos
+            </h1>
+            <p class="text-muted mb-0">
+                Administra las ubicaciones registradas por modelo de aeronave.
+            </p>
+        </div>
+        @Html.ActionLink("+ Nuevo asiento", "Create", null, new
+        {
+            @class = "btn text-white",
+            style = "background:#172b3d;"
+        }
+        )
+    </div>
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Ok"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-1" style="color:#172b3d;">
+                Configuracion de asientos
+            </h2>
+            <small class="text-muted">
+                Cada asiento pertenece a un modelo de aeronave.
+            </small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f3f6f8;color:#172b3d;">
+                    <tr>
+                        <th class="ps-4">
+                            Codigo
+                        </th>
+                        <th>
+                            Modelo
+                        </th>
+                        <th>
+                            Numero
+                        </th>
+                        <th>
+                            Fila
+                        </th>
+                        <th>
+                            Lado
+                        </th>
+                        <th>
+                            Ubicacion
+                        </th>
+                        <th class="text-end pe-4">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (registros != null)
+                    {
+                        foreach (var item in registros)
+                        {
+                            hayRegistros = true;
+                            <tr>
+                                <td class="ps-4 fw-bold">
+                                    @item.Codigo
+                                </td>
+                                <td>
+                                    @(item.ModeloAeronave != null ? item.ModeloAeronave.Fabricante + " " + item.ModeloAeronave.Nombre : "N/A")
+                                </td>
+                                <td>
+                                    @item.NumeroAsiento
+                                </td>
+                                <td>
+                                    @item.Fila
+                                </td>
+                                <td>
+                                    @(item.Lado == "D" ? "Derecho" : item.Lado == "I" ? "Izquierdo" : item.Lado)
+                                </td>
+                                <td>
+                                    @item.Ubicacion
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new
+                                    {
+                                        id = item.NumeroAsiento,
+                                        modeloAeronaveId = item.ModeloAeronaveId,
+                                        numeroAsiento = item.NumeroAsiento
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-secondary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Editar", "Edit", new
+                                    {
+                                        id = item.NumeroAsiento,
+                                        modeloAeronaveId = item.ModeloAeronaveId,
+                                        numeroAsiento = item.NumeroAsiento
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-primary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Eliminar", "Delete", new
+                                    {
+                                        id = item.NumeroAsiento,
+                                        modeloAeronaveId = item.ModeloAeronaveId,
+                                        numeroAsiento = item.NumeroAsiento
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-danger"
+                                    }
+                                    )
+                                </td>
+                            </tr>
+                        }
+                    }
+                    @if (!hayRegistros)
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                No hay asientos registrados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="small text-muted mt-3">
+        La identificacion completa del asiento utiliza el modelo de aeronave y el numero de asiento.
+    </div>
+</div>

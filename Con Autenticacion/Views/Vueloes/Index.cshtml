@@ -1,7 +1,6 @@
 ﻿
-@using System.Linq
 @using Con_Autenticacion.Models
-@model IEnumerable<Vuelo>
+@model List<Vuelo>
 
 @{
     ViewBag.Title = "Vuelos";
@@ -10,13 +9,9 @@
         (User.IsInRole("SuperUsuario") ||
          User.IsInRole("Administrador"));
 
-    int totalVuelos = Model == null ? 0 : Model.Count();
-
-    int vuelosProgramados = Model == null ? 0 :
-        Model.Count(v => v.EstadoVueloCodigo == "PROGRAMADO");
-
-    int vuelosConfirmados = Model == null ? 0 :
-        Model.Count(v => v.EstadoVueloCodigo == "CONFIRMADO");
+    int totalVuelos = (int)(ViewBag.TotalVuelos ?? 0);
+    int vuelosProgramados = (int)(ViewBag.VuelosProgramados ?? 0);
+    int vuelosConfirmados = (int)(ViewBag.VuelosConfirmados ?? 0);
 }
 
 <div class="container py-4" style="max-width:1250px;">
@@ -26,7 +21,7 @@
 
         <div>
             <h2 class="h4 fw-bold mb-1">
-                Gestión y consulta de vuelos
+                Gestion y consulta de vuelos
             </h2>
 
             <p class="text-muted small mb-0">
@@ -144,7 +139,7 @@
 
                 <thead class="table-light">
                     <tr>
-                        <th>Código</th>
+                        <th>Codigo</th>
                         <th>Fecha</th>
                         <th>Frecuencia ID</th>
                         <th>Aeronave ID</th>
@@ -155,13 +150,13 @@
 
                 <tbody>
 
-                    @if (Model != null && Model.Any())
+                    @if (Model != null && Model.Count > 0)
                     {
                         foreach (var vuelo in Model)
                         {
                             <tr>
 
-                                <!-- Código del vuelo -->
+                                <!-- Codigo del vuelo -->
                                 <td class="fw-semibold">
                                     @("VIP" + vuelo.VueloId.ToString("D5"))
                                 </td>
@@ -301,7 +296,7 @@
                                 class="text-center text-muted py-4">
 
                                 No hay vuelos para mostrar.
-                                Verifica que el controlador envíe
+                                Verifica que el controlador envie
                                 la lista de vuelos a esta vista.
 
                             </td>
@@ -316,8 +311,8 @@
 
     <!-- Nota -->
     <p class="small text-muted mt-3">
-        Las operaciones están sujetas a los permisos
-        y validaciones de cada acción del controlador.
+        Las operaciones estan sujetas a los permisos
+        y validaciones de cada accion del controlador.
     </p>
 
 </div>

@@ -1,0 +1,78 @@
+@using Con_Autenticacion.Models
+@model IEnumerable<Vuelo>
+@{
+    ViewBag.Title = "Asignaciones de aeronave";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var aeronave = ViewBag.Aeronave as Aeronave;
+    int totalVuelos = ViewBag.TotalVuelos == null ? 0 : (int)ViewBag.TotalVuelos;
+    var listaVuelos = Model as List<Vuelo> ?? new List<Vuelo>();
+}
+
+<div class="container py-4" style="max-width: 1200px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="text-uppercase small fw-bold text-secondary">Flota y rutas</span>
+            <h1 class="h3 fw-bold mb-1">Vuelos asignados</h1>
+            <p class="text-muted mb-0">Consulta las operaciones relacionadas con esta aeronave.</p>
+        </div>
+        @Html.ActionLink("Volver a aeronaves", "Index", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+
+    @if (aeronave != null)
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3"><div class="small text-muted">Matricula</div><div class="fw-bold fs-5">@aeronave.Matricula</div></div>
+                    <div class="col-md-3"><div class="small text-muted">Modelo</div><div class="fw-semibold">@(aeronave.ModeloAeronave != null ? aeronave.ModeloAeronave.Nombre : "Sin modelo")</div></div>
+                    <div class="col-md-3"><div class="small text-muted">Estado</div><div class="fw-semibold">@(aeronave.EstadoAeronave != null ? aeronave.EstadoAeronave.Descripcion : aeronave.EstadoAeronaveCodigo)</div></div>
+                    <div class="col-md-3"><div class="small text-muted">Vuelos asignados</div><div class="fw-bold fs-5">@totalVuelos</div></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-white fw-bold py-3">Detalle de asignaciones</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th class="ps-4">Vuelo</th><th>Fecha</th><th>Trayecto</th><th>Horario</th><th>Estado</th><th class="text-end pe-4">Accion</th></tr></thead>
+                <tbody>
+                    @if (listaVuelos.Count > 0)
+                    {
+                        foreach (var vuelo in listaVuelos)
+                        {
+                            string trayecto = "N/A";
+                            string salida = "N/A";
+                            string llegada = "N/A";
+                            if (vuelo.Frecuencia != null)
+                            {
+                                salida = vuelo.Frecuencia.HoraSalida.ToString(@"hh\:mm");
+                                llegada = vuelo.Frecuencia.HoraLlegada.ToString(@"hh\:mm");
+                                if (vuelo.Frecuencia.Ruta != null)
+                                {
+                                    string origen = vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "N/A";
+                                    string destino = vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "N/A";
+                                    trayecto = origen + " - " + destino;
+                                }
+                            }
+                            string estado = vuelo.EstadoVuelo != null ? vuelo.EstadoVuelo.Descripcion : vuelo.EstadoVueloCodigo;
+                            <tr>
+                                <td class="ps-4 fw-semibold">VUE-@vuelo.VueloId</td>
+                                <td>@vuelo.FechaOperacion.ToString("dd/MM/yyyy")</td>
+                                <td>@trayecto</td>
+                                <td>@salida - @llegada</td>
+                                <td><span class="badge bg-light text-dark border">@estado</span></td>
+                                <td class="text-end pe-4">@Html.ActionLink("Ver vuelo", "Details", "Vueloes", new { id = vuelo.VueloId }, new { @class = "btn btn-sm btn-outline-primary" })</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-5">Esta aeronave no tiene vuelos asignados.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

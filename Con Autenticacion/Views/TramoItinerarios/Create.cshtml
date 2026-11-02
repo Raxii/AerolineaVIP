@@ -1,57 +1,99 @@
 ﻿@model Con_Autenticacion.Models.TramoItinerario
-
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "Agregar tramo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<h2>Create</h2>
-
-
-@using (Html.BeginForm()) 
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>TramoItinerario</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.ItinerarioId, "ItinerarioId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("ItinerarioId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.ItinerarioId, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4" style="max-width:1000px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Programacion / Tramos
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.VueloId, "VueloId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("VueloId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.VueloId, "", new { @class = "text-danger" })
-            </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Agregar tramo
+        </h1>
+        <p class="text-muted mb-0">
+            Relaciona un vuelo con un itinerario y define su orden.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-0" style="color:#172b3d;">
+                Datos del tramo
+            </h2>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Orden, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Orden, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Orden, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
+        <div class="card-body p-4">
+            @using (Html.BeginForm("Create", "TramoItinerarios", FormMethod.Post, new
+            {
+                @class = "row g-3"
+            }
+           ))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new
+                {
+                    @class = "alert alert-danger"
+                }
+                )
+                <div class="col-12">
+                    <label class="form-label fw-semibold" for="ItinerarioId">
+                        Itinerario
+                    </label>
+                    @Html.DropDownList("ItinerarioId", null, "Selecciona un itinerario", new
+                    {
+                        @class = "form-select"
+                    }
+                    )@Html.ValidationMessageFor(m => m.ItinerarioId, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold" for="VueloId">
+                        Vuelo asignado
+                    </label>
+                    @Html.DropDownList("VueloId", null, "Selecciona un vuelo", new
+                    {
+                        @class = "form-select"
+                    }
+                    )@Html.ValidationMessageFor(m => m.VueloId, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="Orden">
+                        Orden del tramo
+                    </label>
+                    @Html.TextBoxFor(m => m.Orden, new
+                    {
+                        @class = "form-control",
+                        type = "number",
+                        min = "1",
+                        max = "255"
+                    }
+                    )@Html.ValidationMessageFor(m => m.Orden, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="btn text-white" style="background:#172b3d;">
+                        Guardar tramo
+                    </button>
+                    @Html.ActionLink("Cancelar", "Index", null, new
+                    {
+                        @class = "btn btn-outline-secondary"
+                    }
+                    )
+                </div>
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
-
-@section Scripts {
+@section Scripts
+{
     @Scripts.Render("~/bundles/jqueryval")
 }

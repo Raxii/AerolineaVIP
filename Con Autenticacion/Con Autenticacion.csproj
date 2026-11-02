@@ -308,6 +308,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Content Include="Content\aerolinea-admin.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -474,6 +475,13 @@
     <Content Include="Views\Vueloes\Administrar.cshtml" />
     <Content Include="Views\Reportes\Index.cshtml" />
     <Content Include="Views\Vueloes\Index.cshtml" />
+    <Content Include="Views\CheckIns\Atencion.cshtml" />
+    <Content Include="Views\CheckIns\MisCheckIns.cshtml" />
+    <Content Include="Views\Comprobantes\MisComprobantes.cshtml" />
+    <Content Include="Views\Reservas\Atencion.cshtml" />
+    <Content Include="Views\Reservas\MisReservas.cshtml" />
+    <Content Include="Views\Aeronaves\Asignaciones.cshtml" />
+    <Content Include="Views\Usuarios\Historial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

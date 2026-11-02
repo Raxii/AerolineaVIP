@@ -1,49 +1,87 @@
 ﻿@model Con_Autenticacion.Models.TramoItinerario
-
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Eliminar tramo";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string referencia = Model.Itinerario != null ? Model.Itinerario.Referencia : "Itinerario " + Model.ItinerarioId;
+    string estado = Model.Vuelo != null ? Model.Vuelo.EstadoVueloCodigo : "N/A";
 }
-
-<h2>Delete</h2>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>TramoItinerario</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Orden)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Orden)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Itinerario.Referencia)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Itinerario.Referencia)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Vuelo.EstadoVueloCodigo)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Vuelo.EstadoVueloCodigo)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+<div class="container py-4" style="max-width:900px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Programacion / Confirmacion
         </div>
-    }
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Eliminar tramo
+        </h1>
+        <p class="text-muted mb-0">
+            Confirma la eliminacion de esta relacion.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <div class="alert alert-warning border-0">
+                <strong>
+                    Atencion:
+                </strong>
+                se eliminara la relacion entre el itinerario y el vuelo, no el vuelo.
+            </div>
+            <h2 class="h5" style="color:#172b3d;">
+                Tramo #@Model.TramoItinerarioId
+            </h2>
+            <div class="row g-3 my-3">
+                <div class="col-md-4">
+                    <small class="text-muted d-block">
+                        Itinerario
+                    </small>
+                    <strong>
+                        @referencia
+                    </strong>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">
+                        Vuelo
+                    </small>
+                    <strong>
+                        VUE-@Model.VueloId
+                    </strong>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">
+                        Orden
+                    </small>
+                    <strong>
+                        @Model.Orden
+                    </strong>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">
+                        Estado del vuelo
+                    </small>
+                    <strong>
+                        @estado
+                    </strong>
+                </div>
+            </div>
+            @using (Html.BeginForm("Delete", "TramoItinerarios", new
+            {
+                id = Model.TramoItinerarioId
+            }
+           , FormMethod.Post, new
+           {
+               @class = "d-flex flex-wrap gap-2"
+           }
+           ))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger">
+                    Confirmar eliminacion
+                </button>
+                @Html.ActionLink("Cancelar", "Index", null, new
+                {
+                    @class = "btn btn-outline-secondary"
+                }
+                )
+            }
+        </div>
+    </div>
 </div>

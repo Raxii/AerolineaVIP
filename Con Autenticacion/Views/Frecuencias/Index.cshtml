@@ -1,58 +1,157 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Frecuencia>
-
+@using System.Collections.Generic
+@using Con_Autenticacion.Models
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Administracion de frecuencias";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    IEnumerable<Frecuencia> registros = ViewBag.ListaFrecuencias as IEnumerable<Frecuencia>;
+    if (registros == null)
+    {
+        registros = Model;
+    }
+    bool hayRegistros = false;
 }
-
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.DiaSemana)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.HoraSalida)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.HoraLlegada)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Activa)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Ruta.RutaId)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.DiaSemana)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.HoraSalida)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.HoraLlegada)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Activa)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Ruta.RutaId)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.FrecuenciaId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.FrecuenciaId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.FrecuenciaId })
-        </td>
-    </tr>
-}
-
-</table>
+<div class="container py-4" style="max-width:1250px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Flota y rutas / Programacion
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Frecuencias
+            </h1>
+            <p class="text-muted mb-0">
+                Configura los dias y horarios disponibles para cada ruta.
+            </p>
+        </div>
+        @Html.ActionLink("+ Nueva frecuencia", "Create", null, new
+        {
+            @class = "btn text-white",
+            style = "background:#172b3d;"
+        }
+        )
+    </div>
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Ok"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-1" style="color:#172b3d;">
+                Horarios programados
+            </h2>
+            <small class="text-muted">
+                Cada frecuencia define un horario recurrente de una ruta.
+            </small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f3f6f8;color:#172b3d;">
+                    <tr>
+                        <th class="ps-4">
+                            Ruta
+                        </th>
+                        <th>
+                            Dia
+                        </th>
+                        <th>
+                            Salida
+                        </th>
+                        <th>
+                            Llegada
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th class="text-end pe-4">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (registros != null)
+                    {
+                        foreach (var item in registros)
+                        {
+                            hayRegistros = true;
+                            string ruta = item.Ruta != null && item.Ruta.Aeropuerto != null && item.Ruta.Aeropuerto1 != null ? item.Ruta.Aeropuerto.CodigoIATA + " - " + item.Ruta.Aeropuerto1.CodigoIATA : "Ruta " + item.RutaId;
+                            <tr>
+                                <td class="ps-4 fw-semibold">
+                                    @ruta
+                                </td>
+                                <td>
+                                    Dia @item.DiaSemana
+                                </td>
+                                <td>
+                                    @item.HoraSalida.ToString(@"hh\:mm")
+                                </td>
+                                <td>
+                                    @item.HoraLlegada.ToString(@"hh\:mm")
+                                </td>
+                                <td>
+                                    @if (item.Activa)
+                                    {
+                                        <span class="badge text-bg-success">
+                                            Activa
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">
+                                            Inactiva
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new
+                                    {
+                                        id = item.FrecuenciaId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-secondary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Editar", "Edit", new
+                                    {
+                                        id = item.FrecuenciaId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-primary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Eliminar", "Delete", new
+                                    {
+                                        id = item.FrecuenciaId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-danger"
+                                    }
+                                    )
+                                </td>
+                            </tr>
+                        }
+                    }
+                    @if (!hayRegistros)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                No hay frecuencias registradas.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

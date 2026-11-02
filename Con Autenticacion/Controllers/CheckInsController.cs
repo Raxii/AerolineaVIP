@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
-using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
@@ -10,6 +9,7 @@ using Con_Autenticacion.Models;
 
 namespace Con_Autenticacion.Controllers
 {
+    [Authorize(Roles = "SuperUsuario,Administrador,Counter")]
     public class CheckInsController : Controller
     {
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
@@ -17,8 +17,25 @@ namespace Con_Autenticacion.Controllers
         // GET: CheckIns
         public ActionResult Index()
         {
-            var checkIn = db.CheckIn.Include(c => c.ReservaPasajeroVuelo).Include(c => c.EstadoCheckIn);
-            return View(checkIn.ToList());
+            var listaCheckIns = new List<CheckIn>();
+            var todosCheckIns = new List<CheckIn>();
+            foreach (var item in db.CheckIn) { todosCheckIns.Add(item); }
+
+            foreach (var checkIn in todosCheckIns)
+            {
+                checkIn.EstadoCheckIn = db.EstadoCheckIn.Find(checkIn.EstadoCheckInCodigo);
+                checkIn.ReservaPasajeroVuelo = db.ReservaPasajeroVuelo.Find(checkIn.AsignacionId);
+
+                if (checkIn.ReservaPasajeroVuelo != null)
+                {
+                    checkIn.ReservaPasajeroVuelo.Reserva = db.Reserva.Find(checkIn.ReservaPasajeroVuelo.ReservaId);
+                    checkIn.ReservaPasajeroVuelo.Pasajero = db.Pasajero.Find(checkIn.ReservaPasajeroVuelo.PasajeroId);
+                }
+
+                listaCheckIns.Add(checkIn);
+            }
+
+            return View(listaCheckIns);
         }
 
         // GET: CheckIns/Details/5
@@ -33,6 +50,13 @@ namespace Con_Autenticacion.Controllers
             {
                 return HttpNotFound();
             }
+            checkIn.EstadoCheckIn = db.EstadoCheckIn.Find(checkIn.EstadoCheckInCodigo);
+            checkIn.ReservaPasajeroVuelo = db.ReservaPasajeroVuelo.Find(checkIn.AsignacionId);
+            if (checkIn.ReservaPasajeroVuelo != null)
+            {
+                checkIn.ReservaPasajeroVuelo.Reserva = db.Reserva.Find(checkIn.ReservaPasajeroVuelo.ReservaId);
+                checkIn.ReservaPasajeroVuelo.Pasajero = db.Pasajero.Find(checkIn.ReservaPasajeroVuelo.PasajeroId);
+            }
             return View(checkIn);
         }
 
@@ -45,8 +69,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: CheckIns/Create
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "CheckInId,AsignacionId,FechaRegistro,EstadoCheckInCodigo")] CheckIn checkIn)
@@ -81,8 +105,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: CheckIns/Edit/5
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "CheckInId,AsignacionId,FechaRegistro,EstadoCheckInCodigo")] CheckIn checkIn)

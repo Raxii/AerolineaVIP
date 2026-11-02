@@ -15,6 +15,9 @@
     bool esCounter = autenticado &&
         User.IsInRole("Counter");
 
+    bool esCliente = autenticado &&
+        User.IsInRole("Cliente");
+
     bool esPersonalAdmin = esSuper || esAdmin;
 }
 
@@ -27,7 +30,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
-    <title>@ViewBag.Title - Aerolínea VIP</title>
+    <title>@ViewBag.Title - Aerolinea VIP</title>
 
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
@@ -189,26 +192,26 @@
             <a class="navbar-brand"
                href="@Url.Action("Index", "Home")">
 
-                <span class="vip-logo">✈</span>AEROLÍNEA VIP
+                <span class="vip-logo"></span>AEROLINEA VIP
 
                 <span class="vip-subtitulo">
                     VUELOS EJECUTIVOS
                 </span>
             </a>
 
-            <!-- BOTÓN MÓVIL -->
+            <!-- BOTON MOVIL -->
             <button class="navbar-toggler"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#menuVip"
                     aria-controls="menuVip"
                     aria-expanded="false"
-                    aria-label="Mostrar u ocultar menú">
+                    aria-label="Mostrar u ocultar menu">
 
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- CONTENEDOR DE NAVEGACIÓN -->
+            <!-- CONTENEDOR DE NAVEGACION -->
             <div class="collapse navbar-collapse" id="menuVip">
 
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -297,7 +300,7 @@
 
                                 <li>
                                     @Html.ActionLink(
-                                        "Catálogo de asientos",
+                                        "Catalogo de asientos",
                                         "Index",
                                         "Asientoes",
                                         null,
@@ -311,7 +314,7 @@
                     </li>
                     <!-- FIN VUELOS -->
                     <!-- MIS VIAJES -->
-                    @if (autenticado)
+                    @if (esCliente)
                     {
                         <li class="nav-item dropdown">
 
@@ -411,7 +414,7 @@
                         </li>
                     }
 
-                    <!-- MENÚS DE ADMINISTRACIÓN -->
+                    <!-- MENUS DE ADMINISTRACION -->
                     @if (esPersonalAdmin)
                     {
                         <!-- OPERACIONES -->
@@ -429,7 +432,7 @@
 
                                 <li>
                                     <span class="dropdown-header">
-                                        Gestión comercial
+                                        Gestion comercial
                                     </span>
                                 </li>
 
@@ -502,7 +505,7 @@
 
                                 <li>
                                     <span class="dropdown-header">
-                                        Administración de vuelos
+                                        Administracion de vuelos
                                     </span>
                                 </li>
 
@@ -552,7 +555,7 @@
 
                                 <li>
                                     <span class="dropdown-header">
-                                        Programación
+                                        Programacion
                                     </span>
                                 </li>
 
@@ -610,7 +613,7 @@
 
                         </li>
 
-                        <!-- ADMINISTRACIÓN -->
+                        <!-- ADMINISTRACION -->
                         <li class="nav-item dropdown">
 
                             <a class="nav-link dropdown-toggle"
@@ -618,14 +621,14 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
-                                Administración
+                                Administracion
                             </a>
 
                             <ul class="dropdown-menu">
 
                                 <li>
                                     <span class="dropdown-header">
-                                        Herramientas de gestión
+                                        Herramientas de gestion
                                     </span>
                                 </li>
 
@@ -644,7 +647,7 @@
 
                                 <li>
                                     @Html.ActionLink(
-                                        "Menú administrativo CRUD",
+                                        "Menu administrativo CRUD",
                                         "Index",
                                         "Crud",
                                         null,
@@ -667,7 +670,7 @@
                         </li>
                     }
 
-                    <!-- ATENCIÓN / COUNTER -->
+                    <!-- ATENCION / COUNTER -->
                     @if (esCounter)
                     {
                         <li class="nav-item dropdown">
@@ -677,35 +680,35 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
-                                Atención
+                                Atencion
                             </a>
 
                             <ul class="dropdown-menu">
 
                                 <li>
                                     <span class="dropdown-header">
-                                        Personal Counter
+                                        Atencion al pasajero
                                     </span>
                                 </li>
 
                                 <li>
-                                    <span class="vip-pendiente"
-                                          aria-disabled="true">
-                                        Consulta de reservas
-                                        <small>
-                                            Esperando autorización específica del servidor
-                                        </small>
-                                    </span>
+                                    @Html.ActionLink(
+                                        "Consultar reservas",
+                                        "Index",
+                                        "Reservas",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
                                 </li>
 
                                 <li>
-                                    <span class="vip-pendiente"
-                                          aria-disabled="true">
-                                        Asistencia de check-in
-                                        <small>
-                                            Esperando autorización específica del servidor
-                                        </small>
-                                    </span>
+                                    @Html.ActionLink(
+                                        "Gestionar check-in",
+                                        "Index",
+                                        "CheckIns",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
                                 </li>
 
                             </ul>
@@ -728,7 +731,7 @@
                     }
 
                 </ul>
-                <!-- FIN MENÚ PRINCIPAL -->
+                <!-- FIN MENU PRINCIPAL -->
                 <!-- LOGIN / REGISTRO -->
                 <div class="vip-cuenta">
 
@@ -742,26 +745,26 @@
 
     </nav>
 
-    <!-- CONTENIDO DE LA PÁGINA -->
+    <!-- CONTENIDO DE LA PAGINA -->
     <main class="container vip-contenido">
 
         @RenderBody()
 
     </main>
 
-    <!-- PIE DE PÁGINA -->
+    <!-- PIE DE PAGINA -->
     <footer class="vip-pie">
 
         <div class="container d-flex flex-wrap justify-content-between gap-2">
 
             <span>
-                <strong>AEROLÍNEA VIP</strong>
+                <strong>AEROLINEA VIP</strong>
                 &copy; @DateTime.Now.Year
-                · Proyecto académico
+                - Proyecto academico
             </span>
 
             <span>
-                Grupo 3 · Sistema de reservas y administración de vuelos
+                Grupo 3 - Sistema de reservas y administracion de vuelos
             </span>
 
         </div>

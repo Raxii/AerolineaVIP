@@ -10,6 +10,7 @@ using Con_Autenticacion.Models;
 
 namespace Con_Autenticacion.Controllers
 {
+    [Authorize(Roles = "SuperUsuario,Administrador")]
     public class ModeloAeronavesController : Controller
     {
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
@@ -42,8 +43,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: ModeloAeronaves/Create
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "ModeloAeronaveId,Fabricante,Nombre,CapacidadAsientos")] ModeloAeronave modeloAeronave)
@@ -74,8 +75,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: ModeloAeronaves/Edit/5
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "ModeloAeronaveId,Fabricante,Nombre,CapacidadAsientos")] ModeloAeronave modeloAeronave)

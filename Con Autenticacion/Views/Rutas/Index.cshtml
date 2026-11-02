@@ -1,46 +1,154 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Ruta>
-
+@using System.Collections.Generic
+@using Con_Autenticacion.Models
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Administracion de rutas";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    IEnumerable<Ruta> registros = ViewBag.ListaRutas as IEnumerable<Ruta>;
+    if (registros == null)
+    {
+        registros = Model;
+    }
+    bool hayRegistros = false;
 }
-
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Activa)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Aeropuerto.CodigoIATA)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Aeropuerto1.CodigoIATA)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Activa)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Aeropuerto.CodigoIATA)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Aeropuerto1.CodigoIATA)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.RutaId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.RutaId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.RutaId })
-        </td>
-    </tr>
-}
-
-</table>
+<div class="container py-4" style="max-width:1200px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Flota y rutas / Operacion
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Rutas
+            </h1>
+            <p class="text-muted mb-0">
+                Define los trayectos entre aeropuertos registrados.
+            </p>
+        </div>
+        @Html.ActionLink("+ Nueva ruta", "Create", null, new
+        {
+            @class = "btn text-white",
+            style = "background:#172b3d;"
+        }
+        )
+    </div>
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Ok"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-1" style="color:#172b3d;">
+                Rutas registradas
+            </h2>
+            <small class="text-muted">
+                Origen, destino y estado operativo.
+            </small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f3f6f8;color:#172b3d;">
+                    <tr>
+                        <th class="ps-4">
+                            Trayecto
+                        </th>
+                        <th>
+                            Origen
+                        </th>
+                        <th>
+                            Destino
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th class="text-end pe-4">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (registros != null)
+                    {
+                        foreach (var item in registros)
+                        {
+                            hayRegistros = true;
+                            string origen = item.Aeropuerto != null ? item.Aeropuerto.CodigoIATA : item.AeropuertoOrigenId.ToString();
+                            string destino = item.Aeropuerto1 != null ? item.Aeropuerto1.CodigoIATA : item.AeropuertoDestinoId.ToString();
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="fw-bold" style="color:#172b3d;">
+                                        @origen - @destino
+                                    </span>
+                                </td>
+                                <td>
+                                    @(item.Aeropuerto != null ? item.Aeropuerto.Nombre : "Aeropuerto " + item.AeropuertoOrigenId)
+                                </td>
+                                <td>
+                                    @(item.Aeropuerto1 != null ? item.Aeropuerto1.Nombre : "Aeropuerto " + item.AeropuertoDestinoId)
+                                </td>
+                                <td>
+                                    @if (item.Activa)
+                                    {
+                                        <span class="badge text-bg-success">
+                                            Activa
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">
+                                            Inactiva
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new
+                                    {
+                                        id = item.RutaId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-secondary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Editar", "Edit", new
+                                    {
+                                        id = item.RutaId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-primary"
+                                    }
+                                    )
+                                    @Html.ActionLink("Eliminar", "Delete", new
+                                    {
+                                        id = item.RutaId
+                                    }
+                                    , new
+                                         {
+                                        @class = "btn btn-sm btn-outline-danger"
+                                    }
+                                    )
+                                </td>
+                            </tr>
+                        }
+                    }
+                    @if (!hayRegistros)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                No hay rutas registradas.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,43 +1,106 @@
 ﻿@model Con_Autenticacion.Models.TramoItinerario
-
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Detalle de tramo";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string referencia = Model.Itinerario != null ? Model.Itinerario.Referencia : "Itinerario " + Model.ItinerarioId;
+    string nombre = Model.Itinerario != null ? Model.Itinerario.Nombre : "No disponible";
+    string estado = Model.Vuelo != null ? Model.Vuelo.EstadoVueloCodigo : "N/A";
+    string fecha = Model.Vuelo != null ? Model.Vuelo.FechaOperacion.ToString("dd/MM/yyyy") : "N/A";
 }
-
-<h2>Details</h2>
-
-<div>
-    <h4>TramoItinerario</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Orden)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Orden)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Itinerario.Referencia)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Itinerario.Referencia)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Vuelo.EstadoVueloCodigo)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Vuelo.EstadoVueloCodigo)
-        </dd>
-
-    </dl>
+<div class="container py-4" style="max-width:1000px;">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Programacion / Consulta
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Detalle del tramo
+            </h1>
+            <p class="text-muted mb-0">
+                Informacion del vuelo dentro del itinerario.
+            </p>
+        </div>
+        @Html.ActionLink("Volver al listado", "Index", null, new
+        {
+            @class = "btn btn-outline-secondary"
+        }
+        )
+    </div>
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="p-4 text-white" style="background:#172b3d;border-bottom:4px solid #c9a96e;">
+            <div class="small text-uppercase opacity-75">
+                Itinerario
+            </div>
+            <div class="display-6 fw-bold">
+                @referencia
+            </div>
+            <div class="fs-5">
+                @nombre
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Vuelo
+                        </small>
+                        <strong>
+                            VUE-@Model.VueloId
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Orden
+                        </small>
+                        <strong>
+                            @Model.Orden
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Fecha de operacion
+                        </small>
+                        <strong>
+                            @fecha
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Estado del vuelo
+                        </small>
+                        <strong>
+                            @estado
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap mt-4">
+                @Html.ActionLink("Editar tramo", "Edit", new
+                {
+                    id = Model.TramoItinerarioId
+                }
+                , new
+                     {
+                    @class = "btn text-white",
+                         style = "background:#172b3d;"
+                }
+                )@Html.ActionLink("Eliminar tramo", "Delete", new
+                {
+                   id = Model.TramoItinerarioId
+               }
+               , new
+                    {
+                   @class = "btn btn-outline-danger"
+               }
+               )
+            </div>
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.TramoItinerarioId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
