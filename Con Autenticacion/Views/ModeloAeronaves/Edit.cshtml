@@ -1,59 +1,87 @@
-﻿@model Con_Autenticacion.Models.ModeloAeronave
+﻿
+@model Con_Autenticacion.Models.ModeloAeronave
 
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Editar modelo";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string controlador = ViewContext.RouteData.Values["controller"].ToString();
 }
 
-<h2>Edit</h2>
+<div class="container py-4" style="max-width:950px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Configuracion
+        </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">Editar modelo de aeronave</h1>
+        <p class="text-muted mb-0">Actualiza la informacion tecnica del modelo.</p>
+    </div>
 
-
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>ModeloAeronave</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.ModeloAeronaveId)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Fabricante, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Fabricante, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Fabricante, "", new { @class = "text-danger" })
-            </div>
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 fw-bold mb-1" style="color:#172b3d;">Datos del modelo</h2>
+            <small class="text-muted">Modelo #@Model.ModeloAeronaveId</small>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Nombre, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
-            </div>
-        </div>
+        <div class="card-body p-4">
+            @using (Html.BeginForm("Edit", controlador,
+                new { id = Model.ModeloAeronaveId },
+                FormMethod.Post, new { }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.ModeloAeronaveId)
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.CapacidadAsientos, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.CapacidadAsientos, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.CapacidadAsientos, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.Fabricante, "Fabricante", new { @class = "form-label fw-semibold" })
+                        @Html.TextBoxFor(m => m.Fabricante, new
+                        {
+                            @class = "form-control",
+                            maxlength = "60",
+                            placeholder = "Ej. Embraer"
+                        })
+                        @Html.ValidationMessageFor(m => m.Fabricante, "", new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.Nombre, "Nombre del modelo", new { @class = "form-label fw-semibold" })
+                        @Html.TextBoxFor(m => m.Nombre, new
+                        {
+                            @class = "form-control",
+                            maxlength = "60",
+                            placeholder = "Ej. Phenom 300E"
+                        })
+                        @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.CapacidadAsientos, "Capacidad de asientos", new { @class = "form-label fw-semibold" })
+                        @Html.TextBoxFor(m => m.CapacidadAsientos, new
+                        {
+                            @class = "form-control",
+                            type = "number",
+                            min = "1",
+                            max = "7",
+                            step = "1"
+                        })
+                        @Html.ValidationMessageFor(m => m.CapacidadAsientos, "", new { @class = "text-danger small" })
+                        <small class="text-muted">La capacidad permitida es de 1 a 7 asientos.</small>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn text-white px-4" style="background:#172b3d;">
+                        Guardar cambios
+                    </button>
+                    @Html.ActionLink("Cancelar", "Index", null, new
+                    {
+                        @class = "btn btn-outline-secondary px-4"
+                    })
+                </div>
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
-
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}

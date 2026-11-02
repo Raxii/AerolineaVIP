@@ -1,107 +1,91 @@
-﻿@model Con_Autenticacion.Models.Asiento
+﻿
+@model Con_Autenticacion.Models.Asiento
+
 @{
-    ViewBag.Title = "Detalle de asiento";
+    ViewBag.Title = "Detalle del asiento";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    string lado = Model.Lado == "D" ? "Derecho" : Model.Lado == "I" ? "Izquierdo" : Model.Lado;
-    string modelo = Model.ModeloAeronave != null ? Model.ModeloAeronave.Fabricante + " " + Model.ModeloAeronave.Nombre : "N/A";
+
+    string lado = Model.Lado == "D" ? "Derecho" :
+                  Model.Lado == "I" ? "Izquierdo" : Model.Lado;
+
+    string modelo = Model.ModeloAeronave != null
+        ? Model.ModeloAeronave.Fabricante + " " + Model.ModeloAeronave.Nombre
+        : "N/A";
 }
+
 <div class="container py-4" style="max-width:1000px;">
-    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
-        <div>
-            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
-                Flota y rutas / Consulta de cabina
-            </div>
-            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
-                Detalle del asiento
-            </h1>
-            <p class="text-muted mb-0">
-                Informacion de la ubicacion seleccionada.
-            </p>
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Consulta de cabina
         </div>
-        @Html.ActionLink("Volver al listado", "Index", null, new
-        {
-            @class = "btn btn-outline-secondary"
-        }
-        )
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">Detalle del asiento</h1>
+        <p class="text-muted mb-0">Informacion de la ubicacion seleccionada.</p>
     </div>
+
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="p-4 text-white" style="background:#172b3d;border-bottom:4px solid #c9a96e;">
-            <div class="small text-uppercase opacity-75">
-                Asiento
-            </div>
-            <div class="display-6 fw-bold">
-                @Model.Codigo
-            </div>
-            <div class="fs-5">
-                @modelo
-            </div>
+            <div class="small text-uppercase opacity-75">Asiento</div>
+            <h2 class="display-6 fw-bold mb-1">@Model.Codigo</h2>
+            <div class="fs-5">@modelo</div>
         </div>
+
         <div class="card-body p-4">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Numero interno
-                        </small>
-                        <strong>
-                            @Model.NumeroAsiento
-                        </strong>
+                    <div class="border rounded-3 p-3 h-100">
+                        <small class="text-muted d-block mb-2">Numero interno</small>
+                        <strong>@Model.NumeroAsiento</strong>
                     </div>
                 </div>
+
                 <div class="col-md-4">
-                    <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Fila
-                        </small>
-                        <strong>
-                            @Model.Fila
-                        </strong>
+                    <div class="border rounded-3 p-3 h-100">
+                        <small class="text-muted d-block mb-2">Fila</small>
+                        <strong>@Model.Fila</strong>
                     </div>
                 </div>
+
                 <div class="col-md-4">
-                    <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Lado
-                        </small>
-                        <strong>
-                            @lado
-                        </strong>
+                    <div class="border rounded-3 p-3 h-100">
+                        <small class="text-muted d-block mb-2">Lado</small>
+                        <strong>@lado</strong>
                     </div>
                 </div>
+
                 <div class="col-12">
                     <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Ubicacion
-                        </small>
-                        <strong>
-                            @Model.Ubicacion
-                        </strong>
+                        <small class="text-muted d-block mb-2">Modelo de aeronave</small>
+                        <strong>@modelo</strong>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block mb-2">Ubicacion</small>
+                        <strong>@Model.Ubicacion</strong>
                     </div>
                 </div>
             </div>
+
             <div class="d-flex gap-2 flex-wrap mt-4">
-                @Html.ActionLink("Editar asiento", "Edit", new
-                {
-                    id = Model.NumeroAsiento,
-                    modeloAeronaveId = Model.ModeloAeronaveId,
-                    numeroAsiento = Model.NumeroAsiento
-                }
-                , new
-                     {
-                    @class = "btn text-white",
-                         style = "background:#172b3d;"
-                }
-                )@Html.ActionLink("Eliminar asiento", "Delete", new
-                {
-                   id = Model.NumeroAsiento,
-                    modeloAeronaveId = Model.ModeloAeronaveId,
-                    numeroAsiento = Model.NumeroAsiento
-               }
-               , new
-                    {
-                   @class = "btn btn-outline-danger"
-               }
-               )
+                @Html.ActionLink("Editar asiento", "Edit",
+                    new
+                         {
+                        modeloAeronaveId = Model.ModeloAeronaveId,
+                        numeroAsiento = Model.NumeroAsiento
+                    },
+                    new { @class = "btn text-white px-4", style = "background:#172b3d;" })
+
+                @Html.ActionLink("Eliminar asiento", "Delete",
+                    new
+                         {
+                        modeloAeronaveId = Model.ModeloAeronaveId,
+                        numeroAsiento = Model.NumeroAsiento
+                    },
+                    new { @class = "btn btn-outline-danger px-4" })
+
+                @Html.ActionLink("Volver al listado", "Index", null,
+                    new { @class = "btn btn-outline-secondary px-4" })
             </div>
         </div>
     </div>
