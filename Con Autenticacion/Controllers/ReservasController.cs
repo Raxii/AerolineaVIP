@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
-using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
@@ -10,6 +9,7 @@ using Con_Autenticacion.Models;
 
 namespace Con_Autenticacion.Controllers
 {
+    [Authorize(Roles = "SuperUsuario,Administrador,Counter")]
     public class ReservasController : Controller
     {
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
@@ -17,8 +17,30 @@ namespace Con_Autenticacion.Controllers
         // GET: Reservas
         public ActionResult Index()
         {
-            var reserva = db.Reserva.Include(r => r.EstadoReserva);
-            return View(reserva.ToList());
+            var reservas = new List<Reserva>();
+            var todasReservas = new List<Reserva>();
+            var todasAsignaciones = new List<ReservaPasajeroVuelo>();
+            foreach (var item in db.Reserva) { todasReservas.Add(item); }
+            foreach (var item in db.ReservaPasajeroVuelo) { todasAsignaciones.Add(item); }
+
+            foreach (var reserva in todasReservas)
+            {
+                reserva.EstadoReserva = db.EstadoReserva.Find(reserva.EstadoReservaCodigo);
+
+                var asignaciones = new List<ReservaPasajeroVuelo>();
+                foreach (var asignacion in todasAsignaciones)
+                {
+                    if (asignacion.ReservaId == reserva.ReservaId)
+                    {
+                        asignacion.Pasajero = db.Pasajero.Find(asignacion.PasajeroId);
+                        asignaciones.Add(asignacion);
+                    }
+                }
+                reserva.ReservaPasajeroVuelo = asignaciones;
+                reservas.Add(reserva);
+            }
+
+            return View(reservas);
         }
 
         // GET: Reservas/Details/5
@@ -33,6 +55,19 @@ namespace Con_Autenticacion.Controllers
             {
                 return HttpNotFound();
             }
+            reserva.EstadoReserva = db.EstadoReserva.Find(reserva.EstadoReservaCodigo);
+            var asignaciones = new List<ReservaPasajeroVuelo>();
+            var todasAsignaciones = new List<ReservaPasajeroVuelo>();
+            foreach (var item in db.ReservaPasajeroVuelo) { todasAsignaciones.Add(item); }
+            foreach (var asignacion in todasAsignaciones)
+            {
+                if (asignacion.ReservaId == reserva.ReservaId)
+                {
+                    asignacion.Pasajero = db.Pasajero.Find(asignacion.PasajeroId);
+                    asignaciones.Add(asignacion);
+                }
+            }
+            reserva.ReservaPasajeroVuelo = asignaciones;
             return View(reserva);
         }
 
@@ -44,8 +79,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: Reservas/Create
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "ReservaId,CodigoReserva,UsuarioId,FechaCreacion,FechaExpiracion,EstadoReservaCodigo")] Reserva reserva)
@@ -78,8 +113,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: Reservas/Edit/5
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "ReservaId,CodigoReserva,UsuarioId,FechaCreacion,FechaExpiracion,EstadoReservaCodigo")] Reserva reserva)

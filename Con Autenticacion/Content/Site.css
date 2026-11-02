@@ -18,3 +18,25 @@ select,
 textarea {
     max-width: 280px;
 }
+html, body {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.body-content {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+    .body-content footer,
+    footer {
+        margin-top: auto;
+        flex-shrink: 0;
+    }

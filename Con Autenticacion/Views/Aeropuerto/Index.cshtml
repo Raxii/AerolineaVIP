@@ -1,52 +1,110 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Aeropuerto>
-
+﻿@using Con_Autenticacion.Models
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Aeropuertos";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var listaAeropuertos = ViewBag.ListaAeropuertos as List<Aeropuerto> ?? new List<Aeropuerto>();
+    int totalAeropuertos = ViewBag.TotalAeropuertos == null ? 0 : (int)ViewBag.TotalAeropuertos;
+    int aeropuertosActivos = ViewBag.AeropuertosActivos == null ? 0 : (int)ViewBag.AeropuertosActivos;
+    int aeropuertosInactivos = ViewBag.AeropuertosInactivos == null ? 0 : (int)ViewBag.AeropuertosInactivos;
+    string buscar = ViewBag.Buscar as string ?? "";
+    string estadoSeleccionado = ViewBag.EstadoSeleccionado as string ?? "";
 }
 
-<h2>Index</h2>
+<div class="container py-4" style="max-width: 1250px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="text-uppercase small fw-bold text-secondary">Flota y rutas</span>
+            <h1 class="h3 fw-bold mb-1">Administracion de aeropuertos</h1>
+            <p class="text-muted mb-0">Catalogo de aeropuertos registrados en el sistema.</p>
+        </div>
+        @Html.ActionLink("+ Nuevo aeropuerto", "Create", null, new { @class = "btn btn-primary px-4" })
+    </div>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.CodigoIATA)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Localidad)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Activo)
-        </th>
-        <th></th>
-    </tr>
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">@TempData["Ok"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.CodigoIATA)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Nombre)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Localidad)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Activo)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AeropuertoId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AeropuertoId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AeropuertoId })
-        </td>
-    </tr>
-}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Total de aeropuertos</div><div class="display-6 fw-bold">@totalAeropuertos</div></div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Activos</div><div class="display-6 fw-bold text-success">@aeropuertosActivos</div></div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Inactivos</div><div class="display-6 fw-bold text-secondary">@aeropuertosInactivos</div></div></div></div>
+    </div>
 
-</table>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "Aeropuerto", FormMethod.Get, new { @class = "row g-3 align-items-end" }))
+            {
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Buscar aeropuerto</label>
+                    <input type="text" name="buscar" value="@buscar" class="form-control" placeholder="Codigo IATA, nombre o localidad" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="Activo" @(estadoSeleccionado == "Activo" ? "selected" : "")>Activo</option>
+                        <option value="Inactivo" @(estadoSeleccionado == "Inactivo" ? "selected" : "")>Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-dark flex-fill">Filtrar</button>
+                    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-outline-secondary" })
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="fw-bold">Aeropuertos registrados</span>
+            <span class="badge bg-light text-dark border">@listaAeropuertos.Count resultados</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Codigo IATA</th>
+                        <th>Nombre</th>
+                        <th>Localidad</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (listaAeropuertos.Count > 0)
+                    {
+                        foreach (var aeropuerto in listaAeropuertos)
+                        {
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-dark-subtle text-dark border">@aeropuerto.CodigoIATA</span></td>
+                                <td class="fw-semibold">@aeropuerto.Nombre</td>
+                                <td>@aeropuerto.Localidad</td>
+                                <td>
+                                    @if (aeropuerto.Activo)
+                                    {<span class="badge rounded-pill bg-success">Activo</span> }
+                                    else
+                                    { <span class="badge rounded-pill bg-secondary">Inactivo</span>}
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new { id = aeropuerto.AeropuertoId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                    @Html.ActionLink("Editar", "Edit", new { id = aeropuerto.AeropuertoId }, new { @class = "btn btn-sm btn-outline-primary" })
+                                    @Html.ActionLink("Eliminar", "Delete", new { id = aeropuerto.AeropuertoId }, new { @class = "btn btn-sm btn-outline-danger" })
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="5" class="text-center text-muted py-5">No se encontraron aeropuertos.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

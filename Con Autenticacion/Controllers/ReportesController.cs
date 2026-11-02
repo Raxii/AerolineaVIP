@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Con_Autenticacion.Models;
@@ -46,7 +45,12 @@ namespace Con_Autenticacion.Controllers
                     // Cargar una vez las asignaciones de asientos.
                     // Se evita consultar toda la tabla por cada vuelo.
                     var todasLasAsignaciones =
-                        db.ReservaPasajeroVuelo.ToList();
+                        new List<ReservaPasajeroVuelo>();
+
+                    foreach (var asignacion in db.ReservaPasajeroVuelo)
+                    {
+                        todasLasAsignaciones.Add(asignacion);
+                    }
 
                     // Contar vuelos y extraer datos.
                     foreach (var vuelo in db.Vuelo)

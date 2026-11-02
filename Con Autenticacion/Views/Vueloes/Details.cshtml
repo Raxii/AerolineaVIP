@@ -1,51 +1,255 @@
-﻿@model Con_Autenticacion.Models.Vuelo
+﻿
+@model Con_Autenticacion.Models.Vuelo
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Detalle del vuelo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Details</h2>
+<style>
+    .vip-detail-page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 35px 15px 55px;
+    }
 
-<div>
-    <h4>Vuelo</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.FechaOperacion)
-        </dt>
+    .vip-eyebrow {
+        color: #b88a3b;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.FechaOperacion)
-        </dd>
+    .vip-title {
+        color: #172a3b;
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Aeronave.Matricula)
-        </dt>
+    .vip-subtitle {
+        color: #64748b;
+        margin-bottom: 28px;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.Aeronave.Matricula)
-        </dd>
+    .vip-card {
+        background: #fff;
+        border: 1px solid #e5eaf0;
+        border-radius: 18px;
+        box-shadow: 0 8px 26px rgba(23,42,59,.08);
+        overflow: hidden;
+    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.EstadoVuelo.Descripcion)
-        </dt>
+    .vip-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 22px 26px;
+        border-bottom: 1px solid #e8edf2;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.EstadoVuelo.Descripcion)
-        </dd>
+        .vip-card-header h3 {
+            color: #172a3b;
+            font-size: 20px;
+            font-weight: 750;
+            margin: 0;
+        }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Frecuencia.FrecuenciaId)
-        </dt>
+    .vip-id {
+        background: #eef3f7;
+        color: #29465d;
+        padding: 8px 14px;
+        border-radius: 30px;
+        font-weight: 700;
+    }
 
-        <dd>
-            @Html.DisplayFor(model => model.Frecuencia.FrecuenciaId)
-        </dd>
+    .vip-card-body {
+        padding: 28px 26px;
+    }
 
-    </dl>
+    .vip-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .vip-item {
+        background: #f8fafc;
+        border: 1px solid #e8edf2;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .vip-label {
+        display: block;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 750;
+        margin-bottom: 9px;
+    }
+
+    .vip-value {
+        color: #172a3b;
+        font-size: 17px;
+        font-weight: 650;
+        overflow-wrap: anywhere;
+    }
+
+    .vip-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid #edf1f5;
+    }
+
+    .vip-btn-primary {
+        display: inline-block;
+        background: #172a3b;
+        color: #fff;
+        padding: 12px 22px;
+        border-radius: 9px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+        .vip-btn-primary:hover {
+            background: #29465d;
+            color: #fff;
+            text-decoration: none;
+        }
+
+    .vip-btn-secondary {
+        display: inline-block;
+        background: #fff;
+        border: 1px solid #aab6c2;
+        color: #405366;
+        padding: 12px 22px;
+        border-radius: 9px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        .vip-btn-secondary:hover {
+            background: #f3f6f9;
+            color: #172a3b;
+            text-decoration: none;
+        }
+
+    @@media (max-width: 700px) {
+        .vip-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .vip-card-body {
+            padding: 20px;
+        }
+
+        .vip-title {
+            font-size: 25px;
+        }
+    }
+</style>
+
+<div class="container vip-detail-page">
+
+    <div class="vip-eyebrow">
+        AEROLINEA VIP / OPERACIONES
+    </div>
+
+    <h2 class="vip-title">Detalle del vuelo</h2>
+
+    <p class="vip-subtitle">
+        Consulta la informacion operativa del vuelo seleccionado.
+    </p>
+
+    <div class="vip-card">
+
+        <div class="vip-card-header">
+            <h3>Informacion general</h3>
+
+            <span class="vip-id">
+                Vuelo #@Model.VueloId
+            </span>
+        </div>
+
+        <div class="vip-card-body">
+
+            <div class="vip-grid">
+
+                <div class="vip-item">
+                    <span class="vip-label">Fecha de operacion</span>
+                    <div class="vip-value">
+                        @Html.DisplayFor(model => model.FechaOperacion)
+                    </div>
+                </div>
+
+                <div class="vip-item">
+                    <span class="vip-label">Matricula de aeronave</span>
+                    <div class="vip-value">
+                        @if (Model.Aeronave != null)
+                        {
+                            @Model.Aeronave.Matricula
+                        }
+                        else
+                        {
+                            <span>No hay aeronave asignada</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="vip-item">
+                    <span class="vip-label">Estado del vuelo</span>
+                    <div class="vip-value">
+                        @if (Model.EstadoVuelo != null)
+                        {
+                            @Model.EstadoVuelo.Descripcion
+                        }
+                        else
+                        {
+                            <span>Estado no especificado</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="vip-item">
+                    <span class="vip-label">Frecuencia</span>
+                    <div class="vip-value">
+                        @if (Model.Frecuencia != null)
+                        {
+                            @Model.Frecuencia.FrecuenciaId
+                        }
+                        else
+                        {
+                            <span>Sin frecuencia asignada</span>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="vip-actions">
+
+                @Html.ActionLink(
+                    "Editar vuelo",
+                    "Edit",
+                    new { id = Model.VueloId },
+                    new { @class = "vip-btn-primary" }
+                )
+
+                @Html.ActionLink(
+                    "Volver a vuelos",
+                    "Index",
+                    null,
+                    new { @class = "vip-btn-secondary" }
+                )
+
+            </div>
+
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.VueloId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

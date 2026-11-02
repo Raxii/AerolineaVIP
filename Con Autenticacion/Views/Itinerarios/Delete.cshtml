@@ -1,49 +1,68 @@
 ﻿@model Con_Autenticacion.Models.Itinerario
-
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Eliminar itinerario";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    int tramos = ViewBag.TramosAsociados == null ? -1 : (int)ViewBag.TramosAsociados;
 }
-
-<h2>Delete</h2>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Itinerario</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Referencia)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Referencia)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.EstadoItinerario.Descripcion)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.EstadoItinerario.Descripcion)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+<div class="container py-4" style="max-width:900px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Programacion / Confirmacion
         </div>
-    }
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Eliminar itinerario
+        </h1>
+        <p class="text-muted mb-0">
+            Revisa la informacion y los tramos relacionados.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <div class="alert alert-warning border-0">
+                <strong>
+                    Atencion:
+                </strong>
+                si el itinerario tiene tramos asociados, no debe eliminarse.
+            </div>
+            <h2 class="h5" style="color:#172b3d;">
+                @Model.Referencia - @Model.Nombre
+            </h2>
+            <div class="my-3">
+                <small class="text-muted d-block">
+                    Estado
+                </small>
+                <strong>
+                    @(Model.EstadoItinerario != null ? Model.EstadoItinerario.Descripcion : Model.EstadoItinerarioCodigo)
+                </strong>
+            </div>
+            @if (tramos > 0)
+            {
+                <div class="alert alert-danger">
+                    No se puede eliminar: existen @tramos tramo(s) asociados.
+                </div>
+            }
+            @using (Html.BeginForm("Delete", "Itinerarios", new
+            {
+                id = Model.ItinerarioId
+            }
+            , FormMethod.Post, new
+            {
+                @class = "d-flex flex-wrap gap-2"
+            }
+            ))
+            {
+                @Html.AntiForgeryToken() @if (tramos == 0 || tramos == -1)
+                {
+                    <button type="submit" class="btn btn-danger">
+                        Confirmar eliminacion
+                    </button>
+                }
+                @Html.ActionLink("Cancelar", "Index", null, new
+                {
+                    @class = "btn btn-outline-secondary"
+                }
+                )
+            }
+        </div>
+    </div>
 </div>

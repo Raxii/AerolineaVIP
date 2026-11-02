@@ -10,6 +10,7 @@ using Con_Autenticacion.Models;
 
 namespace Con_Autenticacion.Controllers
 {
+    [Authorize(Roles = "SuperUsuario,Administrador")]
     public class ComprobantesController : Controller
     {
         private AerolineaVIP_Context db = new AerolineaVIP_Context();
@@ -46,8 +47,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: Comprobantes/Create
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "ComprobanteId,CompraId,TipoComprobanteCodigo,NumeroComprobante,FechaEmision,EstadoComprobanteCodigo")] Comprobante comprobante)
@@ -84,8 +85,8 @@ namespace Con_Autenticacion.Controllers
         }
 
         // POST: Comprobantes/Edit/5
-        // Para protegerse de ataques de publicación excesiva, habilite las propiedades específicas a las que quiere enlazarse. Para obtener 
-        // más detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Para protegerse de ataques de publicacion excesiva, habilite las propiedades especificas a las que quiere enlazarse. Para obtener 
+        // mas detalles, vea https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "ComprobanteId,CompraId,TipoComprobanteCodigo,NumeroComprobante,FechaEmision,EstadoComprobanteCodigo")] Comprobante comprobante)

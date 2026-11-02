@@ -1,59 +1,112 @@
 ﻿@model Con_Autenticacion.Models.Frecuencia
-
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Detalle de frecuencia";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string ruta = Model.Ruta != null && Model.Ruta.Aeropuerto != null && Model.Ruta.Aeropuerto1 != null ? Model.Ruta.Aeropuerto.CodigoIATA + " - " + Model.Ruta.Aeropuerto1.CodigoIATA : "Ruta " + Model.RutaId;
 }
-
-<h2>Details</h2>
-
-<div>
-    <h4>Frecuencia</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.DiaSemana)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.DiaSemana)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.HoraSalida)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.HoraSalida)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.HoraLlegada)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.HoraLlegada)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Activa)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Activa)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Ruta.RutaId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Ruta.RutaId)
-        </dd>
-
-    </dl>
+<div class="container py-4" style="max-width:980px;">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+                Flota y rutas / Consulta
+            </div>
+            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+                Detalle de frecuencia
+            </h1>
+            <p class="text-muted mb-0">
+                Horario recurrente de la ruta seleccionada.
+            </p>
+        </div>
+        @Html.ActionLink("Volver al listado", "Index", null, new
+        {
+            @class = "btn btn-outline-secondary"
+        }
+        )
+    </div>
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="p-4 text-white" style="background:#172b3d;border-bottom:4px solid #c9a96e;">
+            <div class="small text-uppercase opacity-75">
+                Ruta
+            </div>
+            <div class="display-6 fw-bold">
+                @ruta
+            </div>
+            <div class="fs-5">
+                Frecuencia #@Model.FrecuenciaId
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Dia
+                        </small>
+                        <strong>
+                            Dia @Model.DiaSemana
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Salida
+                        </small>
+                        <strong>
+                            @Model.HoraSalida.ToString(@"hh\:mm")
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Llegada
+                        </small>
+                        <strong>
+                            @Model.HoraLlegada.ToString(@"hh\:mm")
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3">
+                        <small class="text-muted d-block">
+                            Estado
+                        </small>
+                        @if (Model.Activa)
+                        {
+                            <span class="badge text-bg-success">
+                                Activa
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-secondary">
+                                Inactiva
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap mt-4">
+                @Html.ActionLink("Editar frecuencia", "Edit", new
+                {
+                    id = Model.FrecuenciaId
+                }
+                , new
+                     {
+                    @class = "btn text-white",
+                         style = "background:#172b3d;"
+                }
+                )@Html.ActionLink("Eliminar frecuencia", "Delete", new
+                {
+                   id = Model.FrecuenciaId
+               }
+               , new
+                    {
+                   @class = "btn btn-outline-danger"
+               }
+               )
+            </div>
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.FrecuenciaId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

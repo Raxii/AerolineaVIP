@@ -1,59 +1,97 @@
 ﻿@model Con_Autenticacion.Models.Itinerario
-
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Editar itinerario";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<h2>Edit</h2>
-
-
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Itinerario</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.ItinerarioId)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Referencia, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Referencia, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Referencia, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4" style="max-width:980px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Programacion / Itinerarios
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Nombre, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
-            </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Editar itinerario
+        </h1>
+        <p class="text-muted mb-0">
+            Actualiza la informacion del recorrido.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-0" style="color:#172b3d;">
+                @Model.Referencia
+            </h2>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.EstadoItinerarioCodigo, "EstadoItinerarioCodigo", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("EstadoItinerarioCodigo", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.EstadoItinerarioCodigo, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
+        <div class="card-body p-4">
+            @using (Html.BeginForm("Edit", "Itinerarios", FormMethod.Post, new
+            {
+                @class = "row g-3"
+            }
+           ))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.ItinerarioId)
+                @Html.ValidationSummary(true, "", new
+                {
+                    @class = "alert alert-danger"
+                }
+                )
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="Referencia">
+                        Referencia
+                    </label>
+                    @Html.TextBoxFor(m => m.Referencia, new
+                    {
+                        @class = "form-control"
+                    }
+                    )@Html.ValidationMessageFor(m => m.Referencia, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold" for="Nombre">
+                        Nombre del recorrido
+                    </label>
+                    @Html.TextBoxFor(m => m.Nombre, new
+                    {
+                        @class = "form-control"
+                    }
+                    )@Html.ValidationMessageFor(m => m.Nombre, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold" for="EstadoItinerarioCodigo">
+                        Estado
+                    </label>
+                    @Html.DropDownList("EstadoItinerarioCodigo", null, "Selecciona un estado", new
+                    {
+                        @class = "form-select"
+                    }
+                    )@Html.ValidationMessageFor(m => m.EstadoItinerarioCodigo, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="btn text-white" style="background:#172b3d;">
+                        Guardar cambios
+                    </button>
+                    @Html.ActionLink("Cancelar", "Index", null, new
+                    {
+                        @class = "btn btn-outline-secondary"
+                    }
+                    )
+                </div>
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
-
-@section Scripts {
+@section Scripts
+{
     @Scripts.Render("~/bundles/jqueryval")
 }

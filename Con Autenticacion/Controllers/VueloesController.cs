@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Linq;
 using System.Net;
 using System.Web.Mvc;
 using Con_Autenticacion.Models;
@@ -18,13 +16,41 @@ namespace Con_Autenticacion.Controllers
         // Corrige el 404: el controlador de Israel no tenía esta acción.
         public ActionResult Index()
         {
-            var vuelos = db.Vuelo
-                .Include(v => v.Aeronave)
-                .Include(v => v.Frecuencia.Ruta.Aeropuerto)
-                .Include(v => v.Frecuencia.Ruta.Aeropuerto1)
-                .OrderByDescending(v => v.FechaOperacion)
-                .ThenBy(v => v.VueloId)
-                .ToList();
+            var vuelos = new List<Vuelo>();
+
+            // Se cargan los vuelos mediante un recorrido tradicional.
+            foreach (var vuelo in db.Vuelo)
+            {
+                vuelos.Add(vuelo);
+            }
+
+            // Orden descendente por fecha y ascendente por identificador.
+            vuelos.Sort(delegate (Vuelo a, Vuelo b)
+            {
+                var comparacionFecha = b.FechaOperacion.CompareTo(a.FechaOperacion);
+                if (comparacionFecha != 0)
+                    return comparacionFecha;
+
+                return a.VueloId.CompareTo(b.VueloId);
+            });
+
+            // Los indicadores se calculan en el controlador y se envían
+            // a Razor mediante ViewBag.
+            int vuelosProgramados = 0;
+            int vuelosConfirmados = 0;
+
+            foreach (var vuelo in vuelos)
+            {
+                if (vuelo.EstadoVueloCodigo == "PROGRAMADO")
+                    vuelosProgramados++;
+
+                if (vuelo.EstadoVueloCodigo == "CONFIRMADO")
+                    vuelosConfirmados++;
+            }
+
+            ViewBag.TotalVuelos = vuelos.Count;
+            ViewBag.VuelosProgramados = vuelosProgramados;
+            ViewBag.VuelosConfirmados = vuelosConfirmados;
 
             return View(vuelos);
         }
@@ -531,13 +557,25 @@ namespace Con_Autenticacion.Controllers
         [Authorize(Roles = "SuperUsuario,Administrador")]
         public ActionResult Administrar()
         {
-            var vuelos = db.Vuelo
-                .Include(v => v.Aeronave)
-                .Include(v => v.Frecuencia)
-                .OrderByDescending(v => v.FechaOperacion)
-                .ToList();
+            var vuelos = new List<Vuelo>();
+
+            foreach (var vuelo in db.Vuelo)
+            {
+                vuelos.Add(vuelo);
+            }
+
+            vuelos.Sort(delegate (Vuelo a, Vuelo b)
+            {
+                var comparacionFecha = b.FechaOperacion.CompareTo(a.FechaOperacion);
+                if (comparacionFecha != 0)
+                    return comparacionFecha;
+
+                return a.VueloId.CompareTo(b.VueloId);
+            });
+
             ViewBag.TotalVuelos = vuelos.Count;
             ViewBag.Vuelos = vuelos;
+
             return View();
         }
 
@@ -655,54 +693,87 @@ namespace Con_Autenticacion.Controllers
             }
         }
 
-        // Consultas auxiliares (sin modificar datos ni esquema de SQL Server).
+        // Consultas auxiliares mediante foreach y estructuras tradicionales.
+        // No se utilizan expresiones LINQ ni consultas SQL escritas manualmente.
         private Vuelo ObtenerVueloCompleto(int id)
         {
-            return db.Vuelo
-                .Include(v => v.Aeronave.ModeloAeronave)
-                .Include(v => v.EstadoVuelo)
-                .Include(v => v.Frecuencia.Ruta.Aeropuerto)
-                .Include(v => v.Frecuencia.Ruta.Aeropuerto1)
-                .FirstOrDefault(v => v.VueloId == id);
+            foreach (var vuelo in db.Vuelo)
+            {
+                if (vuelo.VueloId == id)
+                    return vuelo;
+            }
+
+            return null;
         }
 
         private Dictionary<int, int> ObtenerConteos(Dictionary<int, HashSet<byte>> ocupados)
         {
-            return ocupados.ToDictionary(x => x.Key, x => x.Value.Count);
+            var conteos = new Dictionary<int, int>();
+
+            foreach (var elemento in ocupados)
+            {
+                conteos[elemento.Key] = elemento.Value.Count;
+            }
+
+            return conteos;
         }
 
+        // Método auxiliar conservado para mantener la estructura del proyecto.
+        // Filtra los vuelos recorriendo la colección con foreach.
         private List<Vuelo> ObtenerVuelosFiltrados(int? origenId, int? destinoId,
             DateTime? fecha, int pasajeros, Dictionary<int, HashSet<byte>> ocupados)
         {
-            var consulta = db.Vuelo
-                .Include(v => v.Aeronave.ModeloAeronave)
-                .Include(v => v.Frecuencia.Ruta.Aeropuerto)
-                .Include(v => v.Frecuencia.Ruta.Aeropuerto1)
-                .Where(v => v.EstadoVueloCodigo != "CANCELADO" &&
-                            v.EstadoVueloCodigo != "COMPLETADO");
-
-            if (origenId.HasValue)
-                consulta = consulta.Where(v => v.Frecuencia.Ruta.AeropuertoOrigenId == origenId.Value);
-            if (destinoId.HasValue)
-                consulta = consulta.Where(v => v.Frecuencia.Ruta.AeropuertoDestinoId == destinoId.Value);
-            if (fecha.HasValue)
-            {
-                var desde = fecha.Value.Date;
-                var hasta = desde.AddDays(1);
-                consulta = consulta.Where(v => v.FechaOperacion >= desde && v.FechaOperacion < hasta);
-            }
-
-            var vuelos = consulta.OrderBy(v => v.FechaOperacion).ThenBy(v => v.VueloId).ToList();
             var resultados = new List<Vuelo>();
-            foreach (var vuelo in vuelos)
+
+            foreach (var vuelo in db.Vuelo)
             {
-                var capacidad = vuelo.Aeronave != null && vuelo.Aeronave.ModeloAeronave != null
-                    ? (int)vuelo.Aeronave.ModeloAeronave.CapacidadAsientos : 0;
-                var cantidadOcupada = ocupados.ContainsKey(vuelo.VueloId)
-                    ? ocupados[vuelo.VueloId].Count : 0;
+                if (vuelo.EstadoVueloCodigo == "CANCELADO" ||
+                    vuelo.EstadoVueloCodigo == "COMPLETADO")
+                    continue;
+
+                if (vuelo.Frecuencia == null || vuelo.Frecuencia.Ruta == null)
+                    continue;
+
+                if (origenId.HasValue &&
+                    vuelo.Frecuencia.Ruta.AeropuertoOrigenId != origenId.Value)
+                    continue;
+
+                if (destinoId.HasValue &&
+                    vuelo.Frecuencia.Ruta.AeropuertoDestinoId != destinoId.Value)
+                    continue;
+
+                if (fecha.HasValue)
+                {
+                    var desde = fecha.Value.Date;
+                    var hasta = desde.AddDays(1);
+
+                    if (vuelo.FechaOperacion < desde || vuelo.FechaOperacion >= hasta)
+                        continue;
+                }
+
+                var capacidad = 0;
+
+                if (vuelo.Aeronave != null && vuelo.Aeronave.ModeloAeronave != null)
+                    capacidad = vuelo.Aeronave.ModeloAeronave.CapacidadAsientos;
+
+                var cantidadOcupada = 0;
+
+                if (ocupados.ContainsKey(vuelo.VueloId))
+                    cantidadOcupada = ocupados[vuelo.VueloId].Count;
+
                 if (capacidad > 0 && capacidad - cantidadOcupada >= pasajeros)
                     resultados.Add(vuelo);
             }
+
+            resultados.Sort(delegate (Vuelo a, Vuelo b)
+            {
+                var comparacionFecha = a.FechaOperacion.CompareTo(b.FechaOperacion);
+                if (comparacionFecha != 0)
+                    return comparacionFecha;
+
+                return a.VueloId.CompareTo(b.VueloId);
+            });
+
             return resultados;
         }
 
@@ -948,6 +1019,18 @@ namespace Con_Autenticacion.Controllers
 
                 asientos.Sort(delegate (Asiento a, Asiento b)
                 {
+                    var comparacionFila = a.Fila.CompareTo(b.Fila);
+                    if (comparacionFila != 0)
+                        return comparacionFila;
+
+                    var comparacionLado = string.Compare(
+                        (a.Lado ?? "").Trim(),
+                        (b.Lado ?? "").Trim(),
+                        StringComparison.OrdinalIgnoreCase);
+
+                    if (comparacionLado != 0)
+                        return comparacionLado;
+
                     return a.NumeroAsiento.CompareTo(b.NumeroAsiento);
                 });
             }
@@ -1012,6 +1095,8 @@ namespace Con_Autenticacion.Controllers
             ViewBag.MensajeEstado = mensajeEstado;
             ViewBag.ExcedeLimitePantalla = cantidadSolicitada > limitePantalla;
             ViewBag.ExcedeDisponibilidad = cantidadSolicitada > 0 && cantidadSolicitada > disponibles;
+
+            PrepararDatosVisualesAsientos(asientos, estadosPorNumero, capacidadReal);
         }
 
         // ==========================================================
@@ -1214,16 +1299,114 @@ namespace Con_Autenticacion.Controllers
                 ViewBag.HoraPartida = vuelo.Frecuencia == null ? "" : vuelo.Frecuencia.HoraSalida.ToString(@"hh\:mm");
                 ViewBag.HoraLlegada = vuelo.Frecuencia == null ? "" : vuelo.Frecuencia.HoraLlegada.ToString(@"hh\:mm");
             }
+
+            PrepararDatosVisualesAsientos(asientos, estadosPorNumero, capacidadReal);
+        }
+
+        // Prepara en el controlador los datos que la vista necesita mostrar.
+        // La vista recibe las filas, los asientos agrupados y sus estados.
+        private void PrepararDatosVisualesAsientos(
+            List<Asiento> asientos,
+            Dictionary<byte, string> estadosPorNumero,
+            int capacidadReal)
+        {
+            var filas = new List<int>();
+            var asientosPorFila = new Dictionary<int, List<Asiento>>();
+            var estadosPorCodigo = new Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase);
+
+            int reservados = 0;
+            int ocupados = 0;
+
+            foreach (var asiento in asientos)
+            {
+                if (!asientosPorFila.ContainsKey(asiento.Fila))
+                {
+                    asientosPorFila[asiento.Fila] = new List<Asiento>();
+                    filas.Add(asiento.Fila);
+                }
+
+                asientosPorFila[asiento.Fila].Add(asiento);
+
+                var codigo = (asiento.Codigo ?? "").Trim();
+                string estadoAsignacion;
+                string estadoVisual = "DISPONIBLE";
+
+                if (estadosPorNumero.TryGetValue(asiento.NumeroAsiento, out estadoAsignacion))
+                {
+                    if (estadoAsignacion == "PENDIENTE")
+                    {
+                        estadoVisual = "RESERVADO";
+                        reservados++;
+                    }
+                    else if (estadoAsignacion == "CONFIRMADA")
+                    {
+                        estadoVisual = "OCUPADO";
+                        ocupados++;
+                    }
+                }
+
+                estadosPorCodigo[codigo] = estadoVisual;
+            }
+
+            int capacidad = capacidadReal > 0 ? capacidadReal : asientos.Count;
+            int disponibles = Math.Max(0, capacidad - reservados - ocupados);
+
+            ViewBag.FilasAsientos = filas;
+            ViewBag.AsientosPorFila = asientosPorFila;
+            ViewBag.EstadosVisualesAsientos = estadosPorCodigo;
+            ViewBag.TotalReservados = reservados;
+            ViewBag.TotalOcupados = ocupados;
+            ViewBag.TotalDisponibles = disponibles;
         }
 
         private void CargarListas(Vuelo vuelo = null)
         {
-            ViewBag.AeronaveId = new SelectList(db.Aeronave.OrderBy(a => a.Matricula).ToList(),
-                "AeronaveId", "Matricula", vuelo == null ? null : (object)vuelo.AeronaveId);
-            ViewBag.EstadoVueloCodigo = new SelectList(db.EstadoVuelo.ToList(),
-                "Codigo", "Descripcion", vuelo == null ? null : (object)vuelo.EstadoVueloCodigo);
-            ViewBag.FrecuenciaId = new SelectList(db.Frecuencia.OrderBy(f => f.FrecuenciaId).ToList(),
-                "FrecuenciaId", "FrecuenciaId", vuelo == null ? null : (object)vuelo.FrecuenciaId);
+            var aeronaves = new List<Aeronave>();
+            foreach (var aeronave in db.Aeronave)
+            {
+                aeronaves.Add(aeronave);
+            }
+
+            aeronaves.Sort(delegate (Aeronave a, Aeronave b)
+            {
+                return string.Compare(a.Matricula, b.Matricula, StringComparison.OrdinalIgnoreCase);
+            });
+
+            var estados = new List<EstadoVuelo>();
+            foreach (var estado in db.EstadoVuelo)
+            {
+                estados.Add(estado);
+            }
+
+            var frecuencias = new List<Frecuencia>();
+            foreach (var frecuencia in db.Frecuencia)
+            {
+                frecuencias.Add(frecuencia);
+            }
+
+            frecuencias.Sort(delegate (Frecuencia a, Frecuencia b)
+            {
+                return a.FrecuenciaId.CompareTo(b.FrecuenciaId);
+            });
+
+            ViewBag.AeronaveId = new SelectList(
+                aeronaves,
+                "AeronaveId",
+                "Matricula",
+                vuelo == null ? null : (object)vuelo.AeronaveId);
+
+            ViewBag.EstadoVueloCodigo = new SelectList(
+                estados,
+                "Codigo",
+                "Descripcion",
+                vuelo == null ? null : (object)vuelo.EstadoVueloCodigo);
+
+            ViewBag.FrecuenciaId = new SelectList(
+                frecuencias,
+                "FrecuenciaId",
+                "FrecuenciaId",
+                vuelo == null ? null : (object)vuelo.FrecuenciaId);
         }
 
         protected override void Dispose(bool disposing)

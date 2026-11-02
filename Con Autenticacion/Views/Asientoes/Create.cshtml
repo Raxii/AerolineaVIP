@@ -1,81 +1,154 @@
 ﻿@model Con_Autenticacion.Models.Asiento
-
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "Registrar asiento";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<h2>Create</h2>
-
-
-@using (Html.BeginForm()) 
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Asiento</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.ModeloAeronaveId, "ModeloAeronaveId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("ModeloAeronaveId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.ModeloAeronaveId, "", new { @class = "text-danger" })
-            </div>
+<div class="container py-4" style="max-width:1000px;">
+    <div class="mb-4">
+        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+            Flota y rutas / Cabina
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.NumeroAsiento, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.NumeroAsiento, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.NumeroAsiento, "", new { @class = "text-danger" })
-            </div>
+        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
+            Registrar asiento
+        </h1>
+        <p class="text-muted mb-0">
+            Agrega una ubicacion a un modelo de aeronave.
+        </p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white px-4 py-3">
+            <h2 class="h5 mb-0" style="color:#172b3d;">
+                Datos del asiento
+            </h2>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Codigo, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Codigo, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Codigo, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Fila, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Fila, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Fila, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Lado, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Lado, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Lado, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Ubicacion, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Ubicacion, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Ubicacion, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
+        <div class="card-body p-4">
+            @using (Html.BeginForm("Create", "Asientoes", FormMethod.Post, new
+            {
+                @class = "row g-3"
+            }
+           ))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new
+                {
+                    @class = "alert alert-danger"
+                }
+                )
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold" for="ModeloAeronaveId">
+                        Modelo de aeronave
+                    </label>
+                    @Html.DropDownList("ModeloAeronaveId", null, "Selecciona un modelo", new
+                    {
+                        @class = "form-select"
+                    }
+                    )@Html.ValidationMessageFor(m => m.ModeloAeronaveId, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="NumeroAsiento">
+                        Numero de asiento
+                    </label>
+                    @Html.TextBoxFor(m => m.NumeroAsiento, new
+                    {
+                        @class = "form-control",
+                        type = "number",
+                        min = "1",
+                        max = "255"
+                    }
+                    )@Html.ValidationMessageFor(m => m.NumeroAsiento, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="Codigo">
+                        Codigo visible
+                    </label>
+                    @Html.TextBoxFor(m => m.Codigo, new
+                    {
+                        @class = "form-control",
+                        maxlength = "2",
+                        placeholder = "Ej. 1A"
+                    }
+                    )@Html.ValidationMessageFor(m => m.Codigo, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="Fila">
+                        Fila
+                    </label>
+                    @Html.TextBoxFor(m => m.Fila, new
+                    {
+                        @class = "form-control",
+                        type = "number",
+                        min = "1",
+                        max = "255"
+                    }
+                    )@Html.ValidationMessageFor(m => m.Fila, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="Lado">
+                        Lado de cabina
+                    </label>
+                    <select id="Lado" name="Lado" class="form-select">
+                        <option value="">
+                            Selecciona un lado
+                        </option>
+                        <option value="D">
+                            Derecho
+                        </option>
+                        <option value="I">
+                            Izquierdo
+                        </option>
+                    </select>
+                    @Html.ValidationMessageFor(m => m.Lado, "", new
+                    {
+                        @class = "text-danger small"
+                    }
+                    )
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="Ubicacion">
+                        Descripcion de ubicacion
+                    </label>
+                    @Html.TextBoxFor(m => m.Ubicacion, new
+                    {
+                        @class = "form-control",
+                        placeholder = "Ej. Ventanilla"
+                    }
+                    )@Html.ValidationMessageFor(m => m.Ubicacion, "", new
+                    {
+                       @class = "text-danger small"
+                   }
+                   )
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="btn text-white" style="background:#172b3d;">
+                        Guardar asiento
+                    </button>
+                    @Html.ActionLink("Cancelar", "Index", null, new
+                    {
+                        @class = "btn btn-outline-secondary"
+                    }
+                    )
+                </div>
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
-
-@section Scripts {
+@section Scripts
+{
     @Scripts.Render("~/bundles/jqueryval")
 }
