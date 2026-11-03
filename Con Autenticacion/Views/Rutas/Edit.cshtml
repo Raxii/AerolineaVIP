@@ -1,99 +1,211 @@
-﻿@model Con_Autenticacion.Models.Ruta
+﻿
+@using System
+@using System.Collections.Generic
+@using System.Web.Mvc
+@model Con_Autenticacion.Models.Ruta
+
 @{
     ViewBag.Title = "Editar ruta";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var opcionesOrigen =
+        ViewBag.AeropuertoOrigenId as IEnumerable<SelectListItem>
+        ?? new List<SelectListItem>();
+
+    var opcionesDestino =
+        ViewBag.AeropuertoDestinoId as IEnumerable<SelectListItem>
+        ?? new List<SelectListItem>();
+
+    string idOrigen = Model.AeropuertoOrigenId.ToString();
+    string idDestino = Model.AeropuertoDestinoId.ToString();
 }
-<div class="container py-4" style="max-width:980px;">
+
+<div class="container py-4" style="max-width:1100px;">
+
     <div class="mb-4">
-        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
+        <div class="text-uppercase small fw-bold mb-2"
+             style="color:#b18b4b;letter-spacing:.12em;">
             Flota y rutas / Operacion
         </div>
+
         <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
             Editar ruta
         </h1>
+
         <p class="text-muted mb-0">
             Modifica el origen, destino o estado de la ruta.
         </p>
     </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
     <div class="card border-0 shadow-sm rounded-4">
+
         <div class="card-header bg-white px-4 py-3">
             <h2 class="h5 mb-0" style="color:#172b3d;">
                 Ruta #@Model.RutaId
             </h2>
         </div>
+
         <div class="card-body p-4">
-            @using (Html.BeginForm("Edit", "Rutas", FormMethod.Post, new
-            {
-                @class = "row g-3"
-            }
-           ))
+
+            @using (Html.BeginForm("Edit", "Rutas", FormMethod.Post))
             {
                 @Html.AntiForgeryToken()
+
                 @Html.HiddenFor(m => m.RutaId)
-                @Html.ValidationSummary(true, "", new
-                {
-                    @class = "alert alert-danger"
-                }
+
+                @Html.ValidationSummary(
+                    true,
+                    "",
+                    new { @class = "alert alert-danger" }
                 )
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="AeropuertoOrigenId">
-                        Aeropuerto de origen
-                    </label>
-                    @Html.DropDownList("AeropuertoOrigenId", null, "Selecciona el origen", new
-                    {
-                        @class = "form-select"
-                    }
-                    )@Html.ValidationMessageFor(m => m.AeropuertoOrigenId, "", new
-                    {
-                       @class = "text-danger small"
-                   }
-                   )
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="AeropuertoDestinoId">
-                        Aeropuerto de destino
-                    </label>
-                    @Html.DropDownList("AeropuertoDestinoId", null, "Selecciona el destino", new
-                    {
-                        @class = "form-select"
-                    }
-                    )@Html.ValidationMessageFor(m => m.AeropuertoDestinoId, "", new
-                    {
-                       @class = "text-danger small"
-                   }
-                   )
-                </div>
-                <div class="col-12">
-                    <div class="form-check form-switch border rounded-3 p-3 ps-5">
-                        <strong class="d-block">
-                            Ruta activa
-                        </strong>
-                        <small class="text-muted d-block mb-2">
-                            Si se desactiva, no deberia utilizarse en nuevas frecuencias.
-                        </small>
-                        @Html.CheckBoxFor(m => m.Activa, new
-                        {
-                            @class = "form-check-input",
-                            role = "switch"
-                        }
+
+                <div class="row g-4">
+
+                    <!-- ORIGEN -->
+                    <div class="col-md-6">
+
+                        <label for="AeropuertoOrigenId"
+                               class="form-label fw-semibold">
+                            Aeropuerto de origen
+                        </label>
+
+                        <select id="AeropuertoOrigenId"
+                                name="AeropuertoOrigenId"
+                                class="form-select"
+                                required>
+
+                            @foreach (var item in opcionesOrigen)
+                            {
+                                if (item.Value == idOrigen)
+                                {
+                                    <option value="@item.Value" selected="selected">
+                                        @item.Text
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">
+                                        @item.Text
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                        @Html.ValidationMessageFor(
+                            m => m.AeropuertoOrigenId,
+                            "",
+                            new { @class = "text-danger small" }
                         )
+
                     </div>
-                </div>
-                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                    <button type="submit" class="btn text-white" style="background:#172b3d;">
-                        Guardar cambios
-                    </button>
-                    @Html.ActionLink("Cancelar", "Index", null, new
-                    {
-                        @class = "btn btn-outline-secondary"
-                    }
-                    )
+
+                    <!-- DESTINO -->
+                    <div class="col-md-6">
+
+                        <label for="AeropuertoDestinoId"
+                               class="form-label fw-semibold">
+                            Aeropuerto de destino
+                        </label>
+
+                        <select id="AeropuertoDestinoId"
+                                name="AeropuertoDestinoId"
+                                class="form-select"
+                                required>
+
+                            @foreach (var item in opcionesDestino)
+                            {
+                                if (item.Value == idDestino)
+                                {
+                                    <option value="@item.Value" selected="selected">
+                                        @item.Text
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">
+                                        @item.Text
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                        @Html.ValidationMessageFor(
+                            m => m.AeropuertoDestinoId,
+                            "",
+                            new { @class = "text-danger small" }
+                        )
+
+                    </div>
+
+                    <!-- ESTADO -->
+                    <div class="col-12">
+
+                        <div class="border rounded-3 p-3">
+
+                            <div class="form-check form-switch">
+
+                                @Html.CheckBoxFor(
+                                    m => m.Activa,
+                                    new
+                                    {
+                                        @class = "form-check-input",
+                                        role = "switch"
+                                    }
+                                )
+
+                                <label class="form-check-label fw-semibold"
+                                       for="Activa">
+                                    Ruta activa
+                                </label>
+
+                            </div>
+
+                            <small class="text-muted d-block mt-2">
+                                Si se desactiva, no deberia utilizarse
+                                en nuevas frecuencias.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <!-- BOTONES -->
+                    <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+
+                        <button type="submit"
+                                class="btn text-white px-4"
+                                style="background:#172b3d;">
+                            Guardar cambios
+                        </button>
+
+                        @Html.ActionLink(
+                            "Cancelar",
+                            "Index",
+                            "Rutas",
+                            null,
+                            new { @class = "btn btn-outline-secondary px-4" }
+                        )
+
+                    </div>
+
                 </div>
             }
+
         </div>
+
     </div>
+
 </div>
-@section Scripts
-{
+
+@section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
 }
