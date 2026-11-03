@@ -493,98 +493,51 @@
 
                     </li>
 
-                    <!-- MIS VIAJES -->
+                    <!-- MIS VIAJES: SOLO CLIENTES -->
 
                     @if (esCliente)
                     {
                         <li class="nav-item dropdown">
-
                             <a class="nav-link dropdown-toggle"
                                href="#"
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
-
                                 Mis viajes
-
                             </a>
 
                             <ul class="dropdown-menu">
-
                                 <li>
-                                    <span class="dropdown-header">
-                                        Reservas de pasajeros
-                                    </span>
+                                    <span class="dropdown-header">Mis viajes y documentos</span>
                                 </li>
-
-                                @if (esPersonalAdmin)
-                                {
-                                    <li>
-                                        @Html.ActionLink(
-                                            "Consultar reservas",
-                                            "Index",
-                                            "Reservas",
-                                            null,
-                                            new { @class = "dropdown-item" }
-                                        )
-                                    </li>
-
-                                    <li>
-                                        @Html.ActionLink(
-                                            "Consultar compras",
-                                            "Index",
-                                            "Compras",
-                                            null,
-                                            new { @class = "dropdown-item" }
-                                        )
-                                    </li>
-
-                                    <li>
-                                        @Html.ActionLink(
-                                            "Comprobantes",
-                                            "Index",
-                                            "Comprobantes",
-                                            null,
-                                            new { @class = "dropdown-item" }
-                                        )
-                                    </li>
-
-                                    <li>
-                                        @Html.ActionLink(
-                                            "Registros de check-in",
-                                            "Index",
-                                            "CheckIns",
-                                            null,
-                                            new { @class = "dropdown-item" }
-                                        )
-                                    </li>
-                                }
-                                else
-                                {
-                                    <li>
-                                        <span class="vip-pendiente">
-                                            Mis reservas
-                                            <small>Consulta pendiente de implementacion</small>
-                                        </span>
-                                    </li>
-
-                                    <li>
-                                        <span class="vip-pendiente">
-                                            Mis comprobantes
-                                            <small>Consulta pendiente de implementacion</small>
-                                        </span>
-                                    </li>
-
-                                    <li>
-                                        <span class="vip-pendiente">
-                                            Check-in
-                                            <small>Validaciones pendientes</small>
-                                        </span>
-                                    </li>
-                                }
-
+                                <li>
+                                    @Html.ActionLink(
+                                        "Mis reservas",
+                                        "Reservas",
+                                        "MisViajes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+                                <li>
+                                    @Html.ActionLink(
+                                        "Mis comprobantes",
+                                        "Comprobantes",
+                                        "MisViajes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
+                                <li>
+                                    @Html.ActionLink(
+                                        "Check-in",
+                                        "CheckIn",
+                                        "MisViajes",
+                                        null,
+                                        new { @class = "dropdown-item" }
+                                    )
+                                </li>
                             </ul>
-
                         </li>
                     }
 

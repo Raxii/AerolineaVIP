@@ -1,215 +1,899 @@
+
+@using System
+@using System.Collections.Generic
 @using Con_Autenticacion.Models
 
 @{
-    ViewBag.Title = "Administracion de Vuelos e Itinerarios";
+    ViewBag.Title = "Administracion de Vuelos";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<Vuelo> vuelos = ViewBag.Vuelos as List<Vuelo>;
+    if (vuelos == null) { vuelos = new List<Vuelo>(); }
+
+    int programados = 0;
+    int cancelados = 0;
+    List<string> rutas = new List<string>();
+    Dictionary<string, string> estados =
+        new Dictionary<string, string>();
+
+    foreach (Vuelo v in vuelos)
+    {
+        string codigo = v.EstadoVueloCodigo ?? "";
+
+        if (codigo == "PROGRAMADO") { programados++; }
+        if (codigo == "CANCELADO") { cancelados++; }
+
+        if (codigo != "" && !estados.ContainsKey(codigo))
+        {
+            string nombre = v.EstadoVuelo != null
+                ? v.EstadoVuelo.Descripcion : codigo;
+
+            estados.Add(codigo, nombre);
+        }
+
+        if (v.Frecuencia != null &&
+            v.Frecuencia.Ruta != null &&
+            v.Frecuencia.Ruta.Aeropuerto != null &&
+            v.Frecuencia.Ruta.Aeropuerto1 != null)
+        {
+            string ruta =
+                v.Frecuencia.Ruta.Aeropuerto.CodigoIATA
+                + " - " +
+                v.Frecuencia.Ruta.Aeropuerto1.CodigoIATA;
+
+            if (!rutas.Contains(ruta))
+            {
+                rutas.Add(ruta);
+            }
+        }
+    }
+
+    DateTime hoy = DateTime.Today;
+
+    string[] diasSemana =
+    {
+        "Dom", "Lun", "Mar", "Mie",
+        "Jue", "Vie", "Sab"
+    };
 }
 
-@{
-    var totalVuelos = (int)(ViewBag.TotalVuelos ?? 0);
-    var vuelos = (List<Vuelo>)(ViewBag.Vuelos ?? new List<Vuelo>());
-}
+<style>
+    .av-admin {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding: 40px 15px 65px;
+    }
 
-<div class="container py-5" style="max-width: 1200px;">
-    <div class="d-flex justify-content-between align-items-start mb-4">
+        .av-admin .titulo {
+            color: #172b3c;
+            font-weight: 800;
+        }
+
+        .av-admin .dorado {
+            color: #b88738;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .av-admin .tarjeta {
+            background: white;
+            border: 1px solid #e0e6eb;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(20,40,60,.06);
+            overflow: hidden;
+        }
+
+        .av-admin .tarjeta-cabecera {
+            padding: 18px 22px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e3e8ed;
+        }
+
+        .av-admin .btn-principal {
+            background: #172b3c;
+            border: 1px solid #172b3c;
+            color: #fff;
+            font-weight: 600;
+        }
+
+            .av-admin .btn-principal:hover {
+                background: #2d4658;
+                color: #fff;
+            }
+
+        .av-admin .indicador {
+            padding: 18px 20px;
+            background: white;
+            border: 1px solid #e0e6eb;
+            border-radius: 14px;
+            height: 100%;
+        }
+
+        .av-admin .numero {
+            color: #172b3c;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .av-admin .form-label {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .av-admin .dia-calendario {
+            min-width: 82px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #dce3e9;
+            border-radius: 10px;
+            background: #fff;
+            color: #172b3c;
+            cursor: pointer;
+            transition: background-color .2s, color .2s, border-color .2s, transform .2s;
+        }
+
+            .av-admin .dia-calendario:hover {
+                border-color: #b88738;
+                transform: translateY(-2px);
+            }
+
+            .av-admin .dia-calendario.dia-hoy {
+                background: #172b3c;
+                border-color: #172b3c;
+                color: #fff;
+            }
+
+                .av-admin .dia-calendario.dia-hoy:hover {
+                    background: #2d4658;
+                }
+
+        .av-admin .tabla-vuelos th {
+            font-weight: 700;
+            font-size: 13px;
+            background: #edf1f5;
+            padding: 15px;
+            white-space: nowrap;
+        }
+
+        .av-admin .tabla-vuelos td {
+            vertical-align: middle;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .av-admin .acciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .av-admin .estado {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .av-admin .estado-programado {
+            background: #dcf4e7;
+            color: #157347;
+        }
+
+        .av-admin .estado-cancelado {
+            background: #fce4e4;
+            color: #b02a37;
+        }
+
+        .av-admin .estado-otro {
+            background: #e8edf4;
+            color: #34465b;
+        }
+</style>
+
+<div class="av-admin">
+
+    <div class="d-flex justify-content-between
+                align-items-end flex-wrap gap-3 mb-4">
+
         <div>
-            <h2 class="h4 fw-bold text-dark mb-1">Administracion de Vuelos e Itinerarios</h2>
-            <p class="small text-muted mb-0">Gestion de la programacion aprobada, rutas, horarios y estados operativos.</p>
+            <div class="dorado mb-2">
+                AEROLINEA VIP / ADMINISTRACION
+            </div>
+
+            <h2 class="titulo mb-2">
+                Administracion de Vuelos e Itinerarios
+            </h2>
+
+            <p class="text-muted mb-0">
+                Consulta y administra vuelos,
+                frecuencias, aeronaves y estados.
+            </p>
         </div>
 
-        <button class="btn px-4 text-white fw-bold rounded-3" style="background-color: #37474f; border-color: #37474f;">+ Crear Programacion</button>
+        @Html.ActionLink(
+            "+ Crear programacion",
+            "Create",
+            "Vueloes",
+            null,
+            new { @class = "btn btn-principal px-4 py-2" }
+        )
     </div>
-    @*AUN NO SE APLICA FILTRO*@
-    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <div class="row g-2 align-items-center">
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Mensaje"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="indicador">
+                <div class="small text-muted">
+                    Total de vuelos
+                </div>
+                <div class="numero">@vuelos.Count</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="indicador">
+                <div class="small text-muted">
+                    Vuelos programados
+                </div>
+                <div class="numero text-success">
+                    @programados
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="indicador">
+                <div class="small text-muted">
+                    Vuelos cancelados
+                </div>
+                <div class="numero text-danger">
+                    @cancelados
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="tarjeta p-4 mb-4">
+
+        <h5 class="fw-bold mb-3">Buscar vuelos</h5>
+
+        <div class="row g-3 align-items-end">
+
             <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Fecha</label>
-                <input type="date" class="form-control form-control-sm">
+                <label for="filtroFecha" class="form-label">
+                    Fecha
+                </label>
+                <input id="filtroFecha"
+                       type="date"
+                       class="form-control" />
             </div>
 
             <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Ruta</label>
-                <select class="form-select form-select-sm">
-                    <option>Todas</option>
-                    <option>UIO - GYE</option>
-                    <option>UIO - MEC</option>
-                    <option>GYE - UIO</option>
+                <label for="filtroRuta" class="form-label">
+                    Ruta
+                </label>
+                <select id="filtroRuta" class="form-select">
+                    <option value="">Todas las rutas</option>
+
+                    @foreach (string ruta in rutas)
+                    {
+                        <option value="@ruta">@ruta</option>
+                    }
                 </select>
             </div>
 
             <div class="col-md-3">
-                <label class="form-label small text-muted fw-bold">Estado</label>
-                <select class="form-select form-select-sm">
-                    <option>Todos</option>
-                    <option>Programado</option>
-                    <option>En vuelo</option>
-                    <option>Retrasado</option>
-                    <option>Cancelado</option>
+                <label for="filtroEstado" class="form-label">
+                    Estado
+                </label>
+                <select id="filtroEstado" class="form-select">
+                    <option value="">Todos los estados</option>
+
+                    @foreach (
+                        KeyValuePair<string, string> estado
+                        in estados)
+                    {
+                        <option value="@estado.Key">
+                            @estado.Value
+                        </option>
+                    }
                 </select>
             </div>
 
-            <div class="col-md-3 d-flex align-items-end gap-2">
-                <button class="btn btn-sm btn-outline-danger w-100">Consultar Conflictos</button>
-                <button class="btn btn-sm px-3 text-white fw-semibold w-100" style="background-color: #37474f; border-color: #37474f;">Filtrar</button>
+            <div class="col-md-3">
+                <div class="d-flex gap-2">
+                    <button id="btnFiltrar"
+                            type="button"
+                            class="btn btn-principal flex-fill">
+                        Filtrar
+                    </button>
+
+                    <button id="btnLimpiar"
+                            type="button"
+                            class="btn btn-outline-secondary">
+                        Limpiar
+                    </button>
+                </div>
             </div>
+
         </div>
+
+        <div class="mt-3">
+            <button id="btnConflictos"
+                    type="button"
+                    class="btn btn-outline-danger btn-sm">
+                Consultar conflictos
+            </button>
+
+            <small class="text-muted ms-2">
+                Revision preliminar de horarios
+                de una misma aeronave.
+            </small>
+        </div>
+
+        <div id="resultadoConflictos"
+             class="mt-3"
+             style="display:none;">
+        </div>
+
     </div>
-    @*FALTA ACTUALIZAR HORARIO*@
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
-        <h6 class="fw-bold text-dark mb-3">Calendario de Operaciones - Octubre 2026</h6>
+
+    <div class="tarjeta p-4 mb-4">
+
+        <h5 class="fw-bold mb-3">
+            Calendario de operaciones -
+            @hoy.ToString("MM/yyyy")
+        </h5>
 
         <div class="d-flex gap-2 flex-wrap">
-            <div class="border rounded-3 p-2 text-center" style="width: 60px; background-color: #37474f; color: white;">
-                <div class="small">Lun</div>
-                <div class="fw-bold">28</div>
-            </div>
 
-            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
-                <div class="small text-muted">Mar</div>
-                <div class="fw-bold text-dark">29</div>
-            </div>
+            @for (int i = 0; i < 7; i++)
+            {
+                DateTime dia = hoy.AddDays(i);
 
-            <div class="border rounded-3 p-2 text-center bg-white text-muted" style="width: 60px; opacity: 0.5;">
-                <div class="small">Mie</div>
-                <div class="fw-bold">30</div>
-            </div>
+                string clase = i == 0
+                    ? "dia-calendario dia-hoy"
+                    : "dia-calendario";
 
-            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
-                <div class="small text-muted">Jue</div>
-                <div class="fw-bold text-dark">31</div>
-            </div>
+                int totalDia = 0;
 
-            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
-                <div class="small text-muted">Vie</div>
-                <div class="fw-bold text-dark">01</div>
-            </div>
+                foreach (Vuelo vuelo in vuelos)
+                {
+                    if (vuelo.FechaOperacion.Date == dia.Date)
+                    {
+                        totalDia++;
+                    }
+                }
 
-            <div class="border rounded-3 p-2 text-center bg-light" style="width: 60px;">
-                <div class="small text-muted">Sab</div>
-                <div class="fw-bold text-dark">02</div>
-            </div>
+                <button type="button"
+                        class="@clase"
+                        data-fecha="@dia.ToString("yyyy-MM-dd")"
+                        aria-pressed="@(i == 0 ? "true" : "false")">
+
+                    <div class="small">
+                        @diasSemana[(int)dia.DayOfWeek]
+                    </div>
+
+                    <div class="fw-bold fs-5">
+                        @dia.ToString("dd")
+                    </div>
+
+                    <div class="small">
+                        @totalDia vuelos
+                    </div>
+                </button>
+            }
+
         </div>
+
+        <p class="small text-muted mb-0 mt-3">
+            Selecciona un dia para filtrar los vuelos.
+        </p>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
-        <div class="card-header bg-light border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-            <span class="small fw-bold text-dark">Itinerarios Programados</span>
-            <span class="badge bg-light text-dark border">@totalVuelos vuelos</span>
+    <div class="tarjeta">
+
+        <div class="tarjeta-cabecera
+                    d-flex justify-content-between
+                    align-items-center gap-2 flex-wrap">
+
+            <div>
+                <h5 class="fw-bold mb-1">
+                    Itinerarios programados
+                </h5>
+                <span class="small text-muted">
+                    Listado de vuelos registrados
+                </span>
+            </div>
+
+            <span id="contadorVuelos"
+                  class="badge bg-light text-dark border">
+                @vuelos.Count vuelos
+            </span>
         </div>
 
-        <table class="table table-hover table-striped align-middle mb-0">
-            <thead class="table-light text-dark">
-                <tr>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Vuelo</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Ruta</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Fecha / Hora</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Aeronave</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Secuencia</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Estado</th>
-                    <th class="py-3 px-4 fw-bold border-bottom-0">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (vuelos.Count > 0)
-                {
-                    foreach (var vuelo in vuelos)
+        <div class="table-responsive">
+
+            <table id="tablaVuelos"
+                   class="table table-striped tabla-vuelos mb-0">
+
+                <thead>
+                    <tr>
+                        <th>Vuelo</th>
+                        <th>Ruta</th>
+                        <th>Fecha / Hora</th>
+                        <th>Aeronave</th>
+                        <th>Frecuencia</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (vuelos.Count == 0)
                     {
-                        var horaPartida = "";
-                        var horaLlegada = "";
-                        var rutaDisplay = "";
-
-                        if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null)
-                        {
-                            horaPartida = vuelo.Frecuencia.HoraSalida.ToString(@"hh\:mm");
-                            horaLlegada = vuelo.Frecuencia.HoraLlegada.ToString(@"hh\:mm");
-
-                            if (vuelo.Frecuencia.Ruta.Aeropuerto != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
-                            {
-                                rutaDisplay = vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA + " - " + vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA;
-                            }
-                        }
-
-                        var aeronaveDisplay = "No asignada";
-                        if (vuelo.Aeronave != null)
-                        {
-                            aeronaveDisplay = vuelo.Aeronave.ModeloAeronave != null ? vuelo.Aeronave.ModeloAeronave.Nombre : "Desconocido";
-                        }
-
-                        var estadoDisplay = vuelo.EstadoVuelo != null ? vuelo.EstadoVuelo.Descripcion : "Desconocido";
-                        var estadoBadge = "bg-success";
-                        if (vuelo.EstadoVuelo != null)
-                        {
-                            if (vuelo.EstadoVuelo.Codigo == "RE")
-                            {
-                                estadoBadge = "bg-warning";
-                            }
-                            else if (vuelo.EstadoVuelo.Codigo == "CA")
-                            {
-                                estadoBadge = "bg-danger";
-                            }
-                        }
-
-                        var secuencia = "Directo";
-                        var numeroTramos = 0;
-                        try
-                        {
-                            // Contar tramos para este vuelo
-                            var db = new Con_Autenticacion.Models.AerolineaVIP_Context();
-                            foreach (var tramo in db.TramoItinerario)
-                            {
-                                if (tramo.VueloId == vuelo.VueloId)
-                                {
-                                    numeroTramos++;
-                                }
-                            }
-
-                            if (numeroTramos > 1)
-                            {
-                                secuencia = (numeroTramos - 1) + " escala";
-                                if (numeroTramos - 1 > 1)
-                                {
-                                    secuencia = (numeroTramos - 1) + " escalas";
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            secuencia = "Directo";
-                        }
-
                         <tr>
-                            <td class="py-3 px-4 fw-semibold">
-                                @Html.DisplayFor(modelItem => vuelo.VueloId)
-                            </td>
-                            <td class="py-3 px-4">@rutaDisplay</td>
-                            <td class="py-3 px-4">
-                                @Html.DisplayFor(modelItem => vuelo.FechaOperacion, "{0:dd MMM yyyy}")
-                                <br>
-                                <span class="small text-muted">@horaPartida - @horaLlegada</span>
-                            </td>
-                            <td class="py-3 px-4">@aeronaveDisplay</td>
-                            <td class="py-3 px-4">
-                                <span class="badge bg-light text-dark border">@secuencia</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <span class="badge @estadoBadge bg-opacity-75 rounded-pill">@estadoDisplay</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-secondary">Modificar</button>
-                                    <button class="btn btn-sm btn-outline-danger">Cancelar</button>
-                                </div>
+                            <td colspan="7"
+                                class="text-center text-muted py-5">
+                                No hay vuelos registrados.
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" class="py-3 px-4 text-center text-muted small">No hay vuelos registrados</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        foreach (Vuelo vuelo in vuelos)
+                        {
+                            string ruta = "Sin ruta";
+                            string inicio = "";
+                            string fin = "";
+                            string aeronave = "No asignada";
+                            string matricula = "";
+                            string aeronaveId = "";
+
+                            string codigo =
+                                vuelo.EstadoVueloCodigo ?? "";
+
+                            string estado =
+                                vuelo.EstadoVuelo != null
+                                ? vuelo.EstadoVuelo.Descripcion
+                                : codigo;
+
+                            string claseEstado =
+                                codigo == "PROGRAMADO"
+                                ? "estado-programado"
+                                : (codigo == "CANCELADO"
+                                ? "estado-cancelado"
+                                : "estado-otro");
+
+                            if (vuelo.Frecuencia != null)
+                            {
+                                inicio = vuelo.Frecuencia.HoraSalida
+                                    .ToString(@"hh\:mm");
+
+                                fin = vuelo.Frecuencia.HoraLlegada
+                                    .ToString(@"hh\:mm");
+
+                                if (vuelo.Frecuencia.Ruta != null &&
+                                    vuelo.Frecuencia.Ruta.Aeropuerto != null &&
+                                    vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
+                                {
+                                    ruta =
+                                        vuelo.Frecuencia.Ruta
+                                        .Aeropuerto.CodigoIATA
+                                        + " - " +
+                                        vuelo.Frecuencia.Ruta
+                                        .Aeropuerto1.CodigoIATA;
+                                }
+                            }
+
+                            if (vuelo.Aeronave != null)
+                            {
+                                matricula =
+                                    vuelo.Aeronave.Matricula;
+
+                                aeronaveId = Convert.ToString(
+                                    vuelo.Aeronave.AeronaveId);
+
+                                aeronave = matricula;
+
+                                if (vuelo.Aeronave.ModeloAeronave != null)
+                                {
+                                    aeronave =
+                                        vuelo.Aeronave
+                                        .ModeloAeronave.Nombre;
+                                }
+                            }
+
+                            <tr data-vuelo="true"
+                                data-fecha="@vuelo.FechaOperacion.ToString("yyyy-MM-dd")"
+                                data-ruta="@ruta"
+                                data-estado="@codigo"
+                                data-aeronave="@aeronaveId"
+                                data-inicio="@inicio"
+                                data-fin="@fin">
+
+                                <td>
+                                    <strong>#@vuelo.VueloId</strong>
+                                </td>
+
+                                <td>@ruta</td>
+
+                                <td>
+                                    <strong>
+                                        @vuelo.FechaOperacion.ToString("dd/MM/yyyy")
+                                    </strong>
+                                    <div class="small text-muted mt-1">
+                                        @inicio - @fin
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>@aeronave</strong>
+                                    <div class="small text-muted">
+                                        @matricula
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        #@vuelo.FrecuenciaId
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="estado @claseEstado">
+                                        @estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="acciones">
+
+                                        @Html.ActionLink(
+                                            "Ver",
+                                            "Details",
+                                            "Vueloes",
+                                            new { id = vuelo.VueloId },
+                                            new
+                                                 {
+                                                @class = "btn btn-sm btn-outline-secondary"
+                                            }
+                                        )
+
+                                        @Html.ActionLink(
+                                            "Modificar",
+                                            "Edit",
+                                            "Vueloes",
+                                            new { id = vuelo.VueloId },
+                                            new
+                                                 {
+                                                @class = "btn btn-sm btn-outline-primary"
+                                            }
+                                        )
+
+                                        @if (codigo != "CANCELADO")
+                                        {
+                                            @Html.ActionLink(
+                                                "Cancelar",
+                                                "Edit",
+                                                "Vueloes",
+                                                new { id = vuelo.VueloId },
+                                                new
+                                                     {
+                                                    @class = "btn btn-sm btn-outline-danger",
+                                                    title = "Selecciona CANCELADO y guarda en Editar",
+                                                    onclick = "return confirm('Se abrira Editar vuelo para cambiar el estado a Cancelado. Continuar?');"
+                                                }
+                                            )
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">
+                                                Cancelado
+                                            </span>
+                                        }
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-3 border-top small text-muted">
+            Cancelar abre Editar vuelo. Para cancelar,
+            selecciona el estado Cancelado y guarda.
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    const fecha = document.getElementById("filtroFecha");
+                    const ruta = document.getElementById("filtroRuta");
+                    const estado = document.getElementById("filtroEstado");
+                    const filtrar = document.getElementById("btnFiltrar");
+                    const limpiar = document.getElementById("btnLimpiar");
+                    const conflictosBtn = document.getElementById("btnConflictos");
+                    const contador = document.getElementById("contadorVuelos");
+                    const resultado = document.getElementById("resultadoConflictos");
+
+                    if (!(fecha instanceof HTMLInputElement) ||
+                        !(ruta instanceof HTMLSelectElement) ||
+                        !(estado instanceof HTMLSelectElement) ||
+                        !(filtrar instanceof HTMLButtonElement) ||
+                        !(limpiar instanceof HTMLButtonElement) ||
+                        !(conflictosBtn instanceof HTMLButtonElement) ||
+                        !(contador instanceof HTMLElement) ||
+                        !(resultado instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    const filas = document.querySelectorAll(
+                        "#tablaVuelos tbody tr[data-vuelo]"
+                    );
+
+                    const dias = document.querySelectorAll(
+                        ".dia-calendario"
+                    );
+
+                    // CAMBIAR COLOR DEL DIA SELECCIONADO
+
+                    function marcarDia(fechaSeleccionada = "") {
+
+                        for (let i = 0; i < dias.length; i++) {
+
+                            const dia = dias[i];
+
+                            if (!(dia instanceof HTMLButtonElement)) {
+                                continue;
+                            }
+
+                            const activo =
+                                dia.getAttribute("data-fecha") ===
+                                fechaSeleccionada;
+
+                            dia.classList.toggle("dia-hoy", activo);
+
+                            dia.setAttribute(
+                                "aria-pressed",
+                                activo ? "true" : "false"
+                            );
+                        }
+                    }
+
+                    // FILTRAR LOS VUELOS
+
+                    function aplicarFiltros() {
+
+                        if (!(fecha instanceof HTMLInputElement) ||
+                            !(ruta instanceof HTMLSelectElement) ||
+                            !(estado instanceof HTMLSelectElement)) {
+                            return;
+                        }
+
+                        let visibles = 0;
+
+                        for (let i = 0; i < filas.length; i++) {
+
+                            const fila = filas[i];
+
+                            if (!(fila instanceof HTMLTableRowElement)) {
+                                continue;
+                            }
+
+                            const mostrar =
+                                (!fecha.value ||
+                                 fecha.value === fila.getAttribute("data-fecha")) &&
+
+                                (!ruta.value ||
+                                 ruta.value === fila.getAttribute("data-ruta")) &&
+
+                                (!estado.value ||
+                                 estado.value === fila.getAttribute("data-estado"));
+
+                            fila.style.display = mostrar ? "" : "none";
+
+                            if (mostrar) {
+                                visibles++;
+                            }
+                        }
+
+                        if (contador instanceof HTMLElement) {
+                            contador.textContent = visibles + " vuelos";
+                        }
+                    }
+
+                    // BOTON FILTRAR
+
+                    filtrar.addEventListener("click", function () {
+
+                        if (!(fecha instanceof HTMLInputElement)) {
+                            return;
+                        }
+
+                        marcarDia(fecha.value);
+                        aplicarFiltros();
+                    });
+
+                    // BOTON LIMPIAR
+
+                    limpiar.addEventListener("click", function () {
+
+                        if (!(fecha instanceof HTMLInputElement) ||
+                            !(ruta instanceof HTMLSelectElement) ||
+                            !(estado instanceof HTMLSelectElement)) {
+                            return;
+                        }
+
+                        fecha.value = "";
+                        ruta.value = "";
+                        estado.value = "";
+
+                        marcarDia("");
+                        aplicarFiltros();
+                    });
+
+                    // CLIC EN LOS DIAS DEL CALENDARIO
+
+                    for (let i = 0; i < dias.length; i++) {
+
+                        const dia = dias[i];
+
+                        if (!(dia instanceof HTMLButtonElement)) {
+                            continue;
+                        }
+
+                        dia.addEventListener("click", function () {
+
+                            if (!(fecha instanceof HTMLInputElement)) {
+                                return;
+                            }
+
+                            const seleccion =
+                                dia.getAttribute("data-fecha") || "";
+
+                            fecha.value = seleccion;
+
+                            // El color se mueve al dia seleccionado
+                            marcarDia(seleccion);
+
+                            // La tabla se actualiza
+                            aplicarFiltros();
+                        });
+                    }
+
+                    // CONVERTIR HORA EN MINUTOS
+
+                    function minutos(hora = "") {
+
+                        const partes = hora.split(":");
+
+                        if (partes.length < 2) {
+                            return -1;
+                        }
+
+                        const h = Number(partes[0]);
+                        const m = Number(partes[1]);
+
+                        if (!Number.isFinite(h) ||
+                            !Number.isFinite(m)) {
+                            return -1;
+                        }
+
+                        return h * 60 + m;
+                    }
+
+                    // CONSULTAR POSIBLES CONFLICTOS
+
+                    conflictosBtn.addEventListener("click", function () {
+
+                        let cantidad = 0;
+
+                        for (let i = 0; i < filas.length; i++) {
+
+                            const fila = filas[i];
+
+                            if (fila instanceof HTMLTableRowElement) {
+                                fila.classList.remove("table-warning");
+                            }
+                        }
+
+                        for (let a = 0; a < filas.length; a++) {
+
+                            const uno = filas[a];
+
+                            if (!(uno instanceof HTMLTableRowElement) ||
+                                uno.getAttribute("data-estado") === "CANCELADO") {
+                                continue;
+                            }
+
+                            const avion =
+                                uno.getAttribute("data-aeronave") || "";
+
+                            const dia =
+                                uno.getAttribute("data-fecha") || "";
+
+                            const desde = minutos(
+                                uno.getAttribute("data-inicio") || ""
+                            );
+
+                            const hasta = minutos(
+                                uno.getAttribute("data-fin") || ""
+                            );
+
+                            if (!avion || desde < 0 || hasta <= desde) {
+                                continue;
+                            }
+
+                            for (let b = a + 1; b < filas.length; b++) {
+
+                                const dos = filas[b];
+
+                                if (!(dos instanceof HTMLTableRowElement) ||
+                                    dos.getAttribute("data-estado") === "CANCELADO" ||
+                                    dos.getAttribute("data-aeronave") !== avion ||
+                                    dos.getAttribute("data-fecha") !== dia) {
+                                    continue;
+                                }
+
+                                const desde2 = minutos(
+                                    dos.getAttribute("data-inicio") || ""
+                                );
+
+                                const hasta2 = minutos(
+                                    dos.getAttribute("data-fin") || ""
+                                );
+
+                                if (desde2 < 0 || hasta2 <= desde2) {
+                                    continue;
+                                }
+
+                                if (desde < hasta2 && desde2 < hasta) {
+
+                                    cantidad++;
+
+                                    uno.classList.add("table-warning");
+                                    dos.classList.add("table-warning");
+                                }
+                            }
+                        }
+
+                        resultado.style.display = "block";
+
+                        resultado.className = cantidad > 0
+                            ? "alert alert-warning mt-3"
+                            : "alert alert-info mt-3";
+
+                        resultado.textContent = cantidad > 0
+                            ? "Se detectaron " + cantidad +
+                              " posibles conflictos. Revisa las filas resaltadas."
+                            : "No se detectaron coincidencias de horario " +
+                              "en vuelos del mismo dia y aeronave.";
+                    });
+                });
+    </script>
+}

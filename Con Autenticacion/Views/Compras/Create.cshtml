@@ -1,8 +1,9 @@
-﻿@using Con_Autenticacion.Models;
+﻿
+@using Con_Autenticacion.Models
 @model Compra
 
 @{
-    ViewBag.Title = "Nuevo registro";
+    ViewBag.Title = "Registrar compra";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -20,72 +21,265 @@
 
         .clase-vip .btn-vip:hover {
             background: #26323B;
+            border-color: #26323B;
             color: white;
         }
 
-    .clase-vip .table thead {
-        background: #E7EBEF;
-    }
-
     .clase-vip .card {
         border: 1px solid #E7EBEF;
+        border-radius: 12px;
+        overflow: hidden;
     }
 
-    .clase-vip .form-control, .clase-vip .form-select {
+    .clase-vip .form-control,
+    .clase-vip .form-select {
         background: #FFFFFF;
+        border-radius: 7px;
+        padding: 10px 12px;
+    }
+
+    .clase-vip .form-label {
+        font-weight: 600;
+        color: #243746;
+    }
+
+    .clase-vip .form-control:focus,
+    .clase-vip .form-select:focus {
+        border-color: #BE8B35;
+        box-shadow: 0 0 0 .15rem rgba(190,139,53,.15);
+    }
+
+    .clase-vip .texto-ayuda {
+        color: #708090;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .clase-vip .input-group-text {
+        background: #E7EBEF;
+        font-weight: 600;
     }
 </style>
 
-
 <div class="container py-4 clase-vip">
+
     <div class="card shadow-sm">
+
         <div class="card-header py-3">
             <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
-            <p class="mb-0">Nuevo registro</p>
+            <p class="mb-0">Registro de compra</p>
         </div>
+
         <div class="card-body p-4">
-            <p class="text-muted">Administración de compras</p>
-            @using (Html.BeginForm())
+
+            <h5 class="mb-2">
+                Información de la compra
+            </h5>
+
+            <p class="text-muted mb-4">
+                Verifica los datos de la reserva antes
+                de registrar la compra.
+            </p>
+
+            @using (Html.BeginForm(
+                "Create",
+                "Compras",
+                FormMethod.Post,
+                new { id = "formCompra" }))
             {
                 @Html.AntiForgeryToken()
-                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                @Html.ValidationSummary(
+                    true,
+                    "",
+                    new { @class = "text-danger" })
+
                 <div class="row">
+
+                    <!-- RESERVA -->
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.ReservaId, "Reserva", new { @class = "form-label" })
-                        @Html.DropDownList("ReservaId", null, new { @class = "form-select" })
-                        @Html.ValidationMessageFor(model => model.ReservaId, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            model => model.ReservaId,
+                            "Reserva",
+                            new { @class = "form-label" })
+
+                        @Html.DropDownList(
+                            "ReservaId",
+                            null,
+                            new { @class = "form-select" })
+
+                        @Html.ValidationMessageFor(
+                            model => model.ReservaId,
+                            "",
+                            new { @class = "text-danger" })
+
+                        <div class="texto-ayuda">
+                            Reserva asociada a esta compra.
+                        </div>
+
                     </div>
+
+                    <!-- FECHA DE COMPRA -->
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.FechaCompra, "Fecha de compra", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.FechaCompra, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.FechaCompra, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            model => model.FechaCompra,
+                            "Fecha de compra",
+                            new { @class = "form-label" })
+
+                        @Html.TextBoxFor(
+                            model => model.FechaCompra,
+                            "{0:yyyy-MM-ddTHH:mm}",
+                            new
+                            {
+                                @class = "form-control",
+                                type = "datetime-local"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            model => model.FechaCompra,
+                            "",
+                            new { @class = "text-danger" })
+
+                        <div class="texto-ayuda">
+                            Fecha y hora de registro.
+                        </div>
+
                     </div>
+
+                    <!-- IMPORTE -->
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.Importe, "Importe", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.Importe, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.Importe, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            model => model.Importe,
+                            "Importe de la compra",
+                            new { @class = "form-label" })
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+                                $
+                            </span>
+
+                            @Html.TextBoxFor(
+                                model => model.Importe,
+                                "{0:0.00}",
+                                new
+                                {
+                                    @class = "form-control",
+                                    type = "text",
+                                    inputmode = "decimal",
+                                    placeholder = "0.00"
+                                })
+
+                        </div>
+
+                        @Html.ValidationMessageFor(
+                            model => model.Importe,
+                            "",
+                            new { @class = "text-danger" })
+
+                        <div class="texto-ayuda">
+                            Importe en dólares. Ejemplo: 450.50
+                        </div>
+
                     </div>
+
+                    <!-- MONEDA -->
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.MonedaCodigo, "Moneda", new { @class = "form-label" })
-                        @Html.DropDownList("MonedaCodigo", null, new { @class = "form-select" })
-                        @Html.ValidationMessageFor(model => model.MonedaCodigo, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            model => model.MonedaCodigo,
+                            "Moneda",
+                            new { @class = "form-label" })
+
+                        @Html.DropDownList(
+                            "MonedaCodigo",
+                            null,
+                            new { @class = "form-select" })
+
+                        @Html.ValidationMessageFor(
+                            model => model.MonedaCodigo,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
+                    <!-- ESTADO DE COMPRA -->
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.EstadoCompraCodigo, "Estado de compra", new { @class = "form-label" })
-                        @Html.DropDownList("EstadoCompraCodigo", null, new { @class = "form-select" })
-                        @Html.ValidationMessageFor(model => model.EstadoCompraCodigo, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            model => model.EstadoCompraCodigo,
+                            "Estado de compra",
+                            new { @class = "form-label" })
+
+                        @Html.DropDownList(
+                            "EstadoCompraCodigo",
+                            null,
+                            new { @class = "form-select" })
+
+                        @Html.ValidationMessageFor(
+                            model => model.EstadoCompraCodigo,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
+                    <!-- CODIGO DE OPERACION -->
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.ClaveIdempotencia, "Código de operación", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.ClaveIdempotencia, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.ClaveIdempotencia, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            model => model.ClaveIdempotencia,
+                            "Código de operación",
+                            new { @class = "form-label" })
+
+                        @Html.TextBoxFor(
+                            model => model.ClaveIdempotencia,
+                            new
+                            {
+                                @class = "form-control",
+                                @readonly = "readonly"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            model => model.ClaveIdempotencia,
+                            "",
+                            new { @class = "text-danger" })
+
+                        <div class="texto-ayuda">
+                            Identificador único de la operación.
+                        </div>
+
                     </div>
+
                 </div>
-                <button type="submit" class="btn btn-vip">Guardar</button>
-                @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+
+                <hr class="my-4" />
+
+                <!-- BOTONES -->
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-vip">
+                        Guardar compra
+                    </button>
+
+                    @Html.ActionLink(
+                        "Volver al listado",
+                        "Index",
+                        null,
+                        new
+                        {
+                            @class = "btn btn-outline-secondary"
+                        })
+
+                </div>
             }
+
         </div>
     </div>
+
 </div>
 
 @section Scripts {

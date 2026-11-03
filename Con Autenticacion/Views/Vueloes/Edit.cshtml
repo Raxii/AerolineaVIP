@@ -1,278 +1,329 @@
-﻿@model Con_Autenticacion.Models.Vuelo
+﻿@using System
+@using System.Collections.Generic
+@using System.Web.Mvc
+@using Con_Autenticacion.Models
+@model Con_Autenticacion.Models.Vuelo
 
 @{
     ViewBag.Title = "Editar vuelo";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    IEnumerable<SelectListItem> rutas =
+        ViewBag.ListaRutas as IEnumerable<SelectListItem>
+        ?? ViewBag.RutaId as IEnumerable<SelectListItem>
+        ?? new List<SelectListItem>();
+
+    IEnumerable<Frecuencia> frecuencias =
+        ViewBag.ListaFrecuencias as IEnumerable<Frecuencia>
+        ?? new List<Frecuencia>();
+
+    IEnumerable<SelectListItem> aeronaves =
+        ViewBag.AeronaveId as IEnumerable<SelectListItem>
+        ?? new List<SelectListItem>();
+
+    IEnumerable<SelectListItem> estados =
+        ViewBag.EstadoVueloCodigo as IEnumerable<SelectListItem>
+        ?? new List<SelectListItem>();
+
+    // Materializar las listas para poder verificar si llegaron datos.
+    List<SelectListItem> rutasDisponibles = new List<SelectListItem>(rutas);
+    List<Frecuencia> frecuenciasDisponibles = new List<Frecuencia>(frecuencias);
+
+    int rutaActual = 0;
+    int frecuenciaActual = Model == null ? 0 : Model.FrecuenciaId;
+
+    foreach (Frecuencia frecuencia in frecuenciasDisponibles)
+    {
+        if (frecuencia.FrecuenciaId == frecuenciaActual)
+        {
+            rutaActual = frecuencia.RutaId;
+            break;
+        }
+    }
+
+    string[] dias = {
+        "", "Lunes", "Martes", "Miercoles", "Jueves",
+        "Viernes", "Sabado", "Domingo"
+    };
 }
 
-
 <style>
-    .vip-vuelo-page {
+    .vip-programar {
         max-width: 980px;
         margin: 0 auto;
-        padding: 34px 12px 56px;
+        padding: 38px 12px 64px;
     }
 
-    .vip-vuelo-eyebrow {
-        color: #b88a3b;
-        font-size: .78rem;
-        font-weight: 800;
-        letter-spacing: 1.8px;
-        text-transform: uppercase;
-        margin-bottom: 8px;
-    }
+        .vip-programar .vip-ruta-superior {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #b88738;
+            text-transform: uppercase;
+        }
 
-    .vip-vuelo-title {
-        color: #172a3b;
-        font-size: 1.9rem;
-        font-weight: 800;
-        margin: 0;
-    }
+        .vip-programar h2 {
+            font-weight: 800;
+            font-size: 30px;
+            color: #172b3c;
+            margin: 9px 0;
+        }
 
-    .vip-vuelo-subtitle {
-        color: #64748b;
-        margin: 8px 0 24px;
-    }
+        .vip-programar .vip-subtitulo {
+            color: #66798b;
+            margin: 0 0 25px;
+        }
 
-    .vip-vuelo-card {
-        background: #fff;
-        border: 1px solid #e5eaf0;
-        border-radius: 18px;
-        box-shadow: 0 8px 26px rgba(23, 42, 59, .08);
-        overflow: hidden;
-    }
+        .vip-programar .vip-tarjeta {
+            background: white;
+            border: 1px solid #e1e8ee;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 28px rgba(23,43,60,.075);
+        }
 
-    .vip-vuelo-card-header {
-        padding: 20px 26px;
-        border-bottom: 1px solid #e8edf2;
-        background: #fff;
-    }
-
-        .vip-vuelo-card-header h3 {
-            color: #172a3b;
-            font-size: 1.12rem;
+        .vip-programar .vip-cabecera {
+            padding: 20px 26px;
+            border-bottom: 1px solid #e7ecf1;
+            font-size: 18px;
             font-weight: 750;
-            margin: 0;
+            color: #172b3c;
         }
 
-    .vip-vuelo-card-body {
-        padding: 28px 26px;
-    }
-
-    .vip-vuelo-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 22px 24px;
-    }
-
-    .vip-vuelo-field {
-        min-width: 0;
-    }
-
-    .vip-vuelo-label {
-        display: block;
-        color: #26394b;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-
-    .vip-vuelo-input {
-        width: 100%;
-        min-height: 44px;
-        border: 1px solid #d7e0e8;
-        border-radius: 9px;
-        padding: 9px 12px;
-        color: #243647;
-        background: #fff;
-        box-shadow: none;
-    }
-
-        .vip-vuelo-input:focus {
-            border-color: #b88a3b;
-            outline: 0;
-            box-shadow: 0 0 0 3px rgba(184, 138, 59, .14);
+        .vip-programar .vip-cuerpo {
+            padding: 27px 26px;
         }
 
-    .vip-vuelo-validation {
-        display: block;
-        margin-top: 6px;
-        font-size: .88rem;
-    }
-
-    .vip-vuelo-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 10px;
-        margin-top: 28px;
-        padding-top: 22px;
-        border-top: 1px solid #edf1f5;
-    }
-
-    .vip-btn-primary {
-        background: #172a3b;
-        border: 1px solid #172a3b;
-        color: #fff;
-        border-radius: 9px;
-        padding: 10px 19px;
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-        .vip-btn-primary:hover,
-        .vip-btn-primary:focus {
-            background: #29465d;
-            border-color: #29465d;
-            color: #fff;
+        .vip-programar .vip-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 20px 26px;
         }
 
-    .vip-btn-secondary {
-        background: #fff;
-        border: 1px solid #aab6c2;
-        color: #405366;
-        border-radius: 9px;
-        padding: 10px 18px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-        .vip-btn-secondary:hover,
-        .vip-btn-secondary:focus {
-            background: #f3f6f9;
-            color: #172a3b;
-            text-decoration: none;
+        .vip-programar .vip-campo {
+            min-width: 0;
         }
 
-    .vip-vuelo-alert {
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-
-    .vip-delete-warning {
-        border: 1px solid #f3d5d5;
-        background: #fff8f8;
-        color: #842029;
-        border-radius: 11px;
-        padding: 14px 16px;
-        margin-bottom: 22px;
-    }
-
-    .vip-delete-details {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px 24px;
-    }
-
-    .vip-delete-item {
-        padding: 13px 15px;
-        background: #f8fafc;
-        border: 1px solid #e8edf2;
-        border-radius: 10px;
-    }
-
-        .vip-delete-item dt {
-            color: #64748b;
-            font-size: .82rem;
+        .vip-programar label {
+            display: block;
             font-weight: 700;
-            margin-bottom: 5px;
+            color: #253b50;
+            margin-bottom: 8px;
         }
 
-        .vip-delete-item dd {
-            color: #172a3b;
-            font-weight: 650;
-            margin: 0;
-            overflow-wrap: anywhere;
+        .vip-programar .vip-entrada {
+            display: block;
+            width: 100%;
+            min-height: 44px;
+            border: 1px solid #d8e1e9;
+            border-radius: 9px;
+            padding: 9px 12px;
+            background: #fff;
+            color: #20364a;
         }
 
-    .vip-btn-danger {
-        background: #b42318;
-        border: 1px solid #b42318;
-        color: #fff;
-        border-radius: 9px;
-        padding: 10px 18px;
-        font-weight: 700;
-    }
+            .vip-programar .vip-entrada:focus {
+                outline: 0;
+                border-color: #b88738;
+                box-shadow: 0 0 0 3px rgba(184,135,56,.12);
+            }
 
-        .vip-btn-danger:hover,
-        .vip-btn-danger:focus {
-            background: #912018;
-            border-color: #912018;
-            color: #fff;
+        .vip-programar .vip-hint {
+            color: #627487;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .vip-programar .vip-resumen {
+            margin: 25px 0 0;
+            padding: 18px 20px;
+            border-left: 4px solid #b88738;
+            border-radius: 9px;
+            background: #f4f7fa;
+            color: #253b50;
+        }
+
+            .vip-programar .vip-resumen strong {
+                display: block;
+                margin-bottom: 4px;
+            }
+
+        .vip-programar .vip-acciones {
+            margin-top: 25px;
+            border-top: 1px solid #e7ecf1;
+            padding-top: 21px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .vip-programar .vip-guardar {
+            background: #172b3c;
+            border: 1px solid #172b3c;
+            border-radius: 9px;
+            padding: 11px 19px;
+            font-weight: 700;
+            color: white;
+        }
+
+            .vip-programar .vip-guardar:hover {
+                background: #304b60;
+                color: white;
+            }
+
+        .vip-programar .vip-volver {
+            padding: 11px 19px;
+            border-radius: 9px;
+            border: 1px solid #a8b6c5;
+            color: #52677b;
+            background: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+            .vip-programar .vip-volver:hover {
+                background: #f1f5f9;
+            }
+
+        .vip-programar .field-validation-error {
+            display: block;
+            margin-top: 5px;
+            color: #b42318;
         }
 
     @@media (max-width: 700px) {
-        .vip-vuelo-page {
-            padding: 24px 10px 40px;
+        .vip-programar {
+            padding: 24px 10px 50px;
         }
 
-        .vip-vuelo-grid,
-        .vip-delete-details {
-            grid-template-columns: 1fr;
-        }
+            .vip-programar .vip-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .vip-vuelo-card-body {
-            padding: 22px 18px;
-        }
-
-        .vip-vuelo-card-header {
-            padding: 18px;
-        }
+            .vip-programar .vip-cuerpo {
+                padding: 20px;
+            }
     }
 </style>
 
-<div class="container vip-vuelo-page">
-    <div class="vip-vuelo-eyebrow">Aerolínea VIP / Administración</div>
-    <h2 class="vip-vuelo-title">Editar vuelo</h2>
-    <p class="vip-vuelo-subtitle">
-        Modifica los datos operativos del vuelo seleccionado.
-    </p>
+<div class="container vip-programar">
+    <div class="vip-ruta-superior">AEROLÍNEA VIP / ADMINISTRACIÓN</div>
+    <h2>Editar vuelo</h2>
+    <p class="vip-subtitulo">Selecciona primero la ruta; luego su frecuencia y la aeronave.</p>
 
-    <div class="vip-vuelo-card">
-        <div class="vip-vuelo-card-header">
-            <h3>Vuelo #@Model.VueloId</h3>
-        </div>
-
-        <div class="vip-vuelo-card-body">
-            @using (Html.BeginForm())
+    <div class="vip-tarjeta">
+        <div class="vip-cabecera">Actualizar vuelo #@Model.VueloId</div>
+        <div class="vip-cuerpo">
+            @using (Html.BeginForm("Edit", "Vueloes", FormMethod.Post))
             {
                 @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.VueloId)
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
-                @Html.HiddenFor(model => model.VueloId)
-                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger vip-vuelo-alert" })
+                if (rutasDisponibles.Count == 0)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        No se recibieron rutas del controlador.
+                    </div>
+                }
+                else if (frecuenciasDisponibles.Count == 0)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        No se recibieron frecuencias del controlador.
+                        El método Create/Edit debe cargar <strong>ViewBag.ListaFrecuencias</strong>.
+                    </div>
+                }
 
-                <div class="vip-vuelo-grid">
-                    <div class="vip-vuelo-field">
-                        @Html.LabelFor(model => model.FrecuenciaId, "Frecuencia", new { @class = "vip-vuelo-label" })
-                        @Html.DropDownList("FrecuenciaId", null, "-- Seleccione una frecuencia --",
-                            new { @class = "form-control vip-vuelo-input" })
-                        @Html.ValidationMessageFor(model => model.FrecuenciaId, "", new { @class = "text-danger vip-vuelo-validation" })
+                <div class="vip-grid">
+                    <div class="vip-campo">
+                        <label for="RutaSeleccionada">Ruta del vuelo</label>
+                        <select id="RutaSeleccionada" class="vip-entrada" required>
+                            <option value="">-- Seleccione una ruta --</option>
+                            @foreach (SelectListItem ruta in rutasDisponibles)
+                            {
+                                if (ruta.Value == Convert.ToString(rutaActual))
+                                {
+                                    <option value="@ruta.Value" selected="selected">@ruta.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@ruta.Value">@ruta.Text</option>
+                                }
+                            }
+                        </select>
+                        <div class="vip-hint">La ruta indica origen y destino.</div>
                     </div>
 
-                    <div class="vip-vuelo-field">
-                        @Html.LabelFor(model => model.FechaOperacion, "Fecha y hora de operación", new { @class = "vip-vuelo-label" })
-                        @Html.EditorFor(model => model.FechaOperacion,
-                            new { htmlAttributes = new { @class = "form-control vip-vuelo-input" } })
-                        @Html.ValidationMessageFor(model => model.FechaOperacion, "", new { @class = "text-danger vip-vuelo-validation" })
+                    <div class="vip-campo">
+                        <label for="FrecuenciaId">Día y horario de salida</label>
+                        <select id="FrecuenciaId" name="FrecuenciaId" class="vip-entrada" required>
+                            <option value="">-- Seleccione una frecuencia --</option>
+                            @foreach (Frecuencia f in frecuenciasDisponibles)
+                            {
+                                string dia = f.DiaSemana >= 1 && f.DiaSemana <= 7
+                                    ? dias[(int)f.DiaSemana] : "Día no definido";
+                                string horario = f.HoraSalida.ToString(@"hh\:mm")
+                                    + " - " + f.HoraLlegada.ToString(@"hh\:mm");
+                                if (f.FrecuenciaId == frecuenciaActual)
+                                {
+                                    <option value="@f.FrecuenciaId" data-ruta="@f.RutaId"
+                                            data-dia="@f.DiaSemana" data-horario="@horario"
+                                            selected="selected">
+                                        @dia | @horario
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@f.FrecuenciaId" data-ruta="@f.RutaId"
+                                            data-dia="@f.DiaSemana" data-horario="@horario">
+                                        @dia | @horario
+                                    </option>
+                                }
+                            }
+                        </select>
+                        @Html.ValidationMessageFor(m => m.FrecuenciaId, "", new { @class = "text-danger" })
+                        <div class="vip-hint">Elige el día y horario de salida establecidos para esta ruta.</div>
                     </div>
 
-                    <div class="vip-vuelo-field">
-                        @Html.LabelFor(model => model.AeronaveId, "Aeronave", new { @class = "vip-vuelo-label" })
-                        @Html.DropDownList("AeronaveId", null, "-- Seleccione una aeronave --",
-                            new { @class = "form-control vip-vuelo-input" })
-                        @Html.ValidationMessageFor(model => model.AeronaveId, "", new { @class = "text-danger vip-vuelo-validation" })
+                    <div class="vip-campo">
+                        <label for="FechaOperacion">Fecha de operación</label>
+                        <select id="FechaOperacion" name="FechaOperacion" class="vip-entrada"
+                                data-fecha-inicial="@(Model == null || Model.FechaOperacion == DateTime.MinValue ? "" : Model.FechaOperacion.ToString("yyyy-MM-dd"))"
+                                required>
+                            <option value="">-- Selecciona primero un día y horario --</option>
+                        </select>
+                        @Html.ValidationMessageFor(m => m.FechaOperacion, "", new { @class = "text-danger" })
+                        <div class="vip-hint">Solo aparecen fechas del día de semana elegido, durante los próximos 12 meses.</div>
+                        <div id="avAvisoFecha" class="small text-danger mt-1" role="status"></div>
                     </div>
 
-                    <div class="vip-vuelo-field">
-                        @Html.LabelFor(model => model.EstadoVueloCodigo, "Estado del vuelo", new { @class = "vip-vuelo-label" })
-                        @Html.DropDownList("EstadoVueloCodigo", null, "-- Seleccione un estado --",
-                            new { @class = "form-control vip-vuelo-input" })
-                        @Html.ValidationMessageFor(model => model.EstadoVueloCodigo, "", new { @class = "text-danger vip-vuelo-validation" })
+                    <div class="vip-campo">
+                        <label for="AeronaveId">Aeronave</label>
+                        @Html.DropDownListFor(m => m.AeronaveId, aeronaves,
+                            "-- Seleccione una aeronave --",
+                            new { @class = "vip-entrada", required = "required" })
+                        @Html.ValidationMessageFor(m => m.AeronaveId, "", new { @class = "text-danger" })
+                        <div class="vip-hint">Selecciona una aeronave disponible para ese horario.</div>
+                    </div>
+
+                    <div class="vip-campo">
+                        <label for="EstadoVueloCodigo">Estado del vuelo</label>
+                        @Html.DropDownListFor(m => m.EstadoVueloCodigo, estados,
+                            "-- Seleccione un estado --",
+                            new { @class = "vip-entrada", required = "required" })
+                        @Html.ValidationMessageFor(m => m.EstadoVueloCodigo, "", new { @class = "text-danger" })
                     </div>
                 </div>
 
-                <div class="vip-vuelo-actions">
-                    <button type="submit" class="vip-btn-primary">Guardar cambios</button>
-                    @Html.ActionLink("Cancelar", "Index", null, new { @class = "vip-btn-secondary" })
+                <div class="vip-resumen" aria-live="polite">
+                    <strong>Resumen de programación</strong>
+                    <span id="avResumen">Selecciona una ruta y frecuencia para ver el horario.</span>
+                </div>
+
+                <div class="vip-acciones">
+                    <button type="submit" class="vip-guardar">Guardar cambios</button>
+                    @Html.ActionLink("Cancelar", "Administrar", "Vueloes", null,
+                        new { @class = "vip-volver" })
                 </div>
             }
         </div>
@@ -281,4 +332,5 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script src="@Url.Content("~/Scripts/vip-vuelos-fechas.js")"></script>
 }
