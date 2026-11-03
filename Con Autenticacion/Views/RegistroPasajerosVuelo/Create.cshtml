@@ -1,0 +1,188 @@
+@using System
+@using System.Collections.Generic
+@using System.Web.Mvc
+@using Con_Autenticacion.ViewModels
+@model RegistroPasajerosVueloVM
+
+@{
+    ViewBag.Title = "Registrar pasajeros";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<SelectListItem> tipos = ViewBag.TiposDocumento as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<style>
+    .registro-vip {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+
+        .registro-vip .cabecera {
+            background: #172A3B;
+            color: #fff;
+            border-radius: 14px 14px 0 0;
+            padding: 25px;
+        }
+
+        .registro-vip .tarjeta {
+            border: 1px solid #E2E8EE;
+            border-radius: 14px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(23,42,59,.07);
+        }
+
+        .registro-vip .resumen {
+            background: #F3F6F9;
+            border-left: 4px solid #CBA968;
+            padding: 17px 20px;
+            border-radius: 8px;
+        }
+
+        .registro-vip .viajero {
+            border: 1px solid #DEE5EC;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .registro-vip .viajero-cabecera {
+            background: #F5F7FA;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .registro-vip .viajero-cuerpo {
+            padding: 20px;
+        }
+
+        .registro-vip label {
+            color: #24384A;
+            font-weight: 650;
+            margin-bottom: 7px;
+        }
+
+        .registro-vip .form-control, .registro-vip .form-select {
+            border-radius: 8px;
+            min-height: 43px;
+        }
+
+        .registro-vip .btn-guardar {
+            background: #172A3B;
+            border-color: #172A3B;
+            color: #fff;
+            font-weight: 700;
+        }
+
+            .registro-vip .btn-guardar:hover {
+                background: #29465D;
+                color: #fff;
+            }
+
+        .registro-vip .asiento {
+            background: #177D46;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 7px;
+            padding: 7px 12px;
+        }
+
+        .registro-vip .field-validation-error {
+            color: #B42318;
+            display: block;
+            margin-top: 5px;
+        }
+</style>
+
+<div class="container py-4 registro-vip">
+    <div class="tarjeta">
+        <div class="cabecera">
+            <h2 class="h4 mb-2">AEROLINEA VIP</h2>
+            <p class="mb-0">Datos de los pasajeros de tu reserva</p>
+        </div>
+        <div class="p-3 p-md-4">
+            <div class="resumen mb-3">
+                <h5 class="fw-bold mb-3">Resumen del vuelo</h5>
+                <div class="row g-2">
+                    <div class="col-sm-3"><strong>Vuelo:</strong> VIP@(Model.VueloId.ToString("D5"))</div>
+                    <div class="col-sm-3"><strong>Ruta:</strong> @Model.Ruta</div>
+                    <div class="col-sm-3"><strong>Fecha:</strong> @Model.FechaOperacion.ToString("dd/MM/yyyy")</div>
+                    <div class="col-sm-3"><strong>Pasajeros:</strong> @Model.CantidadPasajeros</div>
+                </div>
+                <div class="mt-2"><strong>Total de la reserva:</strong> $@Model.TotalEstimado.ToString("N2") USD</div>
+            </div>
+
+            <p class="text-muted mb-3">Completa los datos de cada pasajero. Cada persona tendra un asiento distinto.</p>
+
+            @using (Html.BeginForm("Create", "RegistroPasajerosVuelo", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.VueloId)
+                @Html.HiddenFor(m => m.CantidadPasajeros)
+                @Html.HiddenFor(m => m.CodigosAsientos)
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                for (int i = 0; i < Model.Pasajeros.Count; i++)
+                {
+                    <div class="viajero">
+                        <div class="viajero-cabecera">
+                            <strong>Pasajero @(i + 1)</strong>
+                            <span class="asiento">Asiento @Model.Pasajeros[i].CodigoAsiento</span>
+                        </div>
+                        <div class="viajero-cuerpo">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].TipoDocumentoCodigo, "Tipo de documento", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Pasajeros[i].TipoDocumentoCodigo, tipos, "-- Selecciona un documento --", new { @class = "form-select", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].TipoDocumentoCodigo)
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].NumeroDocumento, "Numero de documento", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Pasajeros[i].NumeroDocumento, new { @class = "form-control", required = "required", maxlength = "20", minlength = "5" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].NumeroDocumento)
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].Nombres, "Nombres", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Pasajeros[i].Nombres, new { @class = "form-control", required = "required", maxlength = "100" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].Nombres)
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].Apellidos, "Apellidos", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Pasajeros[i].Apellidos, new { @class = "form-control", required = "required", maxlength = "100" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].Apellidos)
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].FechaNacimiento, "Fecha de nacimiento (opcional)", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Pasajeros[i].FechaNacimiento, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].FechaNacimiento)
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].Correo, "Correo electronico (opcional)", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Pasajeros[i].Correo, new { @class = "form-control", type = "email", maxlength = "256" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].Correo)
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.LabelFor(m => m.Pasajeros[i].Telefono, "Telefono (opcional)", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Pasajeros[i].Telefono, new { @class = "form-control", maxlength = "20" })
+                                    @Html.ValidationMessageFor(m => m.Pasajeros[i].Telefono)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="submit" class="btn btn-guardar px-4">Guardar reserva y pasajeros</button>
+                    <a class="btn btn-outline-secondary" href="@Url.Action("Seleccionar", "Vueloes", new { vueloId = Model.VueloId, cantidadPasajeros = Model.CantidadPasajeros, codigosAsientos = Model.CodigosAsientos })">Volver a seleccionar asientos</a>
+                </div>
+                <p class="small text-muted mt-3">Los asientos se vuelven a comprobar antes de confirmar la reserva. El pago se realiza despues.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

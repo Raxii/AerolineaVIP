@@ -88,7 +88,7 @@ namespace Con_Autenticacion.Controllers
             }
 
             // Solo aeropuertos activos, recorridos con foreach (sin .Where()).
-            var aeropuertosActivos = ObtenerAeropuertosActivosSinLinq();
+            var aeropuertosActivos = ObtenerAeropuertosActivos();
 
             Aeropuerto origen = null;
             Aeropuerto destino = null;
@@ -105,9 +105,9 @@ namespace Con_Autenticacion.Controllers
             if (AeropuertoDestinoId.HasValue && destino == null)
                 errores.Add("El aeropuerto de destino no existe o no está activo.");
 
-            var ocupados = ObtenerAsientosOcupadosSinLinq();
+            var ocupados = ObtenerAsientosOcupados();
             var resultados = errores.Count == 0
-                ? ObtenerVuelosFiltradosSinLinq(AeropuertoOrigenId, AeropuertoDestinoId,
+                ? ObtenerVuelosParaBusqueda(AeropuertoOrigenId, AeropuertoDestinoId,
                     Fecha, CantidadPasajeros, ocupados)
                 : new List<Vuelo>();
 
@@ -172,8 +172,8 @@ namespace Con_Autenticacion.Controllers
         // crudo contra la base de datos. ObtenerAsientosOcupados() y
         // ObtenerVuelosFiltrados() (con LINQ) se dejan intactos porque los sigue
         // usando PrepararDatosDeAsientos (DisponibilidadAsientos/Seleccionar); en
-        // su lugar se reutiliza ObtenerAsientosOcupadosSinLinq() (misma regla de
-        // negocio) y se agrega ObtenerVuelosFiltradosResultadosSinLinq(), propio
+        // su lugar se reutiliza ObtenerAsientosOcupados() (misma regla de
+        // negocio) y se agrega ObtenerVuelosParaResultados(), propio
         // de esta pantalla, porque Resultados exige reglas que Buscar no aplica:
         // día autorizado por Frecuencia.DiaSemana, Frecuencia.Activa y orden por
         // horario de salida real.
@@ -200,7 +200,7 @@ namespace Con_Autenticacion.Controllers
             }
 
             // Solo aeropuertos activos, recorridos con foreach (sin .Where()/.FirstOrDefault()).
-            var aeropuertosActivos = ObtenerAeropuertosActivosSinLinq();
+            var aeropuertosActivos = ObtenerAeropuertosActivos();
 
             Aeropuerto origen = null;
             Aeropuerto destino = null;
@@ -217,9 +217,9 @@ namespace Con_Autenticacion.Controllers
             if (AeropuertoDestinoId.HasValue && destino == null)
                 errores.Add("El aeropuerto de destino no existe o no está activo.");
 
-            var ocupados = ObtenerAsientosOcupadosSinLinq();
+            var ocupados = ObtenerAsientosOcupados();
             var resultados = errores.Count == 0
-                ? ObtenerVuelosFiltradosResultadosSinLinq(AeropuertoOrigenId, AeropuertoDestinoId,
+                ? ObtenerVuelosParaResultados(AeropuertoOrigenId, AeropuertoDestinoId,
                     Fecha, CantidadPasajeros, ocupados)
                 : new List<Vuelo>();
 
@@ -298,10 +298,10 @@ namespace Con_Autenticacion.Controllers
         {
             if (!vueloId.HasValue) return RedirectToAction("Buscar");
 
-            var vuelo = ObtenerVueloParaDisponibilidadSinLinq(vueloId.Value);
+            var vuelo = ObtenerVueloParaDisponibilidad(vueloId.Value);
             if (vuelo == null) return HttpNotFound();
 
-            PrepararDisponibilidadAsientosSinLinq(vuelo, cantidadPasajeros);
+            PrepararDisponibilidadAsientos(vuelo, cantidadPasajeros);
 
             if (TempData["ErrorDisponibilidad"] != null)
                 ViewBag.ErrorValidacion = TempData["ErrorDisponibilidad"];
@@ -310,13 +310,13 @@ namespace Con_Autenticacion.Controllers
         }
 
         // PLANTILLA #8: Pantalla de selección de vuelo y asientos. Reescrita
-        // para esta tarea: usa un helper EXCLUSIVO (ObtenerVueloParaSeleccionSinLinq)
+        // para esta tarea: usa un helper EXCLUSIVO (ObtenerVueloParaSeleccion)
         // en vez de ObtenerVueloCompleto(), porque ObtenerVueloCompleto() también
         // lo usan Details()/Delete() y modificarlo cambiaría el comportamiento de
         // esas acciones. PrepararDatosDeAsientos() sí se modifica más abajo en
         // este mismo archivo porque, desde la tarea anterior, ya es un método
         // EXCLUSIVO de esta acción (DisponibilidadAsientos usa sus propios
-        // helpers PrepararDisponibilidadAsientosSinLinq/ObtenerVueloParaDisponibilidadSinLinq).
+        // helpers PrepararDisponibilidadAsientos/ObtenerVueloParaDisponibilidad).
         //
         // Se agregan los parámetros opcionales "cantidadPasajeros" y
         // "codigosAsientos" para conservar, al llegar desde
@@ -329,7 +329,7 @@ namespace Con_Autenticacion.Controllers
         {
             if (!vueloId.HasValue || vueloId.Value <= 0) return RedirectToAction("Buscar");
 
-            var vuelo = ObtenerVueloParaSeleccionSinLinq(vueloId.Value);
+            var vuelo = ObtenerVueloParaSeleccion(vueloId.Value);
             if (vuelo == null) return HttpNotFound();
 
             // Si la cantidad no llega desde las pantallas anteriores se asume 1,
@@ -364,7 +364,7 @@ namespace Con_Autenticacion.Controllers
         {
             const int limitePantalla = 7;
 
-            var vuelo = ObtenerVueloParaSeleccionSinLinq(vueloId);
+            var vuelo = ObtenerVueloParaSeleccion(vueloId);
             if (vuelo == null) return HttpNotFound();
 
             if (vuelo.EstadoVueloCodigo != "PROGRAMADO" && vuelo.EstadoVueloCodigo != "CONFIRMADO")
@@ -419,7 +419,7 @@ namespace Con_Autenticacion.Controllers
             // Disponibilidad vigente consultada en este instante (nueva
             // comprobación obligatoria antes de continuar con el registro del
             // pasajero: no se confía en lo que se mostró antes en pantalla).
-            var estadosVigentesContinuar = ObtenerEstadosAsignacionVueloSinLinq(vueloId);
+            var estadosVigentesContinuar = ObtenerEstadosAsignacionVuelo(vueloId);
 
             var vistosContinuar = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var codigo in codigosContinuar)
@@ -449,7 +449,7 @@ namespace Con_Autenticacion.Controllers
             // Todas las validaciones del servidor se cumplieron para este
             // instante. No se registra ninguna reserva aquí: se avanza al
             // registro del pasajero (PasajeroesController.Create()).
-            return RedirectToAction("Create", "Pasajeroes", new { vueloId, cantidadPasajeros, codigosAsientos });
+            return RedirectToAction("Create", "RegistroPasajerosVuelo", new { vueloId, cantidadPasajeros, codigosAsientos });
         }
 
         // Validación de SERVIDOR del botón "Continuar" de DisponibilidadAsientos.
@@ -465,7 +465,7 @@ namespace Con_Autenticacion.Controllers
         {
             const int limitePantalla = 7;
 
-            var vuelo = ObtenerVueloParaDisponibilidadSinLinq(vueloId);
+            var vuelo = ObtenerVueloParaDisponibilidad(vueloId);
             if (vuelo == null) return HttpNotFound();
 
             if (vuelo.EstadoVueloCodigo != "PROGRAMADO" && vuelo.EstadoVueloCodigo != "CONFIRMADO")
@@ -519,7 +519,7 @@ namespace Con_Autenticacion.Controllers
 
             // Ocupación vigente consultada en este instante (no la que se
             // mostró antes en pantalla): nueva comprobación obligatoria.
-            var estadosVigentes = ObtenerEstadosAsignacionVueloSinLinq(vueloId);
+            var estadosVigentes = ObtenerEstadosAsignacionVuelo(vueloId);
 
             var vistos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var codigo in codigos)
@@ -784,7 +784,7 @@ namespace Con_Autenticacion.Controllers
         // modifican el comportamiento de esas acciones.
         // ==========================================================
 
-        private List<Aeropuerto> ObtenerAeropuertosActivosSinLinq()
+        private List<Aeropuerto> ObtenerAeropuertosActivos()
         {
             var aeropuertos = new List<Aeropuerto>();
             foreach (var aeropuerto in db.Aeropuerto)
@@ -801,7 +801,7 @@ namespace Con_Autenticacion.Controllers
             return aeropuertos;
         }
 
-        private Dictionary<int, HashSet<byte>> ObtenerAsientosOcupadosSinLinq()
+        private Dictionary<int, HashSet<byte>> ObtenerAsientosOcupados()
         {
             // Misma regla de negocio que ObtenerAsientosOcupados (PENDIENTE y
             // CONFIRMADA ocupan inventario), pero recorrida con foreach.
@@ -819,7 +819,7 @@ namespace Con_Autenticacion.Controllers
             return ocupacion;
         }
 
-        private List<Vuelo> ObtenerVuelosFiltradosSinLinq(int? origenId, int? destinoId,
+        private List<Vuelo> ObtenerVuelosParaBusqueda(int? origenId, int? destinoId,
             DateTime? fecha, int pasajeros, Dictionary<int, HashSet<byte>> ocupados)
         {
             var resultados = new List<Vuelo>();
@@ -873,7 +873,7 @@ namespace Con_Autenticacion.Controllers
 
         // ==========================================================
         // Helper EXCLUSIVO de Resultados(): parte de las mismas reglas que
-        // ObtenerVuelosFiltradosSinLinq (CANCELADO/COMPLETADO, origen, destino,
+        // ObtenerVuelosParaBusqueda (CANCELADO/COMPLETADO, origen, destino,
         // fecha y capacidad vs. pasajeros), pero agrega las reglas propias de
         // esta pantalla (Frecuencia.Activa, día autorizado por
         // Frecuencia.DiaSemana y orden por horario de salida). No se reutiliza
@@ -883,7 +883,7 @@ namespace Con_Autenticacion.Controllers
         // Frecuencia.DiaSemana usa la misma convención que DateTime.DayOfWeek
         // (0 = Domingo, 1 = Lunes, ... 6 = Sábado), confirmada para este proyecto.
         // ==========================================================
-        private List<Vuelo> ObtenerVuelosFiltradosResultadosSinLinq(int? origenId, int? destinoId,
+        private List<Vuelo> ObtenerVuelosParaResultados(int? origenId, int? destinoId,
             DateTime? fecha, int pasajeros, Dictionary<int, HashSet<byte>> ocupados)
         {
             var resultados = new List<Vuelo>();
@@ -957,14 +957,14 @@ namespace Con_Autenticacion.Controllers
         // .OrderBy()/.Include()/.FirstOrDefault() ni SQL crudo. No se
         // reutiliza ObtenerVueloCompleto() porque también lo usan
         // Details()/Delete(); modificarlo cambiaría el comportamiento de esas
-        // acciones, que esta tarea no debe tocar. ObtenerEstadosAsignacionVueloSinLinq()
+        // acciones, que esta tarea no debe tocar. ObtenerEstadosAsignacionVuelo()
         // también la reutiliza Seleccionar()/ContinuarConSeleccion() desde la
         // tarea de esa pantalla, porque es una regla de negocio genérica (no
         // depende de DisponibilidadAsientos) y reutilizarla no modifica el
         // cuerpo de esa acción.
         // ==========================================================
 
-        private Vuelo ObtenerVueloParaDisponibilidadSinLinq(int id)
+        private Vuelo ObtenerVueloParaDisponibilidad(int id)
         {
             foreach (var vuelo in db.Vuelo)
             {
@@ -975,11 +975,11 @@ namespace Con_Autenticacion.Controllers
 
         // Estado de asignación vigente (PENDIENTE/CONFIRMADA) por número de
         // asiento, para UN solo vuelo. Misma regla de negocio que
-        // ObtenerAsientosOcupadosSinLinq(), pero conservando el código de
+        // ObtenerAsientosOcupados(), pero conservando el código de
         // estado de cada asiento: permite que la vista diferencie "Reservado"
         // (PENDIENTE) de "Ocupado" (CONFIRMADA), y permite volver a comprobar
         // la ocupación vigente al validar el botón Continuar.
-        private Dictionary<byte, string> ObtenerEstadosAsignacionVueloSinLinq(int vueloId)
+        private Dictionary<byte, string> ObtenerEstadosAsignacionVuelo(int vueloId)
         {
             var estados = new Dictionary<byte, string>();
             foreach (var asignacion in db.ReservaPasajeroVuelo)
@@ -993,7 +993,7 @@ namespace Con_Autenticacion.Controllers
             return estados;
         }
 
-        private void PrepararDisponibilidadAsientosSinLinq(Vuelo vuelo, int? cantidadPasajeros)
+        private void PrepararDisponibilidadAsientos(Vuelo vuelo, int? cantidadPasajeros)
         {
             // Límite propio de esta pantalla: nunca se permiten más de 7
             // asientos por operación, aunque la aeronave real tenga más
@@ -1035,7 +1035,7 @@ namespace Con_Autenticacion.Controllers
                 });
             }
 
-            var estadosPorNumero = ObtenerEstadosAsignacionVueloSinLinq(vuelo.VueloId);
+            var estadosPorNumero = ObtenerEstadosAsignacionVuelo(vuelo.VueloId);
 
             var codigosOcupados = new List<string>();
             var estadosPorCodigo = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -1052,7 +1052,8 @@ namespace Con_Autenticacion.Controllers
                 }
             }
 
-            var disponibles = Math.Max(0, capacidadReal - ocupados);
+            var capacidadSeleccionable = Math.Min(capacidadReal, asientos.Count);
+            var disponibles = Math.Max(0, capacidadSeleccionable - ocupados);
             var limiteSeleccion = Math.Max(0, Math.Min(capacidadAplicable, disponibles));
 
             var cantidadSolicitada = cantidadPasajeros.HasValue && cantidadPasajeros.Value > 0
@@ -1104,13 +1105,13 @@ namespace Con_Autenticacion.Controllers
         // ContinuarConSeleccion(): sin .Where()/.Select()/.OrderBy()/
         // .Include()/.FirstOrDefault() ni SQL crudo. No se reutiliza
         // ObtenerVueloCompleto() porque también lo usan Details()/Delete().
-        // Aunque la lógica es idéntica a ObtenerVueloParaDisponibilidadSinLinq(),
+        // Aunque la lógica es idéntica a ObtenerVueloParaDisponibilidad(),
         // se crea un helper independiente para no tener que tocar ninguna línea
         // dentro de DisponibilidadAsientos() (acción protegida que ya llama
-        // directamente a ObtenerVueloParaDisponibilidadSinLinq por su nombre).
+        // directamente a ObtenerVueloParaDisponibilidad por su nombre).
         // ==========================================================
 
-        private Vuelo ObtenerVueloParaSeleccionSinLinq(int id)
+        private Vuelo ObtenerVueloParaSeleccion(int id)
         {
             foreach (var vuelo in db.Vuelo)
             {
@@ -1160,7 +1161,7 @@ namespace Con_Autenticacion.Controllers
             // este instante: se reutiliza el mismo helper que usa
             // DisponibilidadAsientos, para que ambas pantallas diferencien
             // "Reservado" de "Ocupado" con la misma regla de negocio.
-            var estadosPorNumero = ObtenerEstadosAsignacionVueloSinLinq(vuelo.VueloId);
+            var estadosPorNumero = ObtenerEstadosAsignacionVuelo(vuelo.VueloId);
 
             var codigosOcupados = new List<string>();
             var estadosPorCodigo = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -1193,10 +1194,10 @@ namespace Con_Autenticacion.Controllers
 
             // El máximo seleccionable es el menor entre: capacidad aplicable al
             // límite de 7 de esta pantalla, asientos realmente disponibles y
-            // pasajeros solicitados. Así nunca se puede marcar más de lo pedido.
+            // asientos libres reales. La cantidad puede cambiar en la pantalla.
+            // Permite elegir hasta el numero de asientos libres de la aeronave,
+            // sin restringirlo al numero de pasajeros de la busqueda inicial.
             var limiteSeleccion = Math.Max(0, Math.Min(capacidadAplicable, disponibles));
-            if (cantidadSolicitada > 0)
-                limiteSeleccion = Math.Min(limiteSeleccion, cantidadSolicitada);
 
             // El vuelo debe tener aeronave/modelo y un estado operativo válido.
             // No se inventan estados: solo PROGRAMADO y CONFIRMADO admiten
@@ -1360,54 +1361,147 @@ namespace Con_Autenticacion.Controllers
             ViewBag.TotalDisponibles = disponibles;
         }
 
+
         private void CargarListas(Vuelo vuelo = null)
         {
-            var aeronaves = new List<Aeronave>();
-            foreach (var aeronave in db.Aeronave)
+            // ================================================
+            // 1. CARGAR RUTAS ACTIVAS
+            // ================================================
+            var rutas = new List<SelectListItem>();
+
+            foreach (var ruta in db.Ruta)
             {
-                aeronaves.Add(aeronave);
+                if (!ruta.Activa)
+                    continue;
+
+                string origen = "Origen desconocido";
+                string destino = "Destino desconocido";
+
+                if (ruta.Aeropuerto != null)
+                {
+                    origen = ruta.Aeropuerto.Localidad +
+                             " (" + ruta.Aeropuerto.CodigoIATA.Trim() + ")";
+                }
+
+                if (ruta.Aeropuerto1 != null)
+                {
+                    destino = ruta.Aeropuerto1.Localidad +
+                              " (" + ruta.Aeropuerto1.CodigoIATA.Trim() + ")";
+                }
+
+                rutas.Add(new SelectListItem
+                {
+                    Value = ruta.RutaId.ToString(),
+                    Text = origen + " → " + destino
+                });
             }
 
-            aeronaves.Sort(delegate (Aeronave a, Aeronave b)
+            rutas.Sort(delegate (SelectListItem a, SelectListItem b)
             {
-                return string.Compare(a.Matricula, b.Matricula, StringComparison.OrdinalIgnoreCase);
+                return string.Compare(
+                    a.Text,
+                    b.Text,
+                    StringComparison.OrdinalIgnoreCase
+                );
             });
 
-            var estados = new List<EstadoVuelo>();
-            foreach (var estado in db.EstadoVuelo)
-            {
-                estados.Add(estado);
-            }
+            ViewBag.ListaRutas = rutas;
 
+            // ================================================
+            // 2. CARGAR FRECUENCIAS
+            // ================================================
             var frecuencias = new List<Frecuencia>();
+
             foreach (var frecuencia in db.Frecuencia)
             {
-                frecuencias.Add(frecuencia);
+                bool esActual = vuelo != null &&
+                                frecuencia.FrecuenciaId == vuelo.FrecuenciaId;
+
+                if (frecuencia.Activa || esActual)
+                {
+                    frecuencias.Add(frecuencia);
+                }
             }
 
             frecuencias.Sort(delegate (Frecuencia a, Frecuencia b)
             {
-                return a.FrecuenciaId.CompareTo(b.FrecuenciaId);
+                int comparacion = a.RutaId.CompareTo(b.RutaId);
+
+                if (comparacion != 0)
+                    return comparacion;
+
+                comparacion = a.DiaSemana.CompareTo(b.DiaSemana);
+
+                if (comparacion != 0)
+                    return comparacion;
+
+                return a.HoraSalida.CompareTo(b.HoraSalida);
+            });
+
+            ViewBag.ListaFrecuencias = frecuencias;
+
+            // Mantener compatibilidad con otras vistas.
+            ViewBag.FrecuenciaId = new SelectList(
+                frecuencias,
+                "FrecuenciaId",
+                "FrecuenciaId",
+                vuelo == null ? null : (object)vuelo.FrecuenciaId
+            );
+
+            // ================================================
+            // 3. CARGAR AERONAVES
+            // ================================================
+            var aeronaves = new List<Aeronave>();
+
+            foreach (var aeronave in db.Aeronave)
+            {
+                bool esActual = vuelo != null &&
+                                vuelo.AeronaveId.HasValue &&
+                                aeronave.AeronaveId == vuelo.AeronaveId.Value;
+
+                if (aeronave.EstadoAeronaveCodigo == "DISPONIBLE"
+                    || esActual)
+                {
+                    aeronaves.Add(aeronave);
+                }
+            }
+
+            aeronaves.Sort(delegate (Aeronave a, Aeronave b)
+            {
+                return string.Compare(
+                    a.Matricula,
+                    b.Matricula,
+                    StringComparison.OrdinalIgnoreCase
+                );
             });
 
             ViewBag.AeronaveId = new SelectList(
                 aeronaves,
                 "AeronaveId",
                 "Matricula",
-                vuelo == null ? null : (object)vuelo.AeronaveId);
+                vuelo == null ? null : (object)vuelo.AeronaveId
+            );
+
+            // ================================================
+            // 4. CARGAR ESTADOS DE VUELO
+            // ================================================
+            var estados = new List<EstadoVuelo>();
+
+            foreach (var estado in db.EstadoVuelo)
+            {
+                estados.Add(estado);
+            }
 
             ViewBag.EstadoVueloCodigo = new SelectList(
                 estados,
                 "Codigo",
                 "Descripcion",
-                vuelo == null ? null : (object)vuelo.EstadoVueloCodigo);
-
-            ViewBag.FrecuenciaId = new SelectList(
-                frecuencias,
-                "FrecuenciaId",
-                "FrecuenciaId",
-                vuelo == null ? null : (object)vuelo.FrecuenciaId);
+                vuelo == null
+                    ? (object)"PROGRAMADO"
+                    : (object)vuelo.EstadoVueloCodigo
+            );
         }
+
 
         protected override void Dispose(bool disposing)
         {

@@ -1,9 +1,39 @@
-﻿@using Con_Autenticacion.Models;
-@model Pasajero
+﻿
+@using System
+@using System.Collections.Generic
+@using System.Web.Mvc
+@model Con_Autenticacion.Models.Pasajero
 
 @{
     ViewBag.Title = "Nuevo pasajero";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Recuperar correctamente los datos del vuelo.
+    int idAuxiliar = 0;
+    int? vueloId = null;
+
+    if (int.TryParse(Convert.ToString(ViewBag.VueloId), out idAuxiliar))
+    {
+        vueloId = idAuxiliar;
+    }
+
+    // Cantidad de pasajeros.
+    int cantidad = 1;
+    int cantidadAuxiliar = 1;
+
+    if (int.TryParse(Convert.ToString(ViewBag.CantidadPasajeros),
+                     out cantidadAuxiliar) && cantidadAuxiliar > 0)
+    {
+        cantidad = cantidadAuxiliar;
+    }
+
+    // Asientos seleccionados.
+    string codigos = Convert.ToString(ViewBag.CodigosAsientos) ?? "";
+
+    // Lista de documentos.
+    IEnumerable<SelectListItem> tiposDocumento =
+        ViewBag.TipoDocumentoCodigo as IEnumerable<SelectListItem>
+        ?? new List<SelectListItem>();
 }
 
 <style>
@@ -23,113 +53,445 @@
             color: white;
         }
 
-    .clase-vip .table thead {
-        background: #E7EBEF;
-    }
-
     .clase-vip .card {
         border: 1px solid #E7EBEF;
+        border-radius: 12px;
     }
 
-    .clase-vip .form-control, .clase-vip .form-select {
+    .clase-vip .form-control,
+    .clase-vip .form-select {
         background: #FFFFFF;
+        border-color: #D7DEE5;
+        min-height: 42px;
+    }
+
+        .clase-vip .form-control:focus,
+        .clase-vip .form-select:focus {
+            border-color: #CBA968;
+            box-shadow: 0 0 0 0.2rem rgba(203,169,104,.15);
+        }
+
+    .clase-vip .card-body {
+        padding: 30px;
+    }
+
+    .clase-vip .seccion-titulo {
+        color: #34414C;
+        font-weight: 700;
+        border-bottom: 1px solid #E7EBEF;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+    }
+
+    .clase-vip .resumen-vuelo {
+        background: #F6F8FA;
+        border-left: 4px solid #CBA968;
+        padding: 18px;
+        border-radius: 7px;
+        margin-bottom: 25px;
+    }
+
+    @@media(max-width:576px) {
+        .clase-vip .card-body {
+            padding: 18px;
+        }
     }
 </style>
 
-
 <div class="container py-4 clase-vip">
+
     <div class="card shadow-sm">
+
         <div class="card-header py-3">
             <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
             <p class="mb-0">Nuevo pasajero</p>
         </div>
-        <div class="card-body p-4">
-            <p class="text-muted">Administración de pasajeros</p>
-            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "formPasajero" }))
+
+        <div class="card-body">
+
+            @if (TempData["Mensaje"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Mensaje"]
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["Error"]
+                </div>
+            }
+
+            <p class="text-muted">
+                Administración y registro de pasajeros.
+            </p>
+
+            @if (vueloId.HasValue)
+            {
+                <div class="resumen-vuelo">
+
+                    <h5 class="seccion-titulo">
+                        Resumen de selección
+                    </h5>
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-2">
+                            <strong>Vuelo:</strong>
+                            #@vueloId.Value
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <strong>Pasajeros:</strong>
+                            @cantidad
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <strong>Asientos:</strong>
+                            @codigos
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+            <h5 class="seccion-titulo">
+                Información personal
+            </h5>
+
+            @using (Html.BeginForm(
+                "Create",
+                "Pasajeroes",
+                FormMethod.Post,
+                new { id = "formPasajero" }))
             {
                 @Html.AntiForgeryToken()
-                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                @* Conservar los datos del vuelo y los asientos *@
+
+                if (vueloId.HasValue)
+                {
+                    @Html.Hidden("vueloId", vueloId.Value)
+                    @Html.Hidden("cantidadPasajeros", cantidad)
+                    @Html.Hidden("codigosAsientos", codigos)
+                }
+
+                @Html.ValidationSummary(
+                    true,
+                    "",
+                    new { @class = "alert alert-danger" })
+
                 <div class="row">
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.TipoDocumentoCodigo, "Tipo de documento", new { @class = "form-label" })
-                        @Html.DropDownList("TipoDocumentoCodigo", null, new { @class = "form-select" })
-                        @Html.ValidationMessageFor(model => model.TipoDocumentoCodigo, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            m => m.TipoDocumentoCodigo,
+                            "Tipo de documento",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.DropDownListFor(
+                            m => m.TipoDocumentoCodigo,
+                            tiposDocumento,
+                            "-- Seleccione un documento --",
+                            new { @class = "form-select" })
+
+                        @Html.ValidationMessageFor(
+                            m => m.TipoDocumentoCodigo,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.NumeroDocumento, "Número de documento", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.NumeroDocumento, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.NumeroDocumento, "", new { @class = "text-danger" })
-                        <span id="errorCedula" class="text-danger"></span>
+
+                        @Html.LabelFor(
+                            m => m.NumeroDocumento,
+                            "Número de documento",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.TextBoxFor(
+                            m => m.NumeroDocumento,
+                            new
+                            {
+                                @class = "form-control",
+                                maxlength = "20",
+                                autocomplete = "off"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            m => m.NumeroDocumento,
+                            "",
+                            new { @class = "text-danger" })
+
+                        <span id="errorCedula"
+                              class="text-danger"></span>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.Nombres, "Nombres", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.Nombres, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.Nombres, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            m => m.Nombres,
+                            "Nombres",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.TextBoxFor(
+                            m => m.Nombres,
+                            new
+                            {
+                                @class = "form-control",
+                                maxlength = "100",
+                                placeholder = "Ingrese sus nombres"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            m => m.Nombres,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.Apellidos, "Apellidos", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.Apellidos, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.Apellidos, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            m => m.Apellidos,
+                            "Apellidos",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.TextBoxFor(
+                            m => m.Apellidos,
+                            new
+                            {
+                                @class = "form-control",
+                                maxlength = "100",
+                                placeholder = "Ingrese sus apellidos"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            m => m.Apellidos,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.FechaNacimiento, "Fecha de nacimiento", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.FechaNacimiento, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.FechaNacimiento, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            m => m.FechaNacimiento,
+                            "Fecha de nacimiento",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.TextBoxFor(
+                            m => m.FechaNacimiento,
+                            "{0:yyyy-MM-dd}",
+                            new
+                            {
+                                @class = "form-control",
+                                type = "date"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            m => m.FechaNacimiento,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.Correo, "Correo electrónico", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.Correo, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.Correo, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            m => m.Correo,
+                            "Correo electrónico",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.TextBoxFor(
+                            m => m.Correo,
+                            new
+                            {
+                                @class = "form-control",
+                                type = "email",
+                                maxlength = "256",
+                                placeholder = "correo@ejemplo.com"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            m => m.Correo,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.Telefono, "Teléfono", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.Telefono, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.Telefono, "", new { @class = "text-danger" })
+
+                        @Html.LabelFor(
+                            m => m.Telefono,
+                            "Teléfono",
+                            new { @class = "form-label fw-bold" })
+
+                        @Html.TextBoxFor(
+                            m => m.Telefono,
+                            new
+                            {
+                                @class = "form-control",
+                                maxlength = "20",
+                                placeholder = "Número de teléfono"
+                            })
+
+                        @Html.ValidationMessageFor(
+                            m => m.Telefono,
+                            "",
+                            new { @class = "text-danger" })
+
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        @Html.LabelFor(model => model.FechaRegistro, "Fecha de registro", new { @class = "form-label" })
-                        @Html.EditorFor(model => model.FechaRegistro, new { htmlAttributes = new { @class = "form-control" } })
-                        @Html.ValidationMessageFor(model => model.FechaRegistro, "", new { @class = "text-danger" })
+
+                        <label class="form-label fw-bold">
+                            Fecha de registro
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="Asignación automática"
+                               disabled />
+
                     </div>
+
                 </div>
-                <button type="submit" class="btn btn-vip">Guardar</button>
-                @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+
+                <hr class="my-4" />
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button type="submit" class="btn btn-vip">
+                        Guardar pasajero
+                    </button>
+
+                    @if (vueloId.HasValue)
+                    {
+                        @Html.ActionLink(
+                            "Volver a selección",
+                            "Seleccionar",
+                            "Vueloes",
+                            new
+                            {
+                                vueloId = vueloId.Value,
+                                cantidadPasajeros = cantidad,
+                                codigosAsientos = codigos
+                            },
+                            new
+                            {
+                                @class = "btn btn-outline-secondary"
+                            })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(
+                            "Volver al listado",
+                            "Index",
+                            null,
+                            new
+                            {
+                                @class = "btn btn-outline-secondary"
+                            })
+                    }
+
+                </div>
             }
+
         </div>
+
     </div>
+
 </div>
 
 @section Scripts {
+
     @Scripts.Render("~/bundles/jqueryval")
+
     <script>
-                // Validación básica de cédula ecuatoriana.
-                function validarCedula(numero) {
-                    if (!/^\d{10}$/.test(numero)) return false;
+                // Validación de cédula ecuatoriana.
+                function validarCedulaEcuatoriana(numero) {
+
+                    numero = String(numero || "").trim();
+
+                    if (!/^\d{10}$/.test(numero)) {
+                        return false;
+                    }
+
                     var provincia = parseInt(numero.substring(0, 2), 10);
                     var tercerDigito = parseInt(numero.charAt(2), 10);
-                    if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false;
+
+                    if (provincia < 1 || provincia > 24 || tercerDigito > 5) {
+                        return false;
+                    }
+
                     var suma = 0;
+
                     for (var i = 0; i < 9; i++) {
+
                         var digito = parseInt(numero.charAt(i), 10);
-                        if (i % 2 == 0) {
+
+                        if (i % 2 === 0) {
+
                             digito = digito * 2;
-                            if (digito > 9) digito = digito - 9;
+
+                            if (digito > 9) {
+                                digito = digito - 9;
+                            }
                         }
+
                         suma += digito;
                     }
+
                     var verificador = (10 - (suma % 10)) % 10;
-                    return verificador == parseInt(numero.charAt(9), 10);
+
+                    return verificador === parseInt(numero.charAt(9), 10);
                 }
 
-                $(function () {
-                    $("#formPasajero").on("submit", function (evento) {
-                        var tipo = $("#TipoDocumentoCodigo").val() || "";
-                        var nombreTipo = $("#TipoDocumentoCodigo option:selected").text().toUpperCase();
-                        var esCedula = tipo.toUpperCase() == "CEDULA" || tipo.toUpperCase() == "CI" ||
-                            nombreTipo.indexOf("CEDULA") >= 0 || nombreTipo.indexOf("CÉDULA") >= 0;
-                        $("#errorCedula").text("");
-                        if (esCedula && !validarCedula($("#NumeroDocumento").val() || "")) {
-                            $("#errorCedula").text("Ingrese una cédula ecuatoriana válida.");
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    var formulario = document.getElementById("formPasajero");
+                    var tipoDocumento = document.getElementById("TipoDocumentoCodigo");
+                    var numeroDocumento = document.getElementById("NumeroDocumento");
+                    var errorCedula = document.getElementById("errorCedula");
+
+                    if (!formulario || !tipoDocumento ||
+                        !numeroDocumento || !errorCedula) {
+                        return;
+                    }
+
+                    formulario.addEventListener("submit", function (evento) {
+
+                        var opcion = tipoDocumento.options[
+                            tipoDocumento.selectedIndex
+                        ];
+
+                        var valorTipo = opcion
+                            ? String(opcion.value || "").toUpperCase()
+                            : "";
+
+                        var textoTipo = opcion
+                            ? String(opcion.textContent || "").toUpperCase()
+                            : "";
+
+                        var esCedula =
+                            valorTipo === "CI" ||
+                            valorTipo === "CEDULA" ||
+                            textoTipo.indexOf("CEDULA") >= 0 ||
+                            textoTipo.indexOf("CÉDULA") >= 0;
+
+                        errorCedula.textContent = "";
+
+                        if (esCedula &&
+                            !validarCedulaEcuatoriana(numeroDocumento.value)) {
+
+                            errorCedula.textContent =
+                                "Ingrese una cédula ecuatoriana válida.";
+
                             evento.preventDefault();
                         }
                     });
