@@ -1,7 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Web;
+using System.Globalization;
 using System.Web.Mvc;
 using Con_Autenticacion.Models;
 
@@ -11,230 +11,423 @@ namespace Con_Autenticacion.Controllers
     public class ReportesController : Controller
     {
         // PLANTILLA #21
-        public ActionResult Index()
+        public ActionResult Index(
+            string desde,
+            string hasta,
+            string ruta,
+            int? aeronaveId,
+            string estado,
+            string agrupar)
         {
-            var vuelosTotales = 0;
-            var reservasConfirmadas = 0;
-            var cancelaciones = 0;
-            var ocupadosTotales = 0;
-            var capacidadTotal = 0;
+            // ==========================================
+            // 1. VARIABLES GENERALES
+            // ==========================================
 
-            // Se conservan los diccionarios de Israel.
+            int vuelosTotales = 0;
+            int reservasConfirmadas = 0;
+            int cancelaciones = 0;
+            int ocupadosTotales = 0;
+            int capacidadTotal = 0;
+            int ocupacionPromedio = 0;
+
+            // ==========================================
+            // 2. COLECCIONES PARA LA VISTA
+            // ==========================================
+
             var rutas = new List<string>();
-            var rutasDict = new Dictionary<string, int>();
-            var rutasOcupados = new Dictionary<string, int>();
-            var rutasCapacidad = new Dictionary<string, int>();
-
-            var aeronaves = new List<Aeronave>();
             var estados = new List<string>();
+            var aeronaves = new List<Aeronave>();
 
-            // CORRECCIÓN:
-            // Usar el modelo ReporteRuta en lugar de dynamic.
             var reporteRutas = new List<ReporteRuta>();
+
+            // ==========================================
+            // 3. COLECCIONES AUXILIARES
+            // ==========================================
+
+            var vuelos = new List<Vuelo>();
+            var vuelosFiltrados = new List<Vuelo>();
+
+            var asignacionesPorVuelo =
+                new Dictionary<int, List<ReservaPasajeroVuelo>>();
+
+            var estadoReservaPorId =
+                new Dictionary<int, string>();
+
+            var reservasContabilizadas = new HashSet<int>();
+
+            var grupos = new Dictionary<string, ReporteRuta>();
+            var capacidadPorGrupo = new Dictionary<string, int>();
+
+            // ==========================================
+            // 4. VALIDAR AGRUPACION
+            // ==========================================
+
+            if (agrupar != "Ruta" &&
+                agrupar != "Dia" &&
+                agrupar != "Mes" &&
+                agrupar != "Aeronave")
+            {
+                agrupar = "Ruta";
+            }
+
+            // ==========================================
+            // 5. VALIDAR AERONAVE
+            // ==========================================
+
+            if (aeronaveId.HasValue && aeronaveId.Value <= 0)
+            {
+                aeronaveId = null;
+            }
+
+            // ==========================================
+            // 6. VALIDAR FECHAS
+            // ==========================================
+
+            DateTime fechaDesde = DateTime.MinValue;
+            DateTime fechaHasta = DateTime.MinValue;
+
+            bool tieneDesde =
+                !String.IsNullOrWhiteSpace(desde);
+
+            bool tieneHasta =
+                !String.IsNullOrWhiteSpace(hasta);
+
+            bool fechaDesdeValida = !tieneDesde ||
+                DateTime.TryParseExact(
+                    desde,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out fechaDesde
+                );
+
+            bool fechaHastaValida = !tieneHasta ||
+                DateTime.TryParseExact(
+                    hasta,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out fechaHasta
+                );
+
+            bool fechasValidas =
+                fechaDesdeValida && fechaHastaValida;
+
+            if (!fechasValidas)
+            {
+                ViewBag.ErrorReporte =
+                    "Una de las fechas ingresadas no es válida.";
+            }
+
+            if (fechasValidas &&
+                tieneDesde &&
+                tieneHasta &&
+                fechaDesde.Date > fechaHasta.Date)
+            {
+                fechasValidas = false;
+
+                ViewBag.ErrorReporte =
+                    "La fecha inicial no puede ser posterior a la fecha final.";
+            }
+
+            // ==========================================
+            // 7. CONSULTA Y PROCESAMIENTO
+            // ==========================================
 
             using (var db = new AerolineaVIP_Context())
             {
                 try
                 {
-                    // Cargar todas las aeronaves.
+                    // ----------------------------------
+                    // CARGAR AERONAVES
+                    // ----------------------------------
+
                     foreach (var aeronave in db.Aeronave)
                     {
                         aeronaves.Add(aeronave);
                     }
 
-                    // Cargar una vez las asignaciones de asientos.
-                    // Se evita consultar toda la tabla por cada vuelo.
-                    var todasLasAsignaciones =
-                        new List<ReservaPasajeroVuelo>();
+                    // ----------------------------------
+                    // CARGAR VUELOS
+                    // ----------------------------------
 
-                    foreach (var asignacion in db.ReservaPasajeroVuelo)
-                    {
-                        todasLasAsignaciones.Add(asignacion);
-                    }
-
-                    // Contar vuelos y extraer datos.
                     foreach (var vuelo in db.Vuelo)
                     {
-                        vuelosTotales++;
+                        vuelos.Add(vuelo);
 
-                        // Extraer ruta.
-                        var rutaDisplay = "N/A";
+                        // Obtener rutas disponibles.
+                        string rutaDisplay =
+                            ObtenerRutaDisplay(vuelo);
 
-                        try
-                        {
-                            if (vuelo.Frecuencia != null &&
-                                vuelo.Frecuencia.Ruta != null)
-                            {
-                                var origenCodigo = "N/A";
-                                var destinoCodigo = "N/A";
-
-                                try
-                                {
-                                    if (vuelo.Frecuencia.Ruta.Aeropuerto != null)
-                                    {
-                                        origenCodigo =
-                                            vuelo.Frecuencia.Ruta
-                                            .Aeropuerto.CodigoIATA ?? "N/A";
-                                    }
-                                }
-                                catch { }
-
-                                try
-                                {
-                                    if (vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
-                                    {
-                                        destinoCodigo =
-                                            vuelo.Frecuencia.Ruta
-                                            .Aeropuerto1.CodigoIATA ?? "N/A";
-                                    }
-                                }
-                                catch { }
-
-                                rutaDisplay =
-                                    origenCodigo + " → " + destinoCodigo;
-                            }
-                        }
-                        catch { }
-
-                        // Agregar a lista de rutas si no existe.
                         if (!rutas.Contains(rutaDisplay))
                         {
                             rutas.Add(rutaDisplay);
                         }
 
-                        // Contar vuelos por ruta.
-                        if (!rutasDict.ContainsKey(rutaDisplay))
+                        // Obtener estados disponibles.
+                        string estadoDisplay =
+                            ObtenerEstadoDisplay(vuelo);
+
+                        if (!estados.Contains(estadoDisplay))
                         {
-                            rutasDict[rutaDisplay] = 0;
-                            rutasOcupados[rutaDisplay] = 0;
-                            rutasCapacidad[rutaDisplay] = 0;
+                            estados.Add(estadoDisplay);
+                        }
+                    }
+
+                    // ----------------------------------
+                    // CARGAR ASIGNACIONES
+                    // ----------------------------------
+
+                    foreach (var asignacion in db.ReservaPasajeroVuelo)
+                    {
+                        if (!asignacionesPorVuelo.ContainsKey(
+                            asignacion.VueloId))
+                        {
+                            asignacionesPorVuelo[asignacion.VueloId] =
+                                new List<ReservaPasajeroVuelo>();
                         }
 
-                        rutasDict[rutaDisplay]++;
+                        asignacionesPorVuelo[asignacion.VueloId]
+                            .Add(asignacion);
+                    }
 
-                        // Extraer estado.
-                        var estadoVuelo = "Desconocido";
+                    // ----------------------------------
+                    // CARGAR ESTADOS DE RESERVAS
+                    // ----------------------------------
 
-                        try
+                    foreach (var reserva in db.Reserva)
+                    {
+                        estadoReservaPorId[reserva.ReservaId] =
+                            reserva.EstadoReservaCodigo;
+                    }
+
+                    // ==================================
+                    // 8. APLICAR FILTROS
+                    // ==================================
+
+                    foreach (var vuelo in vuelos)
+                    {
+                        bool cumpleFiltros = true;
+
+                        string rutaDisplay =
+                            ObtenerRutaDisplay(vuelo);
+
+                        string estadoDisplay =
+                            ObtenerEstadoDisplay(vuelo);
+
+                        // FILTRO POR FECHA
+
+                        if (tieneDesde || tieneHasta)
                         {
-                            if (vuelo.EstadoVuelo != null)
+                            DateTime fechaVuelo =
+                                vuelo.FechaOperacion.Date;
+
+                            if (tieneDesde &&
+                                fechaVuelo < fechaDesde.Date)
                             {
-                                estadoVuelo =
-                                    vuelo.EstadoVuelo.Descripcion
-                                    ?? "Desconocido";
+                                cumpleFiltros = false;
+                            }
+
+                            if (tieneHasta &&
+                                fechaVuelo > fechaHasta.Date)
+                            {
+                                cumpleFiltros = false;
                             }
                         }
-                        catch { }
 
-                        if (!estados.Contains(estadoVuelo))
+                        // FILTRO POR RUTA
+
+                        if (!String.IsNullOrWhiteSpace(ruta))
                         {
-                            estados.Add(estadoVuelo);
+                            if (rutaDisplay != ruta)
+                            {
+                                cumpleFiltros = false;
+                            }
                         }
 
-                        // CORRECCIÓN:
-                        // Comparar el código del estado,
-                        // no su descripción visible.
+                        // FILTRO POR AERONAVE
+
+                        if (aeronaveId.HasValue)
+                        {
+                            if (!vuelo.AeronaveId.HasValue ||
+                                vuelo.AeronaveId.Value != aeronaveId.Value)
+                            {
+                                cumpleFiltros = false;
+                            }
+                        }
+
+                        // FILTRO POR ESTADO
+
+                        if (!String.IsNullOrWhiteSpace(estado))
+                        {
+                            if (estadoDisplay != estado)
+                            {
+                                cumpleFiltros = false;
+                            }
+                        }
+
+                        // VALIDACION DE FECHAS
+
+                        if (!fechasValidas)
+                        {
+                            cumpleFiltros = false;
+                        }
+
+                        if (cumpleFiltros)
+                        {
+                            vuelosFiltrados.Add(vuelo);
+                        }
+                    }
+
+                    // ==================================
+                    // 9. PROCESAR VUELOS FILTRADOS
+                    // ==================================
+
+                    foreach (var vuelo in vuelosFiltrados)
+                    {
+                        vuelosTotales++;
+
+                        // Determinar agrupación.
+                        string grupo =
+                            ObtenerGrupo(vuelo, agrupar);
+
+                        // Crear grupo si no existe.
+                        if (!grupos.ContainsKey(grupo))
+                        {
+                            grupos[grupo] = new ReporteRuta
+                            {
+                                Ruta = grupo,
+                                Vuelos = 0,
+                                Pasajeros = 0,
+                                Ocupacion = 0,
+                                Ingresos = 0,
+                                Estado = "Consolidado"
+                            };
+
+                            capacidadPorGrupo[grupo] = 0;
+                        }
+
+                        grupos[grupo].Vuelos++;
+
+                        // CONTAR CANCELACIONES
+
                         if (vuelo.EstadoVueloCodigo == "CANCELADO")
                         {
                             cancelaciones++;
                         }
 
-                        // Contar capacidad y ocupación.
-                        var capacidadVuelo = 0;
-                        var ocupadosVuelo = 0;
+                        // CAPACIDAD DE LA AERONAVE
 
-                        try
+                        int capacidadVuelo = 0;
+
+                        if (vuelo.Aeronave != null &&
+                            vuelo.Aeronave.ModeloAeronave != null)
                         {
-                            if (vuelo.Aeronave != null &&
-                                vuelo.Aeronave.ModeloAeronave != null)
-                            {
-                                capacidadVuelo =
-                                    vuelo.Aeronave.ModeloAeronave
-                                    .CapacidadAsientos;
-
-                                capacidadTotal += capacidadVuelo;
-
-                                rutasCapacidad[rutaDisplay] +=
-                                    capacidadVuelo;
-                            }
+                            capacidadVuelo =
+                                vuelo.Aeronave.ModeloAeronave.CapacidadAsientos;
                         }
-                        catch { }
 
-                        // Mantener el conteo original por vuelo,
-                        // pero excluir asientos liberados o cancelados.
-                        foreach (var reserva in todasLasAsignaciones)
+                        capacidadTotal += capacidadVuelo;
+
+                        capacidadPorGrupo[grupo] += capacidadVuelo;
+
+                        // CONTAR ASIGNACIONES DE ASIENTOS
+
+                        if (asignacionesPorVuelo.ContainsKey(vuelo.VueloId))
                         {
-                            if (reserva.VueloId == vuelo.VueloId &&
-                                (reserva.EstadoAsignacionCodigo == "PENDIENTE" ||
-                                 reserva.EstadoAsignacionCodigo == "CONFIRMADA"))
+                            foreach (var asignacion in
+                                asignacionesPorVuelo[vuelo.VueloId])
                             {
-                                ocupadosVuelo++;
-                                ocupadosTotales++;
-                                rutasOcupados[rutaDisplay]++;
+                                if (asignacion.EstadoAsignacionCodigo == "PENDIENTE" ||
+                                    asignacion.EstadoAsignacionCodigo == "CONFIRMADA")
+                                {
+                                    ocupadosTotales++;
+
+                                    grupos[grupo].Pasajeros++;
+
+                                    // CONTAR RESERVAS CONFIRMADAS
+                                    // SIN DUPLICAR UNA MISMA RESERVA.
+
+                                    if (estadoReservaPorId.ContainsKey(
+                                        asignacion.ReservaId))
+                                    {
+                                        string estadoReserva =
+                                            estadoReservaPorId[asignacion.ReservaId];
+
+                                        if (estadoReserva == "CONFIRMADA")
+                                        {
+                                            reservasContabilizadas.Add(
+                                                asignacion.ReservaId);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
 
-                    // CORRECCIÓN:
-                    // Contar reservas confirmadas, no todas
-                    // las asignaciones de pasajeros.
-                    foreach (var reserva in db.Reserva)
+                    // ==================================
+                    // 10. TOTAL DE RESERVAS CONFIRMADAS
+                    // ==================================
+
+                    reservasConfirmadas =
+                        reservasContabilizadas.Count;
+
+                    // ==================================
+                    // 11. CONSTRUIR REPORTE AGRUPADO
+                    // ==================================
+
+                    foreach (var grupoKey in grupos.Keys)
                     {
-                        if (reserva.EstadoReservaCodigo == "CONFIRMADA")
-                        {
-                            reservasConfirmadas++;
-                        }
-                    }
+                        var reporte = grupos[grupoKey];
 
-                    // Construir reporte por ruta.
-                    // Se conserva el algoritmo de Israel.
-                    foreach (var rutaKey in rutasDict.Keys)
-                    {
-                        var vuelosRuta = rutasDict[rutaKey];
+                        int capacidadGrupo =
+                            capacidadPorGrupo[grupoKey];
 
-                        var ocupadosRuta =
-                            rutasOcupados[rutaKey];
+                        // CALCULAR OCUPACION
 
-                        var capacidadRuta =
-                            rutasCapacidad[rutaKey];
-
-                        var ocupacionRuta = capacidadRuta > 0
-                            ? (ocupadosRuta * 100) / capacidadRuta
+                        reporte.Ocupacion = capacidadGrupo > 0
+                            ? (reporte.Pasajeros * 100) / capacidadGrupo
                             : 0;
 
-                        // Se mantiene la estimación original:
-                        // USD 100 por asiento contabilizado.
-                        // NO representa ingresos reales.
-                        decimal ingresosRuta = ocupadosRuta * 100m;
+                        // INGRESOS SIMULADOS
 
-                        // CORRECCIÓN PRINCIPAL:
-                        // Objeto público ReporteRuta en vez
-                        // de un objeto anónimo.
-                        reporteRutas.Add(new ReporteRuta
-                        {
-                            Ruta = rutaKey,
-                            Vuelos = vuelosRuta,
-                            Pasajeros = ocupadosRuta,
-                            Ocupacion = ocupacionRuta,
-                            Ingresos = ingresosRuta,
-                            Estado = "Consolidado"
-                        });
+                        reporte.Ingresos =
+                            reporte.Pasajeros * 100m;
+
+                        reporteRutas.Add(reporte);
                     }
                 }
                 catch (Exception)
                 {
+                    // EVITAR MOSTRAR RESULTADOS PARCIALES.
+
+                    vuelosTotales = 0;
+                    reservasConfirmadas = 0;
+                    cancelaciones = 0;
+                    ocupadosTotales = 0;
+                    capacidadTotal = 0;
+
+                    reporteRutas.Clear();
+
                     ViewBag.ErrorReporte =
                         "No se pudo completar la consulta de reportes.";
                 }
             }
 
-            // Calcular ocupación promedio.
-            var ocupacionPromedio = capacidadTotal > 0
-                ? (ocupadosTotales * 100) / capacidadTotal
+            // ==========================================
+            // 12. CALCULAR OCUPACION GENERAL
+            // ==========================================
+
+            ocupacionPromedio = capacidadTotal > 0
+                ? (int)Math.Round(
+                    ocupadosTotales * 100.0 / capacidadTotal
+                )
                 : 0;
 
-            // Pasar datos a la vista.
-            // Se conservan los nombres originales del ViewBag.
+            // ==========================================
+            // 13. ENVIAR INFORMACION A LA VISTA
+            // ==========================================
+
             ViewBag.VuelosTotales = vuelosTotales;
             ViewBag.OcupacionPromedio = ocupacionPromedio;
             ViewBag.ReservasConfirmadas = reservasConfirmadas;
@@ -245,7 +438,94 @@ namespace Con_Autenticacion.Controllers
             ViewBag.Estados = estados;
             ViewBag.ReporteRutas = reporteRutas;
 
+            // CONSERVAR FILTROS SELECCIONADOS.
+
+            ViewBag.Desde = desde;
+            ViewBag.Hasta = hasta;
+            ViewBag.RutaSeleccionada = ruta;
+            ViewBag.AeronaveSeleccionada = aeronaveId;
+            ViewBag.EstadoSeleccionado = estado;
+            ViewBag.AgruparSeleccionado = agrupar;
+
             return View();
+        }
+
+        // ==========================================
+        // METODO: OBTENER RUTA
+        // ==========================================
+
+        private string ObtenerRutaDisplay(Vuelo vuelo)
+        {
+            string origen = "N/A";
+            string destino = "N/A";
+
+            if (vuelo.Frecuencia != null &&
+                vuelo.Frecuencia.Ruta != null)
+            {
+                if (vuelo.Frecuencia.Ruta.Aeropuerto != null)
+                {
+                    origen =
+                        vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA
+                        ?? "N/A";
+                }
+
+                if (vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
+                {
+                    destino =
+                        vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA
+                        ?? "N/A";
+                }
+            }
+
+            return origen + " → " + destino;
+        }
+
+        // ==========================================
+        // METODO: OBTENER ESTADO
+        // ==========================================
+
+        private string ObtenerEstadoDisplay(Vuelo vuelo)
+        {
+            if (vuelo.EstadoVuelo != null)
+            {
+                return vuelo.EstadoVuelo.Descripcion
+                    ?? "Desconocido";
+            }
+
+            return "Desconocido";
+        }
+
+        // ==========================================
+        // METODO: DETERMINAR AGRUPACION
+        // ==========================================
+
+        private string ObtenerGrupo(Vuelo vuelo, string agrupar)
+        {
+            if (agrupar == "Dia")
+            {
+                return vuelo.FechaOperacion.ToString("dd/MM/yyyy");
+            }
+
+            if (agrupar == "Mes")
+            {
+                return vuelo.FechaOperacion.ToString(
+                    "MMMM yyyy",
+                    new CultureInfo("es-EC")
+                );
+            }
+
+            if (agrupar == "Aeronave")
+            {
+                if (vuelo.Aeronave != null)
+                {
+                    return vuelo.Aeronave.Matricula
+                        ?? "Sin matrícula";
+                }
+
+                return "Sin aeronave";
+            }
+
+            return ObtenerRutaDisplay(vuelo);
         }
     }
 }
