@@ -1,101 +1,32 @@
-﻿@model Con_Autenticacion.Models.Aeropuerto
+﻿@model Con_Autenticacion.Models.Aeronave
+
 @{
-    ViewBag.Title = "Detalle de aeropuerto";
+    ViewBag.Title = "Detalle de aeronave";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<div class="container py-4" style="max-width:980px;">
-    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
-        <div>
-            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
-                Flota y rutas / Consulta
-            </div>
-            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
-                Detalle de aeropuerto
-            </h1>
-            <p class="text-muted mb-0">
-                Informacion del registro seleccionado.
-            </p>
-        </div>
-        @Html.ActionLink("Volver al listado", "Index", null, new
-        {
-            @class = "btn btn-outline-secondary"
-        }
-        )
-    </div>
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="p-4 text-white" style="background:#172b3d;border-bottom:4px solid #c9a96e;">
-            <div class="small text-uppercase opacity-75">
-                Codigo IATA
-            </div>
-            <div class="display-6 fw-bold">
-                @Model.CodigoIATA
-            </div>
-            <div class="fs-5">
-                @Model.Nombre
-            </div>
+
+<div class="container py-4" style="max-width:850px">
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h2 class="h4 mb-0">Detalle de aeronave</h2>
         </div>
         <div class="card-body p-4">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Localidad
-                        </small>
-                        <strong>
-                            @Model.Localidad
-                        </strong>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Estado
-                        </small>
-                        @if (Model.Activo)
-                        {
-                            <span class="badge text-bg-success">
-                                Activo
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge text-bg-secondary">
-                                Inactivo
-                            </span>
-                        }
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="border rounded-3 p-3">
-                        <small class="text-muted d-block">
-                            Identificador interno
-                        </small>
-                        <strong>
-                            @Model.AeropuertoId
-                        </strong>
-                    </div>
-                </div>
-            </div>
-            <div class="d-flex gap-2 flex-wrap mt-4">
-                @Html.ActionLink("Editar aeropuerto", "Edit", new
-                {
-                    id = Model.AeropuertoId
-                }
-                , new
-                     {
-                    @class = "btn text-white",
-                         style = "background:#172b3d;"
-                }
-                )@Html.ActionLink("Eliminar aeropuerto", "Delete", new
-                {
-                   id = Model.AeropuertoId
-               }
-               , new
-                    {
-                   @class = "btn btn-outline-danger"
-               }
-               )
-            </div>
+            <dl class="row">
+                <dt class="col-sm-4">Matricula</dt>
+                <dd class="col-sm-8">@Model.Matricula</dd>
+
+                <dt class="col-sm-4">Modelo</dt>
+                <dd class="col-sm-8">@(Model.ModeloAeronave == null ? "-" : Model.ModeloAeronave.Nombre)</dd>
+
+                <dt class="col-sm-4">Capacidad</dt>
+                <dd class="col-sm-8">@(Model.ModeloAeronave == null ? 0 : Model.ModeloAeronave.CapacidadAsientos)</dd>
+
+                <dt class="col-sm-4">Estado</dt>
+                <dd class="col-sm-8">@(Model.EstadoAeronave == null ? Model.EstadoAeronaveCodigo : Model.EstadoAeronave.Descripcion)</dd>
+            </dl>
+
+            @Html.ActionLink("Editar", "Edit", new { id = Model.AeronaveId }, new { @class = "btn btn-dark" })
+            @Html.ActionLink("Volver", "Index", null, new { @class = "btn btn-outline-secondary" })
         </div>
     </div>
 </div>

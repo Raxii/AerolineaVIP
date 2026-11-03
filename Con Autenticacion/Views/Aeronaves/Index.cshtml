@@ -1,160 +1,89 @@
-﻿@model IEnumerable<Con_Autenticacion.Models.Aeropuerto>
+﻿@using System.Linq
 @using System.Collections.Generic
 @using Con_Autenticacion.Models
+@model IEnumerable<Aeronave>
+
 @{
-    ViewBag.Title = "Administracion de aeropuertos";
+    ViewBag.Title = "Aeronaves";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    IEnumerable<Aeropuerto> registros = ViewBag.ListaAeropuertos as IEnumerable<Aeropuerto>;
-    if (registros == null)
-    {
-        registros = Model;
-    }
-    bool hayRegistros = false;
+    var registros = ViewBag.ListaAeronaves as IEnumerable<Aeronave> ?? Model ?? new List<Aeronave>();
+    var vuelos = ViewBag.VuelosPorAeronave as Dictionary<int, int> ?? new Dictionary<int, int>();
 }
-<div class="container py-4" style="max-width:1200px;">
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
-                Flota y rutas / Catalogo
-            </div>
-            <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
-                Aeropuertos
-            </h1>
-            <p class="text-muted mb-0">
-                Administra los aeropuertos disponibles para las rutas de Aerolinea VIP.
-            </p>
+            <h2 class="h3">Gestion de aeronaves</h2>
+            <p class="text-muted mb-0">Administracion de la flota</p>
         </div>
-        @Html.ActionLink("+ Nuevo aeropuerto", "Create", null, new
-        {
-           @class = "btn text-white",
-            style = "background:#172b3d;border-color:#172b3d;"
-       }
-       )
+        @Html.ActionLink("Nueva aeronave", "Create", null, new { @class = "btn btn-dark" })
     </div>
-    @if (TempData["Ok"] != null)
+
+    @using (Html.BeginForm("Index", "Aeronaves", FormMethod.Get, new { @class = "row g-2 mb-3" }))
     {
-        <div class="alert alert-success">
-            @TempData["Ok"]
+        <div class="col-md-5">
+            <input name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Buscar por matricula" />
+        </div>
+        <div class="col-md-3">
+            <select name="estadoCodigo" class="form-select">
+                <option value="">Todos los estados</option>
+                @foreach (EstadoAeronave e in (ViewBag.Estados as IEnumerable<EstadoAeronave> ?? new List<EstadoAeronave>()))
+                {
+                    <option value="@e.Codigo" selected="@(Convert.ToString(ViewBag.EstadoSeleccionado) == e.Codigo ? "selected" : null)">@e.Descripcion</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="modeloId" class="form-select">
+                <option value="">Todos los modelos</option>
+                @foreach (ModeloAeronave m in (ViewBag.Modelos as IEnumerable<ModeloAeronave> ?? new List<ModeloAeronave>()))
+                {
+                    <option value="@m.ModeloAeronaveId" selected="@(Convert.ToString(ViewBag.ModeloSeleccionado) == m.ModeloAeronaveId.ToString() ? "selected" : null)">@m.Nombre</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-outline-dark w-100" type="submit">Filtrar</button>
         </div>
     }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">
-            @TempData["Error"]
-        </div>
-    }
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center py-3 px-4">
-            <div>
-                <h2 class="h5 mb-1" style="color:#172b3d;">
-                    Catalogo de aeropuertos
-                </h2>
-                <small class="text-muted">
-                    Codigo IATA, nombre oficial y localidad.
-                </small>
-            </div>
-            <span class="badge rounded-pill text-dark border" style="background:#f5eddf;border-color:#e5d4b5 !important;">
-                Listado general
-            </span>
-        </div>
+
+    <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead style="background:#f3f6f8;color:#172b3d;">
+                <thead class="table-light">
                     <tr>
-                        <th class="ps-4">
-                            Codigo
-                        </th>
-                        <th>
-                            Nombre oficial
-                        </th>
-                        <th>
-                            Localidad
-                        </th>
-                        <th>
-                            Estado
-                        </th>
-                        <th class="text-end pe-4">
-                            Acciones
-                        </th>
+                        <th>Matricula</th>
+                        <th>Modelo</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th>Vuelos</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (registros != null)
-                    {
-                        foreach (var item in registros)
-                        {
-                            hayRegistros = true;
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="badge rounded-pill text-dark border" style="background:#f5eddf;">
-                                        @item.CodigoIATA
-                                    </span>
-                                </td>
-                                <td class="fw-semibold">
-                                    @item.Nombre
-                                </td>
-                                <td>
-                                    @item.Localidad
-                                </td>
-                                <td>
-                                    @if (item.Activo)
-                                    {
-                                        <span class="badge text-bg-success">
-                                            Activo
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge text-bg-secondary">
-                                            Inactivo
-                                        </span>
-                                    }
-                                </td>
-                                <td class="text-end pe-4 text-nowrap">
-                                    @Html.ActionLink("Ver", "Details", new
-                                    {
-                                       id = item.AeropuertoId
-                                   }
-                                   , new
-                                        {
-                                       @class = "btn btn-sm btn-outline-secondary"
-                                   }
-                                   )
-                                    @Html.ActionLink("Editar", "Edit", new
-                                    {
-                                        id = item.AeropuertoId
-                                    }
-                                    , new
-                                         {
-                                        @class = "btn btn-sm btn-outline-primary"
-                                    }
-                                    )
-                                    @Html.ActionLink("Eliminar", "Delete", new
-                                    {
-                                        id = item.AeropuertoId
-                                    }
-                                    , new
-                                         {
-                                        @class = "btn btn-sm btn-outline-danger"
-                                    }
-                                    )
-                                </td>
-                            </tr>
-                        }
-                    }
-                    @if (!hayRegistros)
+                    @foreach (var item in registros)
                     {
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-5">
-                                No hay aeropuertos registrados.
+                            <td class="fw-semibold">@item.Matricula</td>
+                            <td>@(item.ModeloAeronave == null ? "-" : item.ModeloAeronave.Nombre)</td>
+                            <td>@(item.ModeloAeronave == null ? 0 : item.ModeloAeronave.CapacidadAsientos)</td>
+                            <td>@(item.EstadoAeronave == null ? item.EstadoAeronaveCodigo : item.EstadoAeronave.Descripcion)</td>
+                            <td>@(vuelos.ContainsKey(item.AeronaveId) ? vuelos[item.AeronaveId] : 0)</td>
+                            <td class="text-nowrap">
+                                @Html.ActionLink("Ver", "Details", new { id = item.AeronaveId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                @Html.ActionLink("Editar", "Edit", new { id = item.AeronaveId }, new { @class = "btn btn-sm btn-outline-primary" })
+                                @Html.ActionLink("Asignaciones", "Asignaciones", new { id = item.AeronaveId }, new { @class = "btn btn-sm btn-outline-dark" })
                             </td>
+                        </tr>
+                    }
+                    @if (!registros.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No hay aeronaves registradas.</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-    </div>
-    <div class="small text-muted mt-3">
-        Los codigos IATA se utilizan para identificar el origen y destino de cada ruta.
     </div>
 </div>

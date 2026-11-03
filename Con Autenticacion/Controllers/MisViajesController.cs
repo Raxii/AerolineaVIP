@@ -30,6 +30,68 @@ namespace Con_Autenticacion.Controllers
             return View("CheckIn", CargarDatosCliente());
         }
 
+        // Muestra solamente comprobantes de la cuenta autenticada.
+        [HttpGet]
+        public ActionResult VerComprobante(int? id)
+        {
+            if (!id.HasValue) return new HttpStatusCodeResult(400);
+
+            ReservaClienteVM reserva;
+            ComprobanteClienteVM comprobante = ObtenerComprobantePropio(id.Value, out reserva);
+            if (comprobante == null) return HttpNotFound();
+
+            ViewBag.DetalleReserva = reserva;
+            return View("VerComprobante", comprobante);
+        }
+
+        // Descarga un PDF real sin dependencias NuGet adicionales.
+        [HttpGet]
+        public ActionResult DescargarComprobante(int? id)
+        {
+            if (!id.HasValue) return new HttpStatusCodeResult(400);
+
+            ReservaClienteVM reserva;
+            ComprobanteClienteVM comprobante = ObtenerComprobantePropio(id.Value, out reserva);
+            if (comprobante == null) return HttpNotFound();
+
+            if (comprobante.Estado != "EMITIDO")
+                return new HttpStatusCodeResult(400, "El comprobante no esta emitido.");
+
+            byte[] pdf = Con_Autenticacion.Helpers.ComprobantePdf.Generar(comprobante, reserva);
+            string nombre = "Comprobante-" + comprobante.ComprobanteId.ToString() + ".pdf";
+            return File(pdf, "application/pdf", nombre);
+        }
+
+        private ComprobanteClienteVM ObtenerComprobantePropio(int comprobanteId,
+            out ReservaClienteVM reservaEncontrada)
+        {
+            reservaEncontrada = null;
+            // CargarDatosCliente obtiene exclusivamente reservas del usuario autenticado
+            // y solo los comprobantes asociados a compras de esas reservas.
+            MisViajesVM datos = CargarDatosCliente();
+            ComprobanteClienteVM comprobante = null;
+
+            foreach (ComprobanteClienteVM item in datos.Comprobantes)
+            {
+                if (item.ComprobanteId == comprobanteId)
+                {
+                    comprobante = item;
+                    break;
+                }
+            }
+            if (comprobante == null) return null;
+
+            foreach (ReservaClienteVM reserva in datos.Reservas)
+            {
+                if (reserva.CodigoReserva == comprobante.CodigoReserva)
+                {
+                    reservaEncontrada = reserva;
+                    break;
+                }
+            }
+            return comprobante;
+        }
+
         // Se comprueba de nuevo la propiedad de la reserva ANTES de escribir.
         [HttpPost]
         [ValidateAntiForgeryToken]

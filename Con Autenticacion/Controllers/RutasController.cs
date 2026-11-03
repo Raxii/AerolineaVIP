@@ -162,9 +162,14 @@ namespace Con_Autenticacion.Controllers
                 ModelState.AddModelError("AeropuertoDestinoId", "El origen y el destino deben ser diferentes.");
             }
 
+            var rutaActual = db.Ruta.Find(ruta.RutaId);
+            if (rutaActual == null) return HttpNotFound();
+
             if (ModelState.IsValid)
             {
-                db.Entry(ruta).State = EntityState.Modified;
+                rutaActual.AeropuertoOrigenId = ruta.AeropuertoOrigenId;
+                rutaActual.AeropuertoDestinoId = ruta.AeropuertoDestinoId;
+                rutaActual.Activa = ruta.Activa;
                 db.SaveChanges();
                 TempData["Ok"] = "Cambios de ruta guardados correctamente.";
                 return RedirectToAction("Index");

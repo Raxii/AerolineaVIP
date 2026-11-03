@@ -88,17 +88,20 @@
                                     {
                                         <span class="text-muted">Sin datos</span>
                                     }
-                            </td>
-                            <td>@item.FechaCompra.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.Importe.ToString("N2") @(item.Moneda != null ? item.Moneda.Codigo : item.MonedaCodigo)</td>
-                            <td>@(item.EstadoCompra != null ? item.EstadoCompra.Descripcion : item.EstadoCompraCodigo)</td>
-                            <td class="text-nowrap">
-                                @Html.ActionLink("Ver", "Details", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-secondary" })
-                                @Html.ActionLink("Editar", "Edit", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-secondary" })
-                                @Html.ActionLink("Eliminar", "Delete", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-danger" })
-                            </td>
-                        </tr>
-                    }
+                                </td>
+                                <td>@item.FechaCompra.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.Importe.ToString("N2") @(item.Moneda != null ? item.Moneda.Codigo : item.MonedaCodigo)</td>
+                                <td>@(item.EstadoCompra != null ? item.EstadoCompra.Descripcion : item.EstadoCompraCodigo)</td>
+                                <td class="text-nowrap">
+                                    @Html.ActionLink("Ver", "Details", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                    @if (item.EstadoCompraCodigo == "PENDIENTE")
+                                    {
+                                        @Html.ActionLink("Pagar", "Pagar", new { id = item.CompraId }, new { @class = "btn btn-sm btn-success" })
+                                        @Html.ActionLink("Anular", "Delete", new { id = item.CompraId }, new { @class = "btn btn-sm btn-outline-danger" })
+                                    }
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
