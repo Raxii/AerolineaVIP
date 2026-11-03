@@ -3,44 +3,81 @@
     ViewBag.Title = "Mis reservas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <div class="container py-4">
     <div class="card border-0 shadow-sm" style="border-radius:16px;overflow:hidden">
         <div class="card-header text-white p-4" style="background:#172b3c">
             <h2 class="h4 mb-1">Mis reservas</h2>
-            <span>Consulta tus vuelos y asientos reservados en Aerol&#237;nea VIP</span>
+            <span>Consulta tus vuelos y asientos reservados en Aerolinea VIP</span>
         </div>
         <div class="card-body p-4">
             <div class="mb-4 d-flex flex-wrap gap-2">
-                @Html.ActionLink("Mis reservas", "Reservas", "MisViajes", null, new { @class = "btn btn-dark" })
-                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
-                @Html.ActionLink("Check-in", "CheckIn", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Mis reservas", "Reservas", "MisViajes", null,
+                    new { @class = "btn btn-dark" })
+                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null,
+                    new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Check-in", "CheckIn", "MisViajes", null,
+                    new { @class = "btn btn-outline-secondary" })
             </div>
+
+            @if (TempData["ErrorMisViajes"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMisViajes"]</div>
+            }
+
             @if (Model.Reservas.Count == 0)
             {
-                <div class="alert alert-info">Todav&#237;a no tienes reservas asociadas a tu cuenta.</div>
+                <div class="alert alert-info">Todavia no tienes reservas asociadas a tu cuenta.</div>
             }
+
             @foreach (var reserva in Model.Reservas)
             {
                 <div class="card mb-3 border-light shadow-sm">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between flex-wrap gap-2">
-                            <h3 class="h5 mb-2">Reserva @reserva.CodigoReserva</h3>
-                            <span class="badge bg-secondary">@reserva.Estado</span>
+                        <div class="d-flex justify-content-between flex-wrap gap-2 align-items-start">
+                            <div>
+                                <h3 class="h5 mb-2">Reserva @reserva.CodigoReserva</h3>
+                                <p class="text-muted mb-2">
+                                    Registrada: @reserva.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            </div>
+                            <span class="badge @(reserva.Estado == "CONFIRMADA" ? "bg-success" : "bg-secondary")">
+                                @reserva.Estado
+                            </span>
                         </div>
-                        <p class="text-muted mb-2">Registrada: @reserva.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
-                        <p><strong>Importe de tramos vigentes:</strong> $@reserva.TotalTramos.ToString("N2") USD</p>
+
+                        <p class="mb-3">
+                            <strong>Total de la reserva:</strong>
+                            $@reserva.TotalTramos.ToString("N2") USD
+                        </p>
+
                         @if (reserva.Descripciones.Count == 0)
                         {
-                            <p class="text-muted">Esta reserva todav&#237;a no tiene vuelos o pasajeros asociados.</p>
+                            <p class="text-muted">Esta reserva no tiene vuelos o pasajeros asociados.</p>
                         }
                         else
                         {
-                            <ul class="mb-0">
+                            <ul class="mb-3">
                                 @foreach (string detalle in reserva.Descripciones)
                                 {
                                     <li>@detalle</li>
                                 }
                             </ul>
+                        }
+
+                        @if (reserva.Estado == "PENDIENTE" && reserva.TotalTramos > 0m)
+                        {
+                            <div class="border-top pt-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="text-muted small">Esta reserva esta pendiente de pago.</div>
+                                @Html.ActionLink("Pagar reserva", "PagarReserva", "Compras",
+                                    new { reservaId = reserva.ReservaId },
+                                    new { @class = "btn btn-success fw-semibold" })
+                            </div>
+                        }
+                        else if (reserva.Estado == "CONFIRMADA")
+                        {
+                            @Html.ActionLink("Ver comprobantes", "Comprobantes", "MisViajes", null,
+                                new { @class = "btn btn-outline-success" })
                         }
                     </div>
                 </div>

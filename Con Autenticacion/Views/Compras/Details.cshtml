@@ -70,16 +70,32 @@
                     }
                     else
                     { <span class="text-muted">Sin datos</span>}
-            </dd>
-            <dt class="col-sm-4">Fecha de compra</dt>
-            <dd class="col-sm-8">@Model.FechaCompra.ToString("dd/MM/yyyy HH:mm")</dd>
-            <dt class="col-sm-4">Importe</dt>
-            <dd class="col-sm-8">@Model.Importe.ToString("N2") @Model.MonedaCodigo</dd>
-            <dt class="col-sm-4">Estado</dt>
-            <dd class="col-sm-8">@(Model.EstadoCompra != null ? Model.EstadoCompra.Descripcion : Model.EstadoCompraCodigo)</dd>
-        </dl>
-        @Html.ActionLink("Editar", "Edit", new { id = Model.CompraId }, new { @class = "btn btn-vip" })
-        @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+                </dd>
+                <dt class="col-sm-4">Fecha de compra</dt>
+                <dd class="col-sm-8">@Model.FechaCompra.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4">Importe</dt>
+                <dd class="col-sm-8">@Model.Importe.ToString("N2") @Model.MonedaCodigo</dd>
+                <dt class="col-sm-4">Estado</dt>
+                <dd class="col-sm-8">@(Model.EstadoCompra != null ? Model.EstadoCompra.Descripcion : Model.EstadoCompraCodigo)</dd>
+            </dl>
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+            @if (TempData["Mensaje"] != null)
+            {
+                <div class="alert alert-success">@TempData["Mensaje"]</div>
+            }
+            @if (Model.EstadoCompraCodigo == "PENDIENTE")
+            {
+                @Html.ActionLink("Continuar al pago de prueba", "Pagar", "Compras", new { id = Model.CompraId }, new { @class = "btn btn-vip" })
+            }
+            else if (Model.EstadoCompraCodigo == "PAGADA")
+            {
+                <div class="alert alert-success">Pago de prueba registrado. Puedes consultar tu comprobante en Mis viajes.</div>
+                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null, new { @class = "btn btn-vip" })
+            }
+            @Html.ActionLink("Volver al listado", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
     </div>
-</div>
 </div>

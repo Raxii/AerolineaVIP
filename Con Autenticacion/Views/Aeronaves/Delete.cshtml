@@ -1,68 +1,25 @@
-﻿@model Con_Autenticacion.Models.Aeropuerto
+﻿@model Con_Autenticacion.Models.Aeronave
+
 @{
-    ViewBag.Title = "Eliminar aeropuerto";
+    ViewBag.Title = "Eliminar aeronave";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<div class="container py-4" style="max-width:900px;">
-    <div class="mb-4">
-        <div class="text-uppercase small fw-bold mb-2" style="color:#b18b4b;letter-spacing:.12em;">
-            Flota y rutas / Confirmacion
+
+<div class="container py-4" style="max-width:850px">
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h2 class="h4 mb-0">Eliminar aeronave</h2>
         </div>
-        <h1 class="h3 fw-bold mb-1" style="color:#172b3d;">
-            Eliminar aeropuerto
-        </h1>
-        <p class="text-muted mb-0">
-            Revisa la informacion antes de confirmar.
-        </p>
-    </div>
-    <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
-            <div class="alert alert-warning border-0">
-                <strong>
-                    Atencion:
-                </strong>
-                esta accion elimina el registro. Si existen rutas relacionadas, la base de datos puede rechazar la operacion.
-            </div>
-            <h2 class="h5" style="color:#172b3d;">
-                @Model.CodigoIATA - @Model.Nombre
-            </h2>
-            <div class="row g-3 my-3">
-                <div class="col-md-6">
-                    <small class="text-muted d-block">
-                        Localidad
-                    </small>
-                    <strong>
-                        @Model.Localidad
-                    </strong>
-                </div>
-                <div class="col-md-6">
-                    <small class="text-muted d-block">
-                        Estado
-                    </small>
-                    <strong>
-                        @(Model.Activo ? "Activo" : "Inactivo")
-                    </strong>
-                </div>
-            </div>
-            @using (Html.BeginForm("Delete", "Aeropuerto", new
-            {
-                id = Model.AeropuertoId
-            }
-           , FormMethod.Post, new
-           {
-               @class = "d-flex flex-wrap gap-2"
-           }
-           ))
+            <div class="alert alert-warning">Confirma si deseas eliminar esta aeronave.</div>
+            <p><strong>Matricula:</strong> @Model.Matricula</p>
+            <p><strong>Modelo:</strong> @(Model.ModeloAeronave == null ? "-" : Model.ModeloAeronave.Nombre)</p>
+
+            @using (Html.BeginForm("Delete", "Aeronaves", new { id = Model.AeronaveId }, FormMethod.Post))
             {
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-danger">
-                    Confirmar eliminacion
-                </button>
-                @Html.ActionLink("Cancelar", "Index", null, new
-                {
-                    @class = "btn btn-outline-secondary"
-                }
-                )
+                <button type="submit" class="btn btn-danger">Confirmar eliminacion</button>
+                @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-outline-secondary" })
             }
         </div>
     </div>

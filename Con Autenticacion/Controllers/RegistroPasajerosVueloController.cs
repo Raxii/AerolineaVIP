@@ -83,6 +83,38 @@ namespace Con_Autenticacion.Controllers
                     p.Correo = string.IsNullOrWhiteSpace(p.Correo) ? null : p.Correo.Trim();
                     p.Telefono = string.IsNullOrWhiteSpace(p.Telefono) ? null : p.Telefono.Trim();
 
+                    TipoDocumentoIdentidad tipoDocumento = null;
+                    foreach (var tipo in db.TipoDocumentoIdentidad)
+                    {
+                        if (string.Equals(tipo.Codigo, p.TipoDocumentoCodigo, StringComparison.OrdinalIgnoreCase))
+                        {
+                            tipoDocumento = tipo;
+                            break;
+                        }
+                    }
+
+                    if (tipoDocumento == null)
+                    {
+                        ModelState.AddModelError("", "Selecciona un tipo de documento valido para el pasajero " + (i + 1) + ".");
+                    }
+                    else
+                    {
+                        string descripcionTipo = (tipoDocumento.Descripcion ?? "").ToUpperInvariant();
+                        bool esCedula = descripcionTipo.Contains("CEDULA") || descripcionTipo.Contains("CÉDULA") ||
+                                        p.TipoDocumentoCodigo.ToUpperInvariant() == "CI";
+                        bool esPasaporte = descripcionTipo.Contains("PASAPORTE") ||
+                                           p.TipoDocumentoCodigo.ToUpperInvariant().Contains("PAS");
+
+                        if (esCedula && !ValidarCedulaEcuador(p.NumeroDocumento))
+                        {
+                            ModelState.AddModelError("", "La cedula del pasajero " + (i + 1) + " no es valida.");
+                        }
+                        else if (esPasaporte && !ValidarPasaporte(p.NumeroDocumento))
+                        {
+                            ModelState.AddModelError("", "El pasaporte del pasajero " + (i + 1) + " debe contener entre 5 y 20 letras o numeros.");
+                        }
+                    }
+
                     if (p.FechaNacimiento.HasValue &&
                         (p.FechaNacimiento.Value.Date <= new DateTime(1900, 1, 1) ||
                          p.FechaNacimiento.Value.Date > DateTime.Today))
@@ -199,8 +231,8 @@ namespace Con_Autenticacion.Controllers
                     }
                     db.SaveChanges();
                     transaccion.Commit();
-                    TempData["Mensaje"] = "Reserva registrada con " + vm.CantidadPasajeros + " pasajero(s).";
-                    return RedirectToAction("Reservas", "MisViajes");
+                    TempData["Mensaje"] = "La reserva fue registrada correctamente. Continua con el proceso de compra.";
+                    return RedirectToAction("Create", "Compras", new { reservaId = reserva.ReservaId });
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -320,6 +352,45 @@ namespace Con_Autenticacion.Controllers
                     return asiento.NumeroAsiento;
             }
             throw new InvalidOperationException("Uno de los asientos ya no esta disponible.");
+        }
+
+        private bool ValidarPasaporte(string numero)
+        {
+            if (string.IsNullOrWhiteSpace(numero)) return false;
+            numero = numero.Trim();
+            if (numero.Length < 5 || numero.Length > 20) return false;
+            foreach (char caracter in numero)
+            {
+                if (!char.IsLetterOrDigit(caracter)) return false;
+            }
+            return true;
+        }
+
+        private bool ValidarCedulaEcuador(string numero)
+        {
+            if (string.IsNullOrWhiteSpace(numero)) return false;
+            numero = numero.Trim();
+            if (numero.Length != 10) return false;
+            for (int i = 0; i < numero.Length; i++)
+                if (!char.IsDigit(numero[i])) return false;
+
+            int provincia = int.Parse(numero.Substring(0, 2));
+            int tercerDigito = int.Parse(numero.Substring(2, 1));
+            if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false;
+
+            int suma = 0;
+            for (int i = 0; i < 9; i++)
+            {
+                int digito = int.Parse(numero.Substring(i, 1));
+                if (i % 2 == 0)
+                {
+                    digito *= 2;
+                    if (digito > 9) digito -= 9;
+                }
+                suma += digito;
+            }
+            int verificador = (10 - (suma % 10)) % 10;
+            return verificador == int.Parse(numero.Substring(9, 1));
         }
 
         private List<string> SepararCodigos(string texto)

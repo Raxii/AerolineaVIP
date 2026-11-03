@@ -3,8 +3,12 @@
 @model LoginViewModel
 
 @{
-    ViewBag.Title = "Iniciar sesión";
+    ViewBag.Title = "Iniciar sesion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=flight" />
 
 <style>
     .vip-login {
@@ -15,6 +19,7 @@
             background-color: #FFFFFF;
             border: 1px solid #E7EBEF;
             border-radius: 10px;
+            overflow: hidden;
         }
 
         .vip-login .vip-header {
@@ -46,8 +51,8 @@
         }
 
             .vip-login .btn-vip:hover {
-                background-color: #F6F8FA;
-                color: #34414C;
+                background-color: #26323B;
+                color: #FFFFFF;
             }
 
         .vip-login .btn-vip-outline {
@@ -60,130 +65,217 @@
                 background-color: #34414C;
                 color: #FFFFFF;
             }
+
+        /* FORMULARIO E ICONO EN EL MISMO ESPACIO BLANCO */
+
+        .vip-login .vip-contenido-login {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0;
+            padding: 30px 35px;
+        }
+
+        .vip-login .vip-formulario {
+            flex: 0 0 55%;
+            min-width: 0;
+        }
+
+        .vip-login .vip-avion {
+            flex: 0 0 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            margin-left: -20px;
+            pointer-events: none;
+        }
+
+            .vip-login .vip-avion .material-symbols-outlined {
+                font-family: 'Material Symbols Outlined';
+                font-size: 170px;
+                line-height: 1;
+                color: #172A3B;
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+                transform: rotate(-35deg);
+                filter: drop-shadow(4px 6px 4px rgba(23,42,59,.12));
+            }
+
+    @@media (max-width: 991px) {
+
+        .vip-login .vip-contenido-login {
+            gap: 15px;
+            padding: 25px;
+        }
+
+        .vip-login .vip-avion .material-symbols-outlined {
+            font-size: 130px;
+        }
+    }
+
+    @@media (max-width: 767px) {
+
+        .vip-login .vip-contenido-login {
+            display: block;
+        }
+
+        .vip-login .vip-avion {
+            display: none;
+        }
+    }
 </style>
 
-<main class="container vip-login py-5" aria-labelledby="title">
+<main class="container vip-login py-5"
+      aria-labelledby="title">
 
     <div class="row justify-content-center">
 
-        <div class="col-lg-7 col-md-8 mb-4">
+        <!-- LOGIN PRINCIPAL -->
 
-            <section id="loginForm" class="card vip-card shadow-sm">
+        <div class="col-lg-8 col-md-8 mb-4">
+
+            <section id="loginForm"
+                     class="card vip-card shadow-sm">
 
                 <div class="card-header vip-header text-center">
 
                     <h2 id="title" class="mb-2">
-                        AEROLÍNEA VIP
+                        AEROLINEA VIP
                     </h2>
 
                     <p class="mb-0">
-                        Inicio de sesión
+                        Inicio de sesion
                     </p>
 
                 </div>
 
-                <div class="card-body p-4">
+                <div class="card-body vip-contenido-login">
 
-                    @using (Html.BeginForm("Login", "Account",
-                        new { ReturnUrl = ViewBag.ReturnUrl },
-                        FormMethod.Post,
-                        new { role = "form" }))
-                    {
-                        @Html.AntiForgeryToken()
+                    <!-- FORMULARIO -->
 
-                        <h4 class="mb-3">
-                            Bienvenido
-                        </h4>
+                    <div class="vip-formulario">
 
-                        <p>
-                            Utilice una cuenta local para iniciar sesión.
-                        </p>
+                        @using (Html.BeginForm(
+                            "Login",
+                            "Account",
+                            new { ReturnUrl = ViewBag.ReturnUrl },
+                            FormMethod.Post,
+                            new { role = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
 
-                        <hr />
+                            <h4 class="mb-3">
+                                Bienvenido
+                            </h4>
 
-                        @Html.ValidationSummary(true, "",
-                            new { @class = "text-danger" })
-
-                        <div class="form-group mb-3">
-
-                            @Html.LabelFor(m => m.UserName)
-
-                            @Html.TextBoxFor(m => m.UserName,
-                                new
-                                     {
-                                    @class = "form-control",
-                                    placeholder = "Nombre de usuario",
-                                    autocomplete = "username"
-                                })
-
-                            @Html.ValidationMessageFor(m => m.UserName,
-                                "",
-                                new { @class = "text-danger" })
-
-                        </div>
-
-                        <div class="form-group mb-3">
-
-                            @Html.LabelFor(m => m.Password)
-
-                            @Html.PasswordFor(m => m.Password,
-                                new
-                                     {
-                                    @class = "form-control",
-                                    placeholder = "Contraseña",
-                                    autocomplete = "current-password"
-                                })
-
-                            @Html.ValidationMessageFor(m => m.Password,
-                                "",
-                                new { @class = "text-danger" })
-
-                        </div>
-
-                        <div class="form-check mb-4">
-
-                            @Html.CheckBoxFor(m => m.RememberMe,
-                                new { @class = "form-check-input" })
-
-                            @Html.LabelFor(m => m.RememberMe,
-                                new { @class = "form-check-label" })
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <input type="submit"
-                                   value="Iniciar sesión"
-                                   class="btn btn-vip w-100" />
-
-                        </div>
-
-                        <div class="text-center mt-4">
-
-                            <p>¿No tiene una cuenta?</p>
-
-                            @Html.ActionLink(
-                                "Registrarse como usuario nuevo",
-                                "Register",
-                                null,
-                                new { @class = "btn btn-vip-outline" }
-                            )
-
-                        </div>
-
-                        @* Habilite esta opción una vez tenga la confirmación de la cuenta habilitada para la funcionalidad de restablecimiento de contraseña
                             <p>
-                                @Html.ActionLink("¿Ha olvidado su contraseña?", "ForgotPassword")
-                            </p>*@
+                                Utilice una cuenta local
+                                para iniciar sesion.
+                            </p>
 
-                    }
+                            <hr />
+
+                            @Html.ValidationSummary(
+                                true,
+                                "",
+                                new { @class = "text-danger" })
+
+                            <div class="form-group mb-3">
+
+                                @Html.LabelFor(m => m.UserName)
+
+                                @Html.TextBoxFor(
+                                    m => m.UserName,
+                                    new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Nombre de usuario",
+                                        autocomplete = "username"
+                                    })
+
+                                @Html.ValidationMessageFor(
+                                    m => m.UserName,
+                                    "",
+                                    new { @class = "text-danger" })
+
+                            </div>
+
+                            <div class="form-group mb-3">
+
+                                @Html.LabelFor(m => m.Password)
+
+                                @Html.PasswordFor(
+                                    m => m.Password,
+                                    new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Contrasena",
+                                        autocomplete = "current-password"
+                                    })
+
+                                @Html.ValidationMessageFor(
+                                    m => m.Password,
+                                    "",
+                                    new { @class = "text-danger" })
+
+                            </div>
+
+                            <div class="form-check mb-4">
+
+                                @Html.CheckBoxFor(
+                                    m => m.RememberMe,
+                                    new { @class = "form-check-input" })
+
+                                @Html.LabelFor(
+                                    m => m.RememberMe,
+                                    new { @class = "form-check-label" })
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <input type="submit"
+                                       value="Iniciar sesion"
+                                       class="btn btn-vip w-100" />
+
+                            </div>
+
+                            <div class="text-center mt-4">
+
+                                <p>
+                                    No tiene una cuenta?
+                                </p>
+
+                                @Html.ActionLink(
+                                    "Registrarse como usuario nuevo",
+                                    "Register",
+                                    null,
+                                    new
+                                    {
+                                        @class = "btn btn-vip-outline"
+                                    })
+
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- AVION EN EL ESPACIO BLANCO -->
+
+                    <div class="vip-avion" aria-hidden="true">
+
+                        <span class="material-symbols-outlined">
+                            flight
+                        </span>
+
+                    </div>
 
                 </div>
 
                 <div class="card-footer vip-footer text-center py-3">
 
                     <small>
-                        Sistema de reservas y administración de pasajes
+                        Sistema de reservas y administracion de pasajes
                     </small>
 
                 </div>
@@ -191,6 +283,8 @@
             </section>
 
         </div>
+
+        <!-- ACCESO EXTERNO -->
 
         <div class="col-lg-4 col-md-4 mb-4">
 
@@ -210,10 +304,9 @@
                     @Html.Partial(
                         "_ExternalLoginsListPartial",
                         new ExternalLoginListViewModel
-                             {
+                        {
                             ReturnUrl = ViewBag.ReturnUrl
-                        }
-                    )
+                        })
 
                 </div>
 
