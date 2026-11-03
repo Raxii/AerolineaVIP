@@ -1,0 +1,50 @@
+@model Con_Autenticacion.ViewModels.MisViajesVM
+@{
+    ViewBag.Title = "Mis reservas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm" style="border-radius:16px;overflow:hidden">
+        <div class="card-header text-white p-4" style="background:#172b3c">
+            <h2 class="h4 mb-1">Mis reservas</h2>
+            <span>Consulta tus vuelos y asientos reservados en Aerol&#237;nea VIP</span>
+        </div>
+        <div class="card-body p-4">
+            <div class="mb-4 d-flex flex-wrap gap-2">
+                @Html.ActionLink("Mis reservas", "Reservas", "MisViajes", null, new { @class = "btn btn-dark" })
+                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Check-in", "CheckIn", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
+            </div>
+            @if (Model.Reservas.Count == 0)
+            {
+                <div class="alert alert-info">Todav&#237;a no tienes reservas asociadas a tu cuenta.</div>
+            }
+            @foreach (var reserva in Model.Reservas)
+            {
+                <div class="card mb-3 border-light shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <h3 class="h5 mb-2">Reserva @reserva.CodigoReserva</h3>
+                            <span class="badge bg-secondary">@reserva.Estado</span>
+                        </div>
+                        <p class="text-muted mb-2">Registrada: @reserva.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p><strong>Importe de tramos vigentes:</strong> $@reserva.TotalTramos.ToString("N2") USD</p>
+                        @if (reserva.Descripciones.Count == 0)
+                        {
+                            <p class="text-muted">Esta reserva todav&#237;a no tiene vuelos o pasajeros asociados.</p>
+                        }
+                        else
+                        {
+                            <ul class="mb-0">
+                                @foreach (string detalle in reserva.Descripciones)
+                                {
+                                    <li>@detalle</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

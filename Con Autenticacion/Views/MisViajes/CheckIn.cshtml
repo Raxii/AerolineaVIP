@@ -1,0 +1,68 @@
+@model Con_Autenticacion.ViewModels.MisViajesVM
+@{
+    ViewBag.Title = "Check-in";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm" style="border-radius:16px;overflow:hidden">
+        <div class="card-header text-white p-4" style="background:#172b3c">
+            <h2 class="h4 mb-1">Check-in</h2>
+            <span>Confirma la presentaci&#243;n de tus pasajeros antes del vuelo</span>
+        </div>
+        <div class="card-body p-4">
+            <div class="mb-4 d-flex flex-wrap gap-2">
+                @Html.ActionLink("Mis reservas", "Reservas", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Check-in", "CheckIn", "MisViajes", null, new { @class = "btn btn-dark" })
+            </div>
+            @if (TempData["MensajeMisViajes"] != null)
+            {
+                <div class="alert alert-success">@TempData["MensajeMisViajes"]</div>
+            }
+            @if (TempData["ErrorMisViajes"] != null)
+            {
+                <div class="alert alert-warning">@TempData["ErrorMisViajes"]</div>
+            }
+            <p class="text-muted">Puedes realizar el check-in el d&#237;a de tu vuelo, antes de la hora de salida, siempre que tu reserva y tu asiento est&#233;n confirmados.</p>
+            @if (Model.CheckIns.Count == 0)
+            {
+                <div class="alert alert-info">No tienes pasajeros con vuelos asignados.</div>
+            }
+            @foreach (var item in Model.CheckIns)
+            {
+                <div class="card mb-3 border-light shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                            <div>
+                                <h3 class="h5">@item.Pasajero</h3>
+                                <p class="mb-1"><strong>@item.Trayecto</strong></p>
+                                <p class="mb-1">Reserva: @item.CodigoReserva | Asiento: @item.Asiento</p>
+                                <p class="mb-1">Salida: @item.FechaVuelo.ToString("dd/MM/yyyy") @item.HoraSalida</p>
+                                <p class="mb-0 text-muted small">@item.Motivo</p>
+                            </div>
+                            <div>
+                                @if (item.Realizado)
+                                {
+                                    <span class="badge bg-success">Check-in completado</span>
+                                }
+                                else if (item.PuedeRealizar)
+                                {
+                                    using (Html.BeginForm("RegistrarCheckIn", "MisViajes", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="asignacionId" value="@item.AsignacionId" />
+                                        <button type="submit" class="btn btn-dark">Realizar check-in</button>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No disponible</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -178,8 +178,10 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ItinerariosController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\MisViajesController.cs" />
     <Compile Include="Controllers\ModeloAeronavesController.cs" />
     <Compile Include="Controllers\PasajeroesController.cs" />
+    <Compile Include="Controllers\RegistroPasajerosVueloController.cs" />
     <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Controllers\ReservasController.cs" />
     <Compile Include="Controllers\RutasController.cs" />
@@ -253,6 +255,7 @@
     <Compile Include="Models\MetodoPago.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\MisViajesVM.cs" />
     <Compile Include="Models\ModelAerolinea.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -280,6 +283,7 @@
     <Compile Include="Models\Pasajero.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\RegistroPasajerosVueloVM.cs" />
     <Compile Include="Models\ReporteRuta.cs" />
     <Compile Include="Models\Reserva.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
@@ -363,6 +367,8 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\vip-asientos-multiples.js" />
+    <Content Include="Scripts\vip-vuelos-fechas.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -483,6 +489,10 @@
     <Content Include="Views\Aeronaves\Asignaciones.cshtml" />
     <Content Include="Views\Usuarios\Historial.cshtml" />
     <Content Include="Views\Aeropuerto\ImgAeropuerto.cshtml" />
+    <Content Include="Views\MisViajes\CheckIn.cshtml" />
+    <Content Include="Views\MisViajes\Comprobantes.cshtml" />
+    <Content Include="Views\MisViajes\Reservas.cshtml" />
+    <Content Include="Views\RegistroPasajerosVuelo\Create.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
