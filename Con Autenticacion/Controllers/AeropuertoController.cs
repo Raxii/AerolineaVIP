@@ -132,9 +132,80 @@ namespace Con_Autenticacion.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(aeropuerto).State = EntityState.Modified;
-                db.SaveChanges();
-                TempData["Ok"] = "Cambios del aeropuerto guardados correctamente.";
+                var actual = db.Aeropuerto.Find(aeropuerto.AeropuertoId);
+                if (actual == null) return HttpNotFound();
+
+                bool desactivar = actual.Activo && !aeropuerto.Activo;
+                using (var transaccion = db.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        actual.CodigoIATA = aeropuerto.CodigoIATA;
+                        actual.Nombre = aeropuerto.Nombre;
+                        actual.Localidad = aeropuerto.Localidad;
+                        actual.Activo = aeropuerto.Activo;
+
+                        if (desactivar)
+                        {
+                            var rutasRelacionadas = new List<Ruta>();
+                            foreach (var ruta in db.Ruta)
+                                if (ruta.AeropuertoOrigenId == actual.AeropuertoId || ruta.AeropuertoDestinoId == actual.AeropuertoId)
+                                    rutasRelacionadas.Add(ruta);
+
+                            var vuelosRelacionados = new HashSet<int>();
+                            foreach (var ruta in rutasRelacionadas)
+                            {
+                                ruta.Activa = false;
+                                foreach (var frecuencia in db.Frecuencia)
+                                {
+                                    if (frecuencia.RutaId == ruta.RutaId)
+                                    {
+                                        frecuencia.Activa = false;
+                                        foreach (var vuelo in db.Vuelo)
+                                        {
+                                            if (vuelo.FrecuenciaId == frecuencia.FrecuenciaId)
+                                            {
+                                                vuelosRelacionados.Add(vuelo.VueloId);
+                                                if (vuelo.EstadoVueloCodigo == "PROGRAMADO" || vuelo.EstadoVueloCodigo == "CONFIRMADO")
+                                                    vuelo.EstadoVueloCodigo = "CANCELADO";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Los tramos no tienen columna de estado en el modelo actual.
+                            // Se inactiva el itinerario completo para que esos tramos no puedan ofrecerse.
+                            string estadoInactivoItinerario = null;
+                            foreach (var estadoItinerario in db.EstadoItinerario)
+                            {
+                                string texto = ((estadoItinerario.Codigo ?? "") + " " + (estadoItinerario.Descripcion ?? "")).ToUpperInvariant();
+                                if (texto.Contains("INACTIV")) { estadoInactivoItinerario = estadoItinerario.Codigo; break; }
+                            }
+                            if (!string.IsNullOrWhiteSpace(estadoInactivoItinerario))
+                            {
+                                var itinerariosAfectados = new HashSet<int>();
+                                foreach (var tramo in db.TramoItinerario)
+                                    if (vuelosRelacionados.Contains(tramo.VueloId)) itinerariosAfectados.Add(tramo.ItinerarioId);
+                                foreach (var itinerario in db.Itinerario)
+                                    if (itinerariosAfectados.Contains(itinerario.ItinerarioId)) itinerario.EstadoItinerarioCodigo = estadoInactivoItinerario;
+                            }
+                        }
+
+                        db.SaveChanges();
+                        transaccion.Commit();
+                    }
+                    catch
+                    {
+                        transaccion.Rollback();
+                        ModelState.AddModelError("", "No se pudieron actualizar las dependencias del aeropuerto. No se guardaron cambios.");
+                        return View(aeropuerto);
+                    }
+                }
+
+                TempData["Ok"] = desactivar
+                    ? "Aeropuerto desactivado. Tambien se desactivaron sus rutas y frecuencias y se cancelaron sus vuelos programados."
+                    : "Cambios del aeropuerto guardados correctamente.";
                 return RedirectToAction("Index");
             }
             return View(aeropuerto);

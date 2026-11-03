@@ -1,0 +1,99 @@
+@model Con_Autenticacion.ViewModels.ComprobanteClienteVM
+@using Con_Autenticacion.ViewModels
+@{
+    ViewBag.Title = "Ver comprobante";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ReservaClienteVM reserva = ViewBag.DetalleReserva as ReservaClienteVM;
+}
+<style>
+    .vip-comprobante {
+        max-width: 900px;
+        margin: auto;
+    }
+
+        .vip-comprobante .cabecera {
+            background: #172b3c;
+            color: white;
+        }
+
+    @@media print {
+        nav, footer, .vip-acciones {
+            display: none !important;
+        }
+
+        .vip-comprobante {
+            max-width: 100%;
+        }
+
+            .vip-comprobante .card {
+                box-shadow: none !important;
+                border: 0 !important;
+            }
+
+            .vip-comprobante .cabecera {
+                background: white !important;
+                color: #172b3c !important;
+            }
+    }
+</style>
+<div class="container py-4 vip-comprobante">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header cabecera p-4">
+            <h2 class="h4 mb-1">AEROLINEA VIP</h2>
+            <div>Comprobante de confirmacion de pago</div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="small text-muted">Numero de comprobante</div>
+                    <h3 class="h5">@Model.NumeroComprobante</h3>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="small text-muted">Estado</div>
+                    <span class="badge @(Model.Estado == "EMITIDO" ? "bg-success" : "bg-secondary")">
+                        @Model.Estado
+                    </span>
+                </div>
+            </div>
+            <dl class="row">
+                <dt class="col-sm-4">Codigo de reserva</dt>
+                <dd class="col-sm-8">@Model.CodigoReserva</dd>
+                <dt class="col-sm-4">Fecha de emision</dt>
+                <dd class="col-sm-8">@Model.FechaEmision.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4">Tipo</dt>
+                <dd class="col-sm-8">@Model.Tipo</dd>
+                <dt class="col-sm-4">Importe total</dt>
+                <dd class="col-sm-8 fw-bold">@Model.ImporteCompra.ToString("N2") @Model.Moneda</dd>
+            </dl>
+
+            <h4 class="h6 border-bottom pb-2 mt-4">Pasajeros y vuelos</h4>
+            @if (reserva == null || reserva.Descripciones.Count == 0)
+            {
+                <p class="text-muted">No hay detalles adicionales disponibles.</p>
+            }
+            else
+            {
+                <ul class="list-group mb-4">
+                    @foreach (string descripcion in reserva.Descripciones)
+                    {
+                        <li class="list-group-item">@descripcion</li>
+                    }
+                </ul>
+            }
+            <div class="alert alert-light border small">
+                Este documento confirma el registro de un pago en Aerolinea VIP.
+                No es una factura tributaria.
+            </div>
+            <div class="d-flex flex-wrap gap-2 vip-acciones">
+                @if (Model.Estado == "EMITIDO")
+                {
+                    @Html.ActionLink("Descargar PDF", "DescargarComprobante", "MisViajes",
+                        new { id = Model.ComprobanteId },
+                        new { @class = "btn btn-dark" })
+                }
+                @Html.ActionLink("Volver a mis comprobantes", "Comprobantes", "MisViajes", null,
+                    new { @class = "btn btn-outline-secondary" })
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,287 +1,76 @@
-﻿
-@using Con_Autenticacion.Models
+﻿@using Con_Autenticacion.Models
+@using System.Collections.Generic
+@using System.Web.Mvc
 @model Compra
-
 @{
     ViewBag.Title = "Registrar compra";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool reservaFija = Model != null && Model.ReservaId > 0;
+    IEnumerable<SelectListItem> reservas =
+        ViewBag.ReservaId as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
 }
 
-<style>
-    .clase-vip .card-header {
-        background: #34414C;
-        color: white;
-    }
-
-    .clase-vip .btn-vip {
-        background: #34414C;
-        border-color: #34414C;
-        color: white;
-    }
-
-        .clase-vip .btn-vip:hover {
-            background: #26323B;
-            border-color: #26323B;
-            color: white;
-        }
-
-    .clase-vip .card {
-        border: 1px solid #E7EBEF;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .clase-vip .form-control,
-    .clase-vip .form-select {
-        background: #FFFFFF;
-        border-radius: 7px;
-        padding: 10px 12px;
-    }
-
-    .clase-vip .form-label {
-        font-weight: 600;
-        color: #243746;
-    }
-
-    .clase-vip .form-control:focus,
-    .clase-vip .form-select:focus {
-        border-color: #BE8B35;
-        box-shadow: 0 0 0 .15rem rgba(190,139,53,.15);
-    }
-
-    .clase-vip .texto-ayuda {
-        color: #708090;
-        font-size: 12px;
-        margin-top: 5px;
-    }
-
-    .clase-vip .input-group-text {
-        background: #E7EBEF;
-        font-weight: 600;
-    }
-</style>
-
-<div class="container py-4 clase-vip">
-
-    <div class="card shadow-sm">
-
-        <div class="card-header py-3">
-            <h2 class="h4 mb-1">AEROLÍNEA VIP</h2>
-            <p class="mb-0">Registro de compra</p>
+<div class="container py-4" style="max-width:950px">
+    <div class="card shadow-sm border-0">
+        <div class="card-header text-white p-4" style="background:#172a3b">
+            <h2 class="h4 mb-1">AEROLINEA VIP</h2>
+            <p class="mb-0">Registrar compra</p>
         </div>
-
         <div class="card-body p-4">
+            <p class="text-muted">El total de la reserva se calcula automaticamente y no se puede modificar.</p>
 
-            <h5 class="mb-2">
-                Información de la compra
-            </h5>
-
-            <p class="text-muted mb-4">
-                Verifica los datos de la reserva antes
-                de registrar la compra.
-            </p>
-
-            @using (Html.BeginForm(
-                "Create",
-                "Compras",
-                FormMethod.Post,
-                new { id = "formCompra" }))
+            @if (TempData["Error"] != null)
             {
-                @Html.AntiForgeryToken()
-
-                @Html.ValidationSummary(
-                    true,
-                    "",
-                    new { @class = "text-danger" })
-
-                <div class="row">
-
-                    <!-- RESERVA -->
-                    <div class="col-md-6 mb-3">
-
-                        @Html.LabelFor(
-                            model => model.ReservaId,
-                            "Reserva",
-                            new { @class = "form-label" })
-
-                        @Html.DropDownList(
-                            "ReservaId",
-                            null,
-                            new { @class = "form-select" })
-
-                        @Html.ValidationMessageFor(
-                            model => model.ReservaId,
-                            "",
-                            new { @class = "text-danger" })
-
-                        <div class="texto-ayuda">
-                            Reserva asociada a esta compra.
-                        </div>
-
-                    </div>
-
-                    <!-- FECHA DE COMPRA -->
-                    <div class="col-md-6 mb-3">
-
-                        @Html.LabelFor(
-                            model => model.FechaCompra,
-                            "Fecha de compra",
-                            new { @class = "form-label" })
-
-                        @Html.TextBoxFor(
-                            model => model.FechaCompra,
-                            "{0:yyyy-MM-ddTHH:mm}",
-                            new
-                            {
-                                @class = "form-control",
-                                type = "datetime-local"
-                            })
-
-                        @Html.ValidationMessageFor(
-                            model => model.FechaCompra,
-                            "",
-                            new { @class = "text-danger" })
-
-                        <div class="texto-ayuda">
-                            Fecha y hora de registro.
-                        </div>
-
-                    </div>
-
-                    <!-- IMPORTE -->
-                    <div class="col-md-6 mb-3">
-
-                        @Html.LabelFor(
-                            model => model.Importe,
-                            "Importe de la compra",
-                            new { @class = "form-label" })
-
-                        <div class="input-group">
-
-                            <span class="input-group-text">
-                                $
-                            </span>
-
-                            @Html.TextBoxFor(
-                                model => model.Importe,
-                                "{0:0.00}",
-                                new
-                                {
-                                    @class = "form-control",
-                                    type = "text",
-                                    inputmode = "decimal",
-                                    placeholder = "0.00"
-                                })
-
-                        </div>
-
-                        @Html.ValidationMessageFor(
-                            model => model.Importe,
-                            "",
-                            new { @class = "text-danger" })
-
-                        <div class="texto-ayuda">
-                            Importe en dólares. Ejemplo: 450.50
-                        </div>
-
-                    </div>
-
-                    <!-- MONEDA -->
-                    <div class="col-md-6 mb-3">
-
-                        @Html.LabelFor(
-                            model => model.MonedaCodigo,
-                            "Moneda",
-                            new { @class = "form-label" })
-
-                        @Html.DropDownList(
-                            "MonedaCodigo",
-                            null,
-                            new { @class = "form-select" })
-
-                        @Html.ValidationMessageFor(
-                            model => model.MonedaCodigo,
-                            "",
-                            new { @class = "text-danger" })
-
-                    </div>
-
-                    <!-- ESTADO DE COMPRA -->
-                    <div class="col-md-6 mb-3">
-
-                        @Html.LabelFor(
-                            model => model.EstadoCompraCodigo,
-                            "Estado de compra",
-                            new { @class = "form-label" })
-
-                        @Html.DropDownList(
-                            "EstadoCompraCodigo",
-                            null,
-                            new { @class = "form-select" })
-
-                        @Html.ValidationMessageFor(
-                            model => model.EstadoCompraCodigo,
-                            "",
-                            new { @class = "text-danger" })
-
-                    </div>
-
-                    <!-- CODIGO DE OPERACION -->
-                    <div class="col-md-6 mb-3">
-
-                        @Html.LabelFor(
-                            model => model.ClaveIdempotencia,
-                            "Código de operación",
-                            new { @class = "form-label" })
-
-                        @Html.TextBoxFor(
-                            model => model.ClaveIdempotencia,
-                            new
-                            {
-                                @class = "form-control",
-                                @readonly = "readonly"
-                            })
-
-                        @Html.ValidationMessageFor(
-                            model => model.ClaveIdempotencia,
-                            "",
-                            new { @class = "text-danger" })
-
-                        <div class="texto-ayuda">
-                            Identificador único de la operación.
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <hr class="my-4" />
-
-                <!-- BOTONES -->
-                <div class="d-flex gap-2">
-
-                    <button type="submit"
-                            class="btn btn-vip">
-                        Guardar compra
-                    </button>
-
-                    @Html.ActionLink(
-                        "Volver al listado",
-                        "Index",
-                        null,
-                        new
-                        {
-                            @class = "btn btn-outline-secondary"
-                        })
-
-                </div>
+                <div class="alert alert-danger">@TempData["Error"]</div>
             }
 
+            @using (Html.BeginForm("Create", "Compras", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Reserva</label>
+                        @if (reservaFija)
+                        {
+                            @Html.HiddenFor(m => m.ReservaId)
+                            <select class="form-select bg-light" disabled="disabled" aria-label="Reserva seleccionada">
+                                @foreach (SelectListItem item in reservas)
+                                {
+                                    if (item.Value == Model.ReservaId.ToString())
+                                    {
+                                        <option selected="selected">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(m => m.ReservaId, reservas,
+                                "-- Selecciona una reserva --",
+                                new { @class = "form-select", required = "required" })
+                            @Html.ValidationMessageFor(m => m.ReservaId, "", new { @class = "text-danger" })
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Importe total</label>
+                        <div class="input-group">
+                            <span class="input-group-text">USD</span>
+                            <div class="form-control bg-light fw-bold" aria-label="Importe total">
+                                @(reservaFija ? Model.Importe.ToString("N2") : "Se calcula al registrar")
+                            </div>
+                        </div>
+                        <div class="form-text">El precio final se verifica en el servidor antes de guardar y pagar.</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn text-white" style="background:#172a3b">
+                    Registrar y continuar al pago
+                </button>
+                @Html.ActionLink("Volver a mis reservas", "Reservas", "MisViajes", null,
+                    new { @class = "btn btn-outline-secondary ms-2" })
+            }
         </div>
     </div>
-
 </div>
-
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}

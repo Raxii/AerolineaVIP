@@ -1,7 +1,9 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Globalization;
+using System.Text;
 using System.Web.Mvc;
 using Con_Autenticacion.Models;
 
@@ -448,6 +450,38 @@ namespace Con_Autenticacion.Controllers
             ViewBag.AgruparSeleccionado = agrupar;
 
             return View();
+        }
+
+        // Exporta el mismo resumen que se muestra en pantalla, respetando los filtros.
+        [HttpGet]
+        public ActionResult ExportarCSV(string desde, string hasta, string ruta,
+            int? aeronaveId, string estado, string agrupar)
+        {
+            var resultado = Index(desde, hasta, ruta, aeronaveId, estado, agrupar) as ViewResult;
+            if (resultado == null)
+                return new HttpStatusCodeResult(500, "No se pudo generar el reporte.");
+
+            var filas = resultado.ViewData["ReporteRutas"] as List<ReporteRuta>;
+            if (filas == null) filas = new List<ReporteRuta>();
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Grupo;Vuelos;Pasajeros;Ocupacion (%);Ingresos;Estado");
+            foreach (var fila in filas)
+            {
+                string grupo = (fila.Ruta ?? "").Replace(";", ",");
+                string estadoFila = (fila.Estado ?? "").Replace(";", ",");
+                csv.AppendLine(string.Join(";", new string[] {
+                    grupo,
+                    fila.Vuelos.ToString(CultureInfo.InvariantCulture),
+                    fila.Pasajeros.ToString(CultureInfo.InvariantCulture),
+                    fila.Ocupacion.ToString("0.##", CultureInfo.InvariantCulture),
+                    fila.Ingresos.ToString("0.00", CultureInfo.InvariantCulture),
+                    estadoFila
+                }));
+            }
+
+            byte[] contenido = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv.ToString())).ToArray();
+            return File(contenido, "text/csv", "Reporte_AerolineaVIP_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + ".csv");
         }
 
         // ==========================================

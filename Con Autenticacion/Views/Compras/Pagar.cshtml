@@ -1,0 +1,43 @@
+@using Con_Autenticacion.Models
+@model Compra
+@{
+    ViewBag.Title = "Pago de prueba";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4" style="max-width:850px">
+    <div class="card shadow-sm border-0">
+        <div class="card-header text-white p-4" style="background:#172a3b">
+            <h2 class="h4 mb-1">AEROLINEA VIP</h2>
+            <p class="mb-0">Confirmacion de pago</p>
+        </div>
+        <div class="card-body p-4">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+            <dl class="row mb-4">
+                <dt class="col-sm-4">Reserva</dt>
+                <dd class="col-sm-8">@(Model.Reserva != null ? Model.Reserva.CodigoReserva : Model.ReservaId.ToString())</dd>
+                <dt class="col-sm-4">Total a confirmar</dt>
+                <dd class="col-sm-8 fw-bold">@Model.Importe.ToString("N2") @Model.MonedaCodigo</dd>
+                <dt class="col-sm-4">Estado actual</dt>
+                <dd class="col-sm-8">Pendiente de pago</dd>
+            </dl>
+            @using (Html.BeginForm("Pagar", "Compras", new { id = Model.CompraId }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <label for="metodoPagoCodigo" class="form-label fw-bold">Metodo de pago de prueba</label>
+                <select id="metodoPagoCodigo" name="metodoPagoCodigo" class="form-select mb-4" required>
+                    <option value="">-- Selecciona un metodo --</option>
+                    <option value="TARJETA_CREDITO">Tarjeta de credito </option>
+                    <option value="TARJETA_DEBITO">Tarjeta de debito </option>
+                </select>
+                <button type="submit" class="btn text-white" style="background:#172a3b">
+                    Confirmar pago de prueba
+                </button>
+                @Html.ActionLink("Volver al detalle", "Details", "Compras", new { id = Model.CompraId }, new { @class = "btn btn-outline-secondary ms-2" })
+            }
+        </div>
+    </div>
+</div>

@@ -3,27 +3,42 @@
     ViewBag.Title = "Mis comprobantes";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <div class="container py-4">
     <div class="card border-0 shadow-sm" style="border-radius:16px;overflow:hidden">
         <div class="card-header text-white p-4" style="background:#172b3c">
             <h2 class="h4 mb-1">Mis comprobantes</h2>
-            <span>Consulta los comprobantes asociados a tus compras</span>
+            <span>Consulta y descarga los comprobantes de tus compras</span>
         </div>
         <div class="card-body p-4">
             <div class="mb-4 d-flex flex-wrap gap-2">
-                @Html.ActionLink("Mis reservas", "Reservas", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
-                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null, new { @class = "btn btn-dark" })
-                @Html.ActionLink("Check-in", "CheckIn", "MisViajes", null, new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Mis reservas", "Reservas", "MisViajes", null,
+                    new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Mis comprobantes", "Comprobantes", "MisViajes", null,
+                    new { @class = "btn btn-dark" })
+                @Html.ActionLink("Check-in", "CheckIn", "MisViajes", null,
+                    new { @class = "btn btn-outline-secondary" })
             </div>
+
             @if (Model.Comprobantes.Count == 0)
             {
-                <div class="alert alert-info">Todav&#237;a no se han emitido comprobantes para tus compras.</div>
+                <div class="alert alert-info">Todavia no se han emitido comprobantes para tus compras.</div>
             }
             else
             {
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light"><tr><th>N&#250;mero</th><th>Reserva</th><th>Fecha</th><th>Tipo</th><th>Importe</th><th>Estado</th></tr></thead>
+                        <thead class="table-light">
+                            <tr>
+                                <th>Numero</th>
+                                <th>Reserva</th>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Importe</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @foreach (var item in Model.Comprobantes)
                             {
@@ -33,7 +48,22 @@
                                     <td>@item.FechaEmision.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td>@item.Tipo</td>
                                     <td>@item.ImporteCompra.ToString("N2") @item.Moneda</td>
-                                    <td>@item.Estado</td>
+                                    <td>
+                                        <span class="badge @(item.Estado == "EMITIDO" ? "bg-success" : "bg-secondary")">
+                                            @item.Estado
+                                        </span>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        @Html.ActionLink("Ver", "VerComprobante", "MisViajes",
+                                            new { id = item.ComprobanteId },
+                                            new { @class = "btn btn-sm btn-outline-primary me-1" })
+                                        @if (item.Estado == "EMITIDO")
+                                        {
+                                            @Html.ActionLink("Descargar PDF", "DescargarComprobante", "MisViajes",
+                                                new { id = item.ComprobanteId },
+                                                new { @class = "btn btn-sm btn-outline-secondary" })
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>

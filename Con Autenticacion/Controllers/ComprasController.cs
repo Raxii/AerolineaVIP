@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -86,6 +87,53 @@ namespace Con_Autenticacion.Controllers
             return RedirectToAction("Index");
         }
 
+        // GET: Compras/PagarReserva?reservaId=14
+        // Permite retomar el pago desde Mis viajes sin crear compras duplicadas.
+        [HttpGet]
+        [Authorize(Roles = "Cliente,SuperUsuario,Administrador")]
+        public ActionResult PagarReserva(int? reservaId)
+        {
+            if (!reservaId.HasValue || reservaId.Value <= 0)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            Reserva reserva = ObtenerReservaVisible(reservaId.Value);
+            if (reserva == null) return HttpNotFound();
+
+            ProcesarExpiracion(reserva);
+            reserva = ObtenerReservaVisible(reservaId.Value);
+            if (reserva == null) return HttpNotFound();
+
+            if (reserva.EstadoReservaCodigo == "CONFIRMADA")
+                return RedirectToAction("Comprobantes", "MisViajes");
+
+            if (reserva.EstadoReservaCodigo != "PENDIENTE")
+            {
+                TempData["ErrorMisViajes"] = "Esta reserva ya no admite pagos.";
+                return RedirectToAction("Reservas", "MisViajes");
+            }
+
+            // Comprobar propiedad de la reserva antes de buscar su compra.
+            Compra compra = null;
+            foreach (Compra item in db.Compra)
+            {
+                if (item.ReservaId != reserva.ReservaId) continue;
+                if (item.EstadoCompraCodigo == "PENDIENTE" ||
+                    item.EstadoCompraCodigo == "PAGADA")
+                {
+                    compra = item;
+                    break;
+                }
+            }
+
+            if (compra == null)
+                return RedirectToAction("Create", new { reservaId = reserva.ReservaId });
+
+            if (compra.EstadoCompraCodigo == "PAGADA")
+                return RedirectToAction("Details", new { id = compra.CompraId });
+
+            return RedirectToAction("Pagar", new { id = compra.CompraId });
+        }
+
         // GET: Compras/Details/5
         public ActionResult Details(int? id)
         {
@@ -137,7 +185,9 @@ namespace Con_Autenticacion.Controllers
                      c.EstadoCompraCodigo == "PAGADA"));
 
                 if (compraExistente != null)
-                    return RedirectToAction("Details", new { id = compraExistente.CompraId });
+                    return compraExistente.EstadoCompraCodigo == "PENDIENTE"
+                        ? RedirectToAction("Pagar", new { id = compraExistente.CompraId })
+                        : RedirectToAction("Details", new { id = compraExistente.CompraId });
 
                 decimal importe = CalcularImporteReserva(reserva.ReservaId);
 
@@ -201,7 +251,9 @@ namespace Con_Autenticacion.Controllers
                  c.EstadoCompraCodigo == "PAGADA"));
 
             if (compraExistente != null)
-                return RedirectToAction("Details", new { id = compraExistente.CompraId });
+                return compraExistente.EstadoCompraCodigo == "PENDIENTE"
+                    ? RedirectToAction("Pagar", new { id = compraExistente.CompraId })
+                    : RedirectToAction("Details", new { id = compraExistente.CompraId });
 
             // El importe siempre se calcula en el servidor.
             decimal importe = CalcularImporteReserva(reservaId);
@@ -233,7 +285,7 @@ namespace Con_Autenticacion.Controllers
                 }
 
                 TempData["Mensaje"] = "La compra pendiente fue registrada correctamente.";
-                return RedirectToAction("Details", new { id = nuevaCompra.CompraId });
+                return RedirectToAction("Pagar", new { id = nuevaCompra.CompraId });
             }
             catch (DbUpdateException)
             {
@@ -372,6 +424,161 @@ namespace Con_Autenticacion.Controllers
                     transaccion.Rollback();
                     throw;
                 }
+            }
+        }
+
+
+        // GET: Compras/Pagar/5
+        [HttpGet]
+        [Authorize(Roles = "Cliente,SuperUsuario,Administrador")]
+        public ActionResult Pagar(int? id)
+        {
+            if (!id.HasValue) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            Compra compra = ConsultaCompras().FirstOrDefault(c => c.CompraId == id.Value);
+            if (compra == null) return HttpNotFound();
+
+            ProcesarExpiracion(compra.Reserva);
+            compra = ConsultaCompras().FirstOrDefault(c => c.CompraId == id.Value);
+            if (compra == null) return HttpNotFound();
+
+            if (compra.EstadoCompraCodigo != "PENDIENTE")
+                return RedirectToAction("Details", new { id = compra.CompraId });
+
+            return View(compra);
+        }
+
+        // POST: Compras/Pagar/5. Pago de prueba, sin tarjetas ni cargos reales.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Cliente,SuperUsuario,Administrador")]
+        public ActionResult Pagar(int id, string metodoPagoCodigo)
+        {
+            if (metodoPagoCodigo != "TARJETA_CREDITO" && metodoPagoCodigo != "TARJETA_DEBITO")
+            {
+                TempData["Error"] = "Selecciona un metodo de pago.";
+                return RedirectToAction("Pagar", new { id = id });
+            }
+
+            // Consultar mediante el filtro de propiedad del usuario antes de escribir.
+            Compra visible = ConsultaCompras().FirstOrDefault(c => c.CompraId == id);
+            if (visible == null) return HttpNotFound();
+
+            try
+            {
+                using (var transaccion = db.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    Compra compra = db.Compra.Find(id);
+                    if (compra == null) return HttpNotFound();
+
+                    if (compra.EstadoCompraCodigo == "PAGADA")
+                    {
+                        transaccion.Commit();
+                        return RedirectToAction("Details", new { id = id });
+                    }
+
+                    Reserva reserva = db.Reserva.Find(compra.ReservaId);
+                    if (compra.EstadoCompraCodigo != "PENDIENTE" ||
+                        reserva == null || reserva.EstadoReservaCodigo != "PENDIENTE" ||
+                        (reserva.FechaExpiracion.HasValue && reserva.FechaExpiracion.Value <= DateTime.Now))
+                    {
+                        TempData["Error"] = "La reserva ya no esta disponible para el pago.";
+                        transaccion.Commit();
+                        return RedirectToAction("Details", new { id = id });
+                    }
+
+                    bool existePago = false;
+                    foreach (Pago p in db.Pago)
+                    {
+                        if (p.CompraId == id && p.EstadoPagoCodigo == "APROBADO")
+                        {
+                            existePago = true;
+                            break;
+                        }
+                    }
+                    if (existePago)
+                    {
+                        TempData["Error"] = "La compra ya tiene un pago aprobado.";
+                        transaccion.Commit();
+                        return RedirectToAction("Details", new { id = id });
+                    }
+
+                    // El importe se verifica contra las asignaciones actuales;
+                    // nunca se recibe del formulario ni del navegador.
+                    decimal totalServidor = CalcularImporteReserva(reserva.ReservaId);
+                    if (totalServidor <= 0m || compra.Importe != totalServidor)
+                    {
+                        TempData["Error"] = "El total de la reserva no coincide. Contacta a soporte antes de pagar.";
+                        transaccion.Commit();
+                        return RedirectToAction("Details", new { id = id });
+                    }
+
+                    if (compra.Importe <= 0m)
+                    {
+                        TempData["Error"] = "El importe de la compra no es valido.";
+                        transaccion.Commit();
+                        return RedirectToAction("Details", new { id = id });
+                    }
+
+                    // No pedir ni almacenar numeros reales de tarjeta.
+                    Pago pago = new Pago
+                    {
+                        CompraId = id,
+                        FechaPago = DateTime.Now,
+                        Importe = compra.Importe,
+                        EstadoPagoCodigo = "APROBADO",
+                        MetodoPagoCodigo = metodoPagoCodigo,
+                        MarcaTarjetaCodigo = "VISA",
+                        UltimosCuatroDigitos = "0000",
+                        NombreTitular = "OPERACION DE PRUEBA",
+                        CodigoOperacion = "SIM-" + Guid.NewGuid().ToString("N"),
+                        EsSimulado = true,
+                        MensajeResultado = "Pago de prueba aprobado. No se realizo ningun cargo real."
+                    };
+                    db.Pago.Add(pago);
+                    compra.EstadoCompraCodigo = "PAGADA";
+                    reserva.EstadoReservaCodigo = "CONFIRMADA";
+
+                    foreach (ReservaPasajeroVuelo a in db.ReservaPasajeroVuelo)
+                    {
+                        if (a.ReservaId == reserva.ReservaId && a.EstadoAsignacionCodigo == "PENDIENTE")
+                            a.EstadoAsignacionCodigo = "CONFIRMADA";
+                    }
+
+                    bool existeComprobante = false;
+                    foreach (Comprobante c in db.Comprobante)
+                    {
+                        if (c.CompraId == id && c.TipoComprobanteCodigo == "CONFIRMACION" &&
+                            c.EstadoComprobanteCodigo == "EMITIDO")
+                        {
+                            existeComprobante = true;
+                            break;
+                        }
+                    }
+
+                    if (!existeComprobante)
+                    {
+                        db.Comprobante.Add(new Comprobante
+                        {
+                            CompraId = id,
+                            TipoComprobanteCodigo = "CONFIRMACION",
+                            NumeroComprobante = "CNF-" + id.ToString("D8"),
+                            FechaEmision = DateTime.Now,
+                            EstadoComprobanteCodigo = "EMITIDO"
+                        });
+                    }
+
+                    db.SaveChanges();
+                    transaccion.Commit();
+                }
+
+                TempData["Mensaje"] = "Pago de prueba aprobado y comprobante generado.";
+                return RedirectToAction("Details", new { id = id });
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "No se pudo completar el pago de prueba. Verifica los datos e intenta nuevamente.";
+                return RedirectToAction("Pagar", new { id = id });
             }
         }
 

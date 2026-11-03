@@ -191,6 +191,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ComprobantePdf.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Aeronave.cs">
       <DependentUpon>ModelAerolinea.tt</DependentUpon>
@@ -494,6 +495,8 @@
     <Content Include="Views\MisViajes\Comprobantes.cshtml" />
     <Content Include="Views\MisViajes\Reservas.cshtml" />
     <Content Include="Views\RegistroPasajerosVuelo\Create.cshtml" />
+    <Content Include="Views\Compras\Pagar.cshtml" />
+    <Content Include="Views\MisViajes\VerComprobante.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
