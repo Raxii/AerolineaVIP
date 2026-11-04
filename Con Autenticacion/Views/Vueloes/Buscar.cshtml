@@ -1,6 +1,9 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Vuelo>
 
 @{
+    // =====================================
+    // CONFIGURACION INICIAL DE LA VISTA
+    // =====================================
     ViewBag.Title = "Buscar Vuelos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
@@ -18,12 +21,17 @@
     var errores = ViewBag.Errores as List<string> ?? new List<string>();
     var moneda = ViewBag.Moneda as string ?? "USD";
 }
-
+@* =====================================
+    CONTENEDOR PRINCIPAL DE LA PAGINA
+    ===================================== *@
 <div class="container py-5" style="max-width: 1100px;">
     <div class="mb-4">
         <h2 class="h4 fw-bold text-dark mb-1">Buscar Vuelos</h2>
         <p class="small text-muted mb-4">Encuentra vuelos disponibles según tu origen, destino, fecha y cantidad de pasajeros.</p>
     </div>
+    @* =====================================
+        PRESENTACION DE ERRORES
+        ===================================== *@
 
     @if (errores.Count > 0)
     {
@@ -36,7 +44,9 @@
             </ul>
         </div>
     }
-
+    @* =====================================
+        FORMULARIO DE FILTROS DE BUSQUEDA
+        ===================================== *@
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e0e0e0 !important;">
         @using (Html.BeginForm("Buscar", "Vueloes", FormMethod.Get))
         {
@@ -84,110 +94,118 @@
             </div>
         }
     </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
-        <div class="card-header bg-light border-bottom py-3 px-4">
-            @if (hayResultados)
-            {
-                <span class="small text-muted">
-                    Mostrando <strong>@totalResultados</strong> vuelos disponibles para <strong>@pasajeros pasajeros</strong>
-                    @if (fechaBusqueda.HasValue)
-                    {
-                        <span>el <strong>@fechaBusqueda.Value.ToString("dd MMM yyyy")</strong>.</span>
-                    }
-                </span>
-            }
-            else
-            {
-                <span class="small text-muted">No se encontraron vuelos con los filtros seleccionados.</span>
-            }
-        </div>
-
-        <div class="card-body p-0">
-            @if (!hayResultados)
-            {
-                <div class="p-4 text-center text-muted">
-                    No hay vuelos disponibles para ese origen, destino y fecha.
-                </div>
-            }
-            else
-            {
-                foreach (var vuelo in Model)
+    @* =====================================
+        RESULTADOS DE LA BUSQUEDA
+        ===================================== *@
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e0e0e0 !important;">
+    <div class="card-header bg-light border-bottom py-3 px-4">
+        @if (hayResultados)
+        {
+            <span class="small text-muted">
+                Mostrando <strong>@totalResultados</strong> vuelos disponibles para <strong>@pasajeros pasajeros</strong>
+                @if (fechaBusqueda.HasValue)
                 {
-                    var capacidad = 0;
-                    if (vuelo.Aeronave != null && vuelo.Aeronave.ModeloAeronave != null)
-                    {
-                        capacidad = vuelo.Aeronave.ModeloAeronave.CapacidadAsientos;
-                    }
+                    <span>el <strong>@fechaBusqueda.Value.ToString("dd MMM yyyy")</strong>.</span>
+                }
+            </span>
+        }
+        else
+        {
+            <span class="small text-muted">No se encontraron vuelos con los filtros seleccionados.</span>
+        }
+    </div>
+    @* =====================================
+        LISTADO DE VUELOS ENCONTRADOS
+        ===================================== *@
+<div class="card-body p-0">
+    @if (!hayResultados)
+    {
+        <div class="p-4 text-center text-muted">
+            No hay vuelos disponibles para ese origen, destino y fecha.
+        </div>
+    }
+    else
+    {
+        foreach (var vuelo in Model)
+        {
+            var capacidad = 0;
+            if (vuelo.Aeronave != null && vuelo.Aeronave.ModeloAeronave != null)
+            {
+                capacidad = vuelo.Aeronave.ModeloAeronave.CapacidadAsientos;
+            }
 
-                    var ocupados = 0;
-                    if (ocupadosPorVuelo.ContainsKey(vuelo.VueloId))
-                    {
-                        ocupados = ocupadosPorVuelo[vuelo.VueloId];
-                    }
+            var ocupados = 0;
+            if (ocupadosPorVuelo.ContainsKey(vuelo.VueloId))
+            {
+                ocupados = ocupadosPorVuelo[vuelo.VueloId];
+            }
 
-                    var restantes = capacidad > 0 ? capacidad - ocupados : 0;
-                    var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
-                    var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
-                    var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
+            var restantes = capacidad > 0 ? capacidad - ocupados : 0;
+            var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
+            var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
+            var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
 
-                    decimal? tarifaPasajero = tarifaPorVuelo.ContainsKey(vuelo.VueloId) ? tarifaPorVuelo[vuelo.VueloId] : null;
-                    decimal? totalReserva = totalPorVuelo.ContainsKey(vuelo.VueloId) ? totalPorVuelo[vuelo.VueloId] : null;
-                    bool conDescuento = descuentoPorVuelo.ContainsKey(vuelo.VueloId) && descuentoPorVuelo[vuelo.VueloId];
+            decimal? tarifaPasajero = tarifaPorVuelo.ContainsKey(vuelo.VueloId) ? tarifaPorVuelo[vuelo.VueloId] : null;
+            decimal? totalReserva = totalPorVuelo.ContainsKey(vuelo.VueloId) ? totalPorVuelo[vuelo.VueloId] : null;
+            bool conDescuento = descuentoPorVuelo.ContainsKey(vuelo.VueloId) && descuentoPorVuelo[vuelo.VueloId];
 
-                    <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
-                        <div class="d-flex align-items-center gap-4">
-                            <div class="text-center">
-                                <div class="fw-bold fs-5 text-dark">@((vuelo.Frecuencia != null) ? vuelo.Frecuencia.HoraSalida.ToString("hh\\:mm") : "--:--")</div>
-                                <div class="small text-muted">@origenIata</div>
-                            </div>
-                            <div class="text-muted small" style="width: 100px; border-top: 2px dashed #adb5bd;"></div>
-                            <div class="text-center">
-                                <div class="fw-bold fs-5 text-dark">@((vuelo.Frecuencia != null) ? vuelo.Frecuencia.HoraLlegada.ToString("hh\\:mm") : "--:--")</div>
-                                <div class="small text-muted">@destinoIata</div>
-                            </div>
-                            <div class="small text-muted ms-3">@duracion.TotalMinutes.ToString("0") minutos</div>
-                        </div>
+            @* =====================================
+                PRESENTACION DE CADA VUELO
+                ===================================== *@
 
-                        <div class="text-center">
-                            <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
-                            <div class="small text-muted mt-1">@restantes asientos restantes</div>
-                        </div>
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">@((vuelo.Frecuencia != null) ? vuelo.Frecuencia.HoraSalida.ToString("hh\\:mm") : "--:--")</div>
+                        <div class="small text-muted">@origenIata</div>
+                    </div>
+                    <div class="text-muted small" style="width: 100px; border-top: 2px dashed #adb5bd;"></div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-dark">@((vuelo.Frecuencia != null) ? vuelo.Frecuencia.HoraLlegada.ToString("hh\\:mm") : "--:--")</div>
+                        <div class="small text-muted">@destinoIata</div>
+                    </div>
+                    <div class="small text-muted ms-3">@duracion.TotalMinutes.ToString("0") minutos</div>
+                </div>
 
-                        <div class="text-end d-flex align-items-center gap-3">
-                            <div>
-                                <div class="small text-muted">Desde (por pasajero)</div>
-                                @if (tarifaPasajero.HasValue)
+                <div class="text-center">
+                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">Disponible</span>
+                    <div class="small text-muted mt-1">@restantes asientos restantes</div>
+                </div>
+
+                <div class="text-end d-flex align-items-center gap-3">
+                    <div>
+                        <div class="small text-muted">Desde (por pasajero)</div>
+                        @if (tarifaPasajero.HasValue)
+                        {
+                            <div class="fw-bold fs-5 text-dark">@moneda @tarifaPasajero.Value.ToString("0.00")</div>
+                            <div class="small text-muted">
+                                Total @pasajeros pax: @moneda @totalReserva.Value.ToString("0.00")
+                                @if (conDescuento)
                                 {
-                                    <div class="fw-bold fs-5 text-dark">@moneda @tarifaPasajero.Value.ToString("0.00")</div>
-                                    <div class="small text-muted">
-                                        Total @pasajeros pax: @moneda @totalReserva.Value.ToString("0.00")
-                                        @if (conDescuento)
-                                        {
-                                            <span class="text-success">(desc. académico 5%)</span>
-                                        }
-                                    </div>
+                                    <span class="text-success">(desc. académico 5%)</span>
                                 }
-                                else
-                                {
-                                    <div class="fw-bold fs-6 text-muted">Tarifa no disponible</div>
-                                }
-                                <div class="small text-muted mt-1">
-                                    @if (vuelo.Aeronave != null)
-                                    {
-                                        @vuelo.Aeronave.Matricula
-                                    }
-                                    else
-                                    {
-                                        <span>N/A</span>
-                                    }
-                                </div>
                             </div>
-                            <a href="@Url.Action("Resultados", "Vueloes", new { AeropuertoOrigenId = origenSeleccionado, AeropuertoDestinoId = destinoSeleccionado, Fecha = (fechaBusqueda.HasValue ? fechaBusqueda.Value.ToString("yyyy-MM-dd") : ""), CantidadPasajeros = pasajeros })" class="btn btn-sm px-3 py-2 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar</a>
+                        }
+                        else
+                        {
+                            <div class="fw-bold fs-6 text-muted">Tarifa no disponible</div>
+                        }
+                        <div class="small text-muted mt-1">
+                            @if (vuelo.Aeronave != null)
+                            {
+                                @vuelo.Aeronave.Matricula
+                            }
+                            else
+                            {
+                                <span>N/A</span>
+                            }
                         </div>
                     </div>
-                }
-            }
-        </div>
-    </div>
+                    <a href="@Url.Action("Resultados", "Vueloes", new { AeropuertoOrigenId = origenSeleccionado, AeropuertoDestinoId = destinoSeleccionado, Fecha = (fechaBusqueda.HasValue ? fechaBusqueda.Value.ToString("yyyy-MM-dd") : ""), CantidadPasajeros = pasajeros })" class="btn btn-sm px-3 py-2 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar</a>
+                </div>
+            </div>
+        }
+    }
+</div>
+</div>
 </div>

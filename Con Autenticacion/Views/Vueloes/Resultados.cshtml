@@ -1,6 +1,9 @@
 ﻿@model IEnumerable<Con_Autenticacion.Models.Vuelo>
 
 @{
+    // =====================================
+    // CONFIGURACION INICIAL DE LA VISTA
+    // =====================================
     ViewBag.Title = "Resultados de Búsqueda";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
@@ -22,7 +25,9 @@
     var errores = ViewBag.Errores as List<string> ?? new List<string>();
     var moneda = ViewBag.Moneda as string ?? "USD";
 }
-
+@* =====================================
+    CONTENEDOR PRINCIPAL DE LA PAGINA
+    ===================================== *@
 <div class="container py-5" style="max-width: 1200px;">
     <div class="mb-4">
         <h2 class="h4 fw-bold text-dark mb-1">Resultados de Búsqueda</h2>
@@ -43,7 +48,9 @@
             <p class="small text-muted mb-4">No se encontraron vuelos con los criterios de búsqueda.</p>
         }
     </div>
-
+    @* =====================================
+        PRESENTACION DE ERRORES
+        ===================================== *@
     @if (errores.Count > 0)
     {
         <div class="alert alert-danger rounded-4">
@@ -56,11 +63,14 @@
         </div>
     }
 
+    @* =====================================
+        FILTRO DE HORARIO DE SALIDA
+        ===================================== *@
     @* Filtro de horario: funcional y basado en datos reales de Frecuencia.HoraSalida.
-       Se retiraron los filtros de "Escalas" y "Aerolínea": el sistema solo opera
-       vuelos directos (no hay lógica de itinerarios de varios tramos conectada a
-       esta pantalla) y solo existe una aerolínea (Aerolínea VIP), por lo que no
-       hay datos reales contra los cuales filtrar. *@
+        Se retiraron los filtros de "Escalas" y "Aerolínea": el sistema solo opera
+        vuelos directos (no hay lógica de itinerarios de varios tramos conectada a
+        esta pantalla) y solo existe una aerolínea (Aerolínea VIP), por lo que no
+        hay datos reales contra los cuales filtrar. *@
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="border: 1px solid #e0e0e0 !important;">
         <div class="row g-2 align-items-center">
             <div class="col-md-4">
@@ -81,164 +91,145 @@
             </div>
         </div>
     </div>
-
-    <div class="d-flex flex-column gap-3" id="listaVuelos">
-        @if (!hayResultados)
+    @* =====================================
+        LISTADO DE RESULTADOS
+        ===================================== *@
+<div class="d-flex flex-column gap-3" id="listaVuelos">
+    @if (!hayResultados)
+    {
+        <div class="alert alert-info" role="alert">
+            No hay vuelos disponibles para los criterios seleccionados.
+        </div>
+        <div>
+            <a href="@Url.Action("Buscar", "Vueloes", new { AeropuertoOrigenId = origenId, AeropuertoDestinoId = destinoId, Fecha = (fechaBusqueda.HasValue ? fechaBusqueda.Value.ToString("yyyy-MM-dd") : null), CantidadPasajeros = pasajeros })" class="btn btn-outline-secondary px-4">Volver a la búsqueda</a>
+        </div>
+    }
+    else
+    {
+        foreach (var vuelo in vuelos)
         {
-            <div class="alert alert-info" role="alert">
-                No hay vuelos disponibles para los criterios seleccionados.
-            </div>
-            <div>
-                <a href="@Url.Action("Buscar", "Vueloes", new { AeropuertoOrigenId = origenId, AeropuertoDestinoId = destinoId, Fecha = (fechaBusqueda.HasValue ? fechaBusqueda.Value.ToString("yyyy-MM-dd") : null), CantidadPasajeros = pasajeros })" class="btn btn-outline-secondary px-4">Volver a la búsqueda</a>
-            </div>
-        }
-        else
-        {
-            foreach (var vuelo in vuelos)
-            {
-                var capacidad = capacidadPorVuelo.ContainsKey(vuelo.VueloId) ? capacidadPorVuelo[vuelo.VueloId] : 0;
-                var ocupados = ocupadosPorVuelo.ContainsKey(vuelo.VueloId) ? ocupadosPorVuelo[vuelo.VueloId] : 0;
-                var restantes = disponiblesPorVuelo.ContainsKey(vuelo.VueloId) ? disponiblesPorVuelo[vuelo.VueloId] : 0;
+            var capacidad = capacidadPorVuelo.ContainsKey(vuelo.VueloId) ? capacidadPorVuelo[vuelo.VueloId] : 0;
+            var ocupados = ocupadosPorVuelo.ContainsKey(vuelo.VueloId) ? ocupadosPorVuelo[vuelo.VueloId] : 0;
+            var restantes = disponiblesPorVuelo.ContainsKey(vuelo.VueloId) ? disponiblesPorVuelo[vuelo.VueloId] : 0;
 
-                var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
-                var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
-                var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
-                var horaSalida = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraSalida.ToString("hh\\:mm") : "--:--";
-                var horaLlegada = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada.ToString("hh\\:mm") : "--:--";
-                var horaSalidaMinutos = vuelo.Frecuencia != null ? (int)vuelo.Frecuencia.HoraSalida.TotalMinutes : -1;
+            var duracion = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada - vuelo.Frecuencia.HoraSalida : TimeSpan.Zero;
+            var origenIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null ? vuelo.Frecuencia.Ruta.Aeropuerto.CodigoIATA : "ORIG";
+            var destinoIata = vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null ? vuelo.Frecuencia.Ruta.Aeropuerto1.CodigoIATA : "DEST";
+            var horaSalida = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraSalida.ToString("hh\\:mm") : "--:--";
+            var horaLlegada = vuelo.Frecuencia != null ? vuelo.Frecuencia.HoraLlegada.ToString("hh\\:mm") : "--:--";
+            var horaSalidaMinutos = vuelo.Frecuencia != null ? (int)vuelo.Frecuencia.HoraSalida.TotalMinutes : -1;
 
-                decimal? tarifaPasajero = tarifaPorVuelo.ContainsKey(vuelo.VueloId) ? tarifaPorVuelo[vuelo.VueloId] : null;
-                decimal? totalReserva = totalPorVuelo.ContainsKey(vuelo.VueloId) ? totalPorVuelo[vuelo.VueloId] : null;
-                bool conDescuento = descuentoPorVuelo.ContainsKey(vuelo.VueloId) && descuentoPorVuelo[vuelo.VueloId];
-
-                <div class="card border-0 shadow-sm rounded-4 tarjeta-vuelo" data-hora-salida="@horaSalidaMinutos" style="border: 1px solid #e0e0e0 !important;">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <span class="fw-bold text-dark">Aerolínea VIP</span>
-                                <span class="badge bg-light text-dark ms-2">
-                                    @if (vuelo.Aeronave != null)
-                                    {
-                                        @vuelo.Aeronave.Matricula
-                                    }
-                                    else
-                                    {
-                                        <span>N/A</span>
-                                    }
-                                </span>
-                                <span class="small text-muted ms-2">Vuelo #@vuelo.VueloId</span>
-                            </div>
-                            <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">@restantes disponibles</span>
-                        </div>
-
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="text-center">
-                                <div class="fw-bold fs-4 text-dark">@horaSalida</div>
-                                <div class="small text-muted">@origenIata</div>
-                                <div class="small text-muted">
-                                    @if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null)
-                                    {
-                                        @vuelo.Frecuencia.Ruta.Aeropuerto.Nombre
-                                    }
-                                </div>
-                            </div>
-
-                            <div class="flex-grow-1 px-4 text-center">
-                                <div class="small text-muted mb-1">@duracion.Hours h @duracion.Minutes m</div>
-                                <div style="border-top: 2px dashed #adb5bd; position: relative;">
-                                    <span class="badge bg-warning text-dark rounded-pill position-absolute top-50 start-50 translate-middle" style="font-size: 10px;">Directo</span>
-                                </div>
-                                <div class="small text-muted mt-1">Vuelo directo</div>
-                            </div>
-
-                            <div class="text-center">
-                                <div class="fw-bold fs-4 text-dark">@horaLlegada</div>
-                                <div class="small text-muted">@destinoIata</div>
-                                <div class="small text-muted">
-                                    @if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
-                                    {
-                                        @vuelo.Frecuencia.Ruta.Aeropuerto1.Nombre
-                                    }
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                            <div>
-                                <span class="small text-muted">Capacidad total:</span>
-                                <span class="fw-bold text-dark">@capacidad</span>
-                                <span class="small text-muted ms-2">| Ocupados: @ocupados</span>
-                                <span class="small text-muted ms-2">| Disponibles: @restantes</span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                @if (tarifaPasajero.HasValue)
+            decimal? tarifaPasajero = tarifaPorVuelo.ContainsKey(vuelo.VueloId) ? tarifaPorVuelo[vuelo.VueloId] : null;
+            decimal? totalReserva = totalPorVuelo.ContainsKey(vuelo.VueloId) ? totalPorVuelo[vuelo.VueloId] : null;
+            bool conDescuento = descuentoPorVuelo.ContainsKey(vuelo.VueloId) && descuentoPorVuelo[vuelo.VueloId];
+            @* =====================================
+                TARJETA DE INFORMACION DEL VUELO
+                ===================================== *@
+            <div class="card border-0 shadow-sm rounded-4 tarjeta-vuelo" data-hora-salida="@horaSalidaMinutos" style="border: 1px solid #e0e0e0 !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="fw-bold text-dark">Aerolínea VIP</span>
+                            <span class="badge bg-light text-dark ms-2">
+                                @if (vuelo.Aeronave != null)
                                 {
-                                    <span class="small text-muted">Desde</span>
-                                    <span class="fw-bold fs-5 text-dark">@moneda @tarifaPasajero.Value.ToString("0.00")</span>
-                                    <span class="small text-muted">/ pasajero</span>
-                                    <div class="small text-muted">
-                                        Total @pasajeros pax: @moneda @totalReserva.Value.ToString("0.00")
-                                        @if (conDescuento)
-                                        {
-                                            <span class="text-success">(desc. académico 5%)</span>
-                                        }
-                                    </div>
+                                    @vuelo.Aeronave.Matricula
                                 }
                                 else
                                 {
-                                    <span class="small text-muted">Tarifa no disponible para este tramo.</span>
+                                    <span>N/A</span>
+                                }
+                            </span>
+                            <span class="small text-muted ms-2">Vuelo #@vuelo.VueloId</span>
+                        </div>
+                        <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2">@restantes disponibles</span>
+                    </div>
+                    @* -------------------------------------
+        HORARIOS Y DATOS DE LA RUTA
+        ------------------------------------- *@
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="text-center">
+                            <div class="fw-bold fs-4 text-dark">@horaSalida</div>
+                            <div class="small text-muted">@origenIata</div>
+                            <div class="small text-muted">
+                                @if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto != null)
+                                {
+                                    @vuelo.Frecuencia.Ruta.Aeropuerto.Nombre
                                 }
                             </div>
+                        </div>
 
-                            <div class="d-flex gap-2">
-                                <a href="@Url.Action("Details", "Vueloes", new { id = vuelo.VueloId })" class="btn btn-sm btn-outline-secondary px-3">Ver detalles</a>
-                                <a href="@Url.Action("DisponibilidadAsientos", "Vueloes", new { vueloId = vuelo.VueloId, CantidadPasajeros = pasajeros })" class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</a>
+                        <div class="flex-grow-1 px-4 text-center">
+                            <div class="small text-muted mb-1">@duracion.Hours h @duracion.Minutes m</div>
+                            <div style="border-top: 2px dashed #adb5bd; position: relative;">
+                                <span class="badge bg-warning text-dark rounded-pill position-absolute top-50 start-50 translate-middle" style="font-size: 10px;">Directo</span>
+                            </div>
+                            <div class="small text-muted mt-1">Vuelo directo</div>
+                        </div>
+
+                        <div class="text-center">
+                            <div class="fw-bold fs-4 text-dark">@horaLlegada</div>
+                            <div class="small text-muted">@destinoIata</div>
+                            <div class="small text-muted">
+                                @if (vuelo.Frecuencia != null && vuelo.Frecuencia.Ruta != null && vuelo.Frecuencia.Ruta.Aeropuerto1 != null)
+                                {
+                                    @vuelo.Frecuencia.Ruta.Aeropuerto1.Nombre
+                                }
                             </div>
                         </div>
                     </div>
+                    @* -------------------------------------
+                        RESUMEN DE DISPONIBILIDAD
+                        ------------------------------------- *@
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <div>
+                            <span class="small text-muted">Capacidad total:</span>
+                            <span class="fw-bold text-dark">@capacidad</span>
+                            <span class="small text-muted ms-2">| Ocupados: @ocupados</span>
+                            <span class="small text-muted ms-2">| Disponibles: @restantes</span>
+                        </div>
+                    </div>
+                    @* -------------------------------------
+                    TARIFAS Y DESCUENTOS
+                    ------------------------------------- *@
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        @if (tarifaPasajero.HasValue)
+                        {
+                            <span class="small text-muted">Desde</span>
+                            <span class="fw-bold fs-5 text-dark">@moneda @tarifaPasajero.Value.ToString("0.00")</span>
+                            <span class="small text-muted">/ pasajero</span>
+                            <div class="small text-muted">
+                                Total @pasajeros pax: @moneda @totalReserva.Value.ToString("0.00")
+                                @if (conDescuento)
+                                {
+                                    <span class="text-success">(desc. académico 5%)</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="small text-muted">Tarifa no disponible para este tramo.</span>
+                        }
+                    </div>
+                    @* -------------------------------------
+                        ACCIONES SOBRE EL VUELO
+                        ------------------------------------- *@
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("Details", "Vueloes", new { id = vuelo.VueloId })" class="btn btn-sm btn-outline-secondary px-3">Ver detalles</a>
+                        <a href="@Url.Action("DisponibilidadAsientos", "Vueloes", new { vueloId = vuelo.VueloId, CantidadPasajeros = pasajeros })" class="btn btn-sm px-4 text-white fw-semibold rounded-3" style="background-color: #37474f; border-color: #37474f;">Seleccionar vuelo</a>
+                    </div>
                 </div>
-            }
+                </div>
+            </div>
         }
-    </div>
+    }
+</div>
 </div>
 
 @if (hayResultados)
 {
-    <script>
-        (function () {
-            var select = document.getElementById('filtroHorario');
-            var limpiar = document.getElementById('limpiarFiltroHorario');
-            var tarjetas = document.querySelectorAll('.tarjeta-vuelo');
-
-            function aplicarFiltro() {
-                var valor = select.value;
-                for (var i = 0; i < tarjetas.length; i++) {
-                    var tarjeta = tarjetas[i];
-                    var minutos = parseInt(tarjeta.getAttribute('data-hora-salida'), 10);
-                    var visible = true;
-
-                    if (!isNaN(minutos) && minutos >= 0) {
-                        if (valor === 'manana') visible = minutos < 12 * 60;
-                        else if (valor === 'tarde') visible = minutos >= 12 * 60 && minutos < 18 * 60;
-                        else if (valor === 'noche') visible = minutos >= 18 * 60;
-                    }
-
-                    tarjeta.style.display = visible ? '' : 'none';
-                }
-            }
-
-            if (select) {
-                select.addEventListener('change', aplicarFiltro);
-            }
-            if (limpiar) {
-                limpiar.addEventListener('click', function () {
-                    select.value = 'todos';
-                    aplicarFiltro();
-                });
-            }
-        })();
-    </script>
+    @section Scripts {
+        <script src="@Url.Content("~/Scripts/Validaciones/hay-resultados.js")"></script>
+    }
 }
